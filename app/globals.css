@@ -1,0 +1,225 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink:        oklch(9%  0.010 280);
+  --ink-70:     oklch(35% 0.010 280);
+  --ink-40:     oklch(62% 0.010 280);
+  --ink-15:     oklch(85% 0.008 280);
+  --ink-06:     oklch(94% 0.005 280);
+  --paper:      oklch(98% 0.004 90);
+
+  --accent-spring:  oklch(64% 0.160 22);
+  --accent-summer:  oklch(56% 0.160 248);
+  --accent-fall:    oklch(62% 0.155 48);
+  --accent-winter:  oklch(42% 0.120 168);
+  --accent:         var(--accent-fall);
+
+  --sp-xs:  6px;
+  --sp-sm:  12px;
+  --sp-md:  24px;
+  --sp-lg:  48px;
+  --sp-xl:  80px;
+  --sp-2xl: 140px;
+
+  --rule: 1px solid var(--ink-15);
+  --max: 1280px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+}
+
+.wrap {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 60px;
+}
+
+@media (max-width: 768px) {
+  .wrap {
+    padding: 0 24px;
+  }
+}
+
+/* Typography utilities */
+.t-hero {
+  font-family: var(--font-serif);
+  font-size: clamp(64px, 9vw, 120px);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 0.92;
+}
+
+.t-display {
+  font-family: var(--font-serif);
+  font-size: clamp(44px, 5vw, 72px);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.0;
+}
+
+.t-h1 {
+  font-family: var(--font-serif);
+  font-size: 40px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.t-section {
+  font-family: var(--font-condensed);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.t-retailer {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.t-body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--ink-70);
+}
+
+.t-meta {
+  font-family: var(--font-condensed);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-40);
+}
+
+.t-code {
+  font-family: var(--font-condensed);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1.5px solid var(--ink);
+  padding: 3px 10px;
+  display: inline-block;
+}
+
+/* Button utilities */
+.btn-primary {
+  font-family: var(--font-condensed);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: var(--paper);
+  border: 1.5px solid var(--ink);
+  padding: 14px 32px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  display: inline-block;
+  text-decoration: none;
+}
+.btn-primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn-ghost {
+  font-family: var(--font-condensed);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink-15);
+  padding: 14px 32px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  display: inline-block;
+  text-decoration: none;
+}
+.btn-ghost:hover {
+  border-color: var(--ink);
+}
+
+/* Input */
+.field-input {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  padding: 14px 18px;
+  border: 1.5px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  outline: none;
+  width: 100%;
+}
+.field-input::placeholder {
+  color: var(--ink-40);
+}
+.field-input:focus {
+  border-color: var(--accent);
+}
+
+/* Toggle switch */
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  background: var(--ink-15);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.toggle input:checked + .toggle-track {
+  background: var(--ink);
+}
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: var(--paper);
+  transition: transform 0.2s;
+}
+.toggle input:checked ~ .toggle-thumb {
+  transform: translateX(18px);
+}
