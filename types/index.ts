@@ -1,6 +1,7 @@
 export type Tier = 'free' | 'paid'
 export type SubscriptionMode = 'category' | 'retailer'
 export type GenderOption = 'men' | 'women' | 'unisex'
+export type SpendTier = '$' | '$$' | '$$$' | '$$$$'
 
 export type SendDay = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
 
@@ -39,6 +40,7 @@ export interface Subscriber {
   min_discount: 30 | 40 | 50
   subscription_mode: SubscriptionMode
   gender_filter: GenderOption[]
+  spend_tier_filter: SpendTier[]
   is_active: boolean
   created_at: string
   updated_at: string
@@ -101,6 +103,7 @@ export interface UserPreferences {
   deal_types: Record<DealType, boolean>
   subscription_mode: SubscriptionMode
   gender_filter: GenderOption[]
+  spend_tier_filter: SpendTier[]
   selected_retailers: string[]
 }
 

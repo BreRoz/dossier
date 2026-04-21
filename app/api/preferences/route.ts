@@ -5,6 +5,7 @@ import type { Category, DealType, SendDay } from '@/types'
 import { ALL_CATEGORIES } from '@/types'
 
 const GENDER_OPTIONS = ['men', 'women', 'unisex'] as const
+const SPEND_TIERS = ['$', '$$', '$$$', '$$$$'] as const
 
 const PreferencesSchema = z.object({
   preferences: z.object({
@@ -15,6 +16,7 @@ const PreferencesSchema = z.object({
     deal_types: z.record(z.boolean()).optional(),
     subscription_mode: z.enum(['category', 'retailer']).optional(),
     gender_filter: z.array(z.enum(GENDER_OPTIONS)).optional(),
+    spend_tier_filter: z.array(z.enum(SPEND_TIERS)).optional(),
     selected_retailers: z.array(z.string()).optional(),
   }),
 })
@@ -61,6 +63,7 @@ export async function GET() {
       min_discount: subscriber.min_discount,
       subscription_mode: subscriber.subscription_mode ?? 'category',
       gender_filter: subscriber.gender_filter ?? ['men', 'women', 'unisex'],
+      spend_tier_filter: subscriber.spend_tier_filter ?? ['$', '$$', '$$$', '$$$$'],
       categories,
       deal_types,
       selected_retailers,
@@ -103,6 +106,8 @@ export async function PUT(request: NextRequest) {
   if (preferences.send_day && isPaid) updates.send_day = preferences.send_day
   if (preferences.min_discount && isPaid) updates.min_discount = preferences.min_discount
   if (preferences.gender_filter !== undefined) updates.gender_filter = preferences.gender_filter
+  // spend_tier_filter available to all users
+  if (preferences.spend_tier_filter !== undefined) updates.spend_tier_filter = preferences.spend_tier_filter
   // subscription_mode only for paid; free is always 'category'
   if (preferences.subscription_mode !== undefined && isPaid) {
     updates.subscription_mode = preferences.subscription_mode

@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { DossierLogo } from '@/components/DossierLogo'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { createClient } from '@/lib/supabase/client'
-import type { Category, DealType, SendDay, UserPreferences, GenderOption } from '@/types'
+import type { Category, DealType, SendDay, UserPreferences, GenderOption, SpendTier } from '@/types'
 import { ALL_CATEGORIES, FREE_CATEGORIES, CATEGORY_LABELS, DEAL_TYPE_LABELS } from '@/types'
 import type { RetailerSummary } from '@/app/api/retailers/route'
 
@@ -31,6 +31,13 @@ const GENDER_OPTIONS: { value: GenderOption; label: string }[] = [
   { value: 'men', label: 'Men' },
   { value: 'women', label: 'Women' },
   { value: 'unisex', label: 'Unisex' },
+]
+
+const SPEND_TIER_OPTIONS: { value: SpendTier; label: string; sub: string }[] = [
+  { value: '$',    label: '$',    sub: 'Budget' },
+  { value: '$$',   label: '$$',   sub: 'Mid-Range' },
+  { value: '$$$',  label: '$$$',  sub: 'Premium' },
+  { value: '$$$$', label: '$$$$', sub: 'Luxury' },
 ]
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
@@ -86,6 +93,7 @@ export default function PreferencesPage() {
     min_discount: 40,
     subscription_mode: 'category',
     gender_filter: ['men', 'women', 'unisex'],
+    spend_tier_filter: ['$', '$$', '$$$', '$$$$'] as SpendTier[],
     categories: Object.fromEntries(ALL_CATEGORIES.map((c) => [c, FREE_CATEGORIES.includes(c)])) as Record<Category, boolean>,
     deal_types: Object.fromEntries(ALL_DEAL_TYPES.map((t) => [t, t !== 'up-to'])) as Record<DealType, boolean>,
     selected_retailers: [],
@@ -109,6 +117,7 @@ export default function PreferencesPage() {
           ...data.preferences,
           subscription_mode: data.preferences?.subscription_mode ?? 'category',
           gender_filter: data.preferences?.gender_filter ?? ['men', 'women', 'unisex'],
+          spend_tier_filter: data.preferences?.spend_tier_filter ?? ['$', '$$', '$$$', '$$$$'],
           selected_retailers: data.preferences?.selected_retailers ?? [],
         }))
       }
@@ -146,6 +155,18 @@ export default function PreferencesPage() {
   const toggleDealType = (dt: DealType) => {
     if (tier === 'free') return
     setPrefs((p) => ({ ...p, deal_types: { ...p.deal_types, [dt]: !p.deal_types[dt] } }))
+  }
+
+  const toggleSpendTier = (tier: SpendTier) => {
+    setPrefs((p) => {
+      const current = p.spend_tier_filter ?? ['$', '$$', '$$$', '$$$$']
+      const has = current.includes(tier)
+      if (has && current.length === 1) return p   // keep at least one
+      return {
+        ...p,
+        spend_tier_filter: has ? current.filter((t) => t !== tier) : [...current, tier],
+      }
+    })
   }
 
   const toggleGender = (g: GenderOption) => {
@@ -438,6 +459,41 @@ export default function PreferencesPage() {
                   }}
                 >
                   {label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* ── SECTION 4: Spend Tier Filter (all users) ─────────────── */}
+        <div style={{ marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
+          <SectionHeader label="Spend Tier" />
+          <p style={{
+            fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
+            lineHeight: 1.5, marginBottom: 20, maxWidth: 480,
+          }}>
+            Filter deals by how much brands typically charge. Select all tiers you shop.
+          </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {SPEND_TIER_OPTIONS.map(({ value, label, sub }) => {
+              const active = (prefs.spend_tier_filter ?? ['$', '$$', '$$$', '$$$$']).includes(value)
+              return (
+                <button
+                  key={value}
+                  onClick={() => toggleSpendTier(value)}
+                  title={sub}
+                  style={{
+                    fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: 600,
+                    letterSpacing: '0.1em', padding: '10px 20px', border: '1.5px solid',
+                    borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
+                    background: active ? 'var(--ink)' : 'transparent',
+                    color: active ? 'var(--paper)' : 'var(--ink-40)',
+                    cursor: 'pointer',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                  }}
+                >
+                  <span>{label}</span>
+                  <span style={{ fontSize: 8, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.7 }}>{sub}</span>
                 </button>
               )
             })}

@@ -7,9 +7,9 @@ import Link from 'next/link'
 import { DossierLogo } from '@/components/DossierLogo'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { createClient } from '@/lib/supabase/client'
-import type { Category } from '@/types'
+import type { Category, SpendTier } from '@/types'
 import { CATEGORY_LABELS } from '@/types'
-import type { RetailerSummary } from '@/app/api/retailers/route'
+import type { StoreRow } from '@/app/api/stores/route'
 
 interface Stats {
   emails_caught: number
@@ -17,63 +17,42 @@ interface Stats {
   emails_saved: number
 }
 
+const ALL_SPEND_TIERS: SpendTier[] = ['$', '$$', '$$$', '$$$$']
+
+const SPEND_TIER_LABELS: Record<SpendTier, string> = {
+  '$':    'Budget',
+  '$$':   'Mid-Range',
+  '$$$':  'Premium',
+  '$$$$': 'Luxury',
+}
+
 function fmt(n: number): string {
   return n.toLocaleString('en-US')
 }
 
-function StatCard({
-  value,
-  label,
-  sub,
-}: {
-  value: number
-  label: string
-  sub?: string
-}) {
+function StatCard({ value, label, sub }: { value: number; label: string; sub?: string }) {
   return (
-    <div
-      style={{
-        padding: '32px 40px',
-        background: 'var(--ink-06)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 8,
-        flex: 1,
-      }}
-    >
-      <div
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 52,
-          fontWeight: 300,
-          letterSpacing: '-0.02em',
-          lineHeight: 1,
-          color: 'var(--ink)',
-        }}
-      >
+    <div style={{
+      padding: '32px 40px', background: 'var(--ink-06)',
+      display: 'flex', flexDirection: 'column', gap: 8, flex: 1,
+    }}>
+      <div style={{
+        fontFamily: 'var(--font-serif)', fontSize: 52, fontWeight: 300,
+        letterSpacing: '-0.02em', lineHeight: 1, color: 'var(--ink)',
+      }}>
         {fmt(value)}
       </div>
-      <div
-        style={{
-          fontFamily: 'var(--font-condensed)',
-          fontSize: 11,
-          fontWeight: 600,
-          letterSpacing: '0.22em',
-          textTransform: 'uppercase',
-          color: 'var(--accent)',
-        }}
-      >
+      <div style={{
+        fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
+        letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--accent)',
+      }}>
         {label}
       </div>
       {sub && (
-        <div
-          style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: 13,
-            color: 'var(--ink-40)',
-            lineHeight: 1.4,
-          }}
-        >
+        <div style={{
+          fontFamily: 'var(--font-sans)', fontSize: 13,
+          color: 'var(--ink-40)', lineHeight: 1.4,
+        }}>
           {sub}
         </div>
       )}
@@ -81,48 +60,46 @@ function StatCard({
   )
 }
 
+// Month name from MM-DD-YYYY
+function monthAdded(dateStr: string): string {
+  if (!dateStr) return ''
+  const parts = dateStr.split('-')
+  if (parts.length !== 3) return ''
+  const month = parseInt(parts[0], 10) - 1
+  const year  = parseInt(parts[2], 10)
+  return new Date(year, month, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
+}
+
 export default function StoresPage() {
   const supabase = createClient()
 
-  const [stats, setStats] = useState<Stats | null>(null)
-  const [retailers, setRetailers] = useState<RetailerSummary[]>([])
-  const [subscribedRetailers, setSubscribedRetailers] = useState<string[]>([])
-  const [enabledCategories, setEnabledCategories] = useState<string[]>([])
-  const [subscriptionMode, setSubscriptionMode] = useState<'category' | 'retailer'>('category')
-  const [genderFilter, setGenderFilter] = useState<string[]>(['men', 'women', 'unisex'])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
+  const [stats, setStats]             = useState<Stats | null>(null)
+  const [stores, setStores]           = useState<StoreRow[]>([])
+  const [spendFilter, setSpendFilter] = useState<SpendTier[]>(['$', '$$', '$$$', '$$$$'])
+  const [loading, setLoading]         = useState(true)
+  const [search, setSearch]           = useState('')
+  const [activeCategory, setActiveCategory] = useState<string>('all')
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
 
-      const [statsRes, retailersRes, prefsRes] = await Promise.all([
+      const [statsRes, storesRes, prefsRes] = await Promise.all([
         fetch('/api/stats'),
-        fetch('/api/retailers'),
+        fetch('/api/stores'),
         fetch('/api/preferences'),
       ])
 
-      if (statsRes.ok) setStats(await statsRes.json())
-
-      if (retailersRes.ok) {
-        const data = await retailersRes.json()
-        setRetailers(data.retailers || [])
+      if (statsRes.ok)  setStats(await statsRes.json())
+      if (storesRes.ok) {
+        const data = await storesRes.json()
+        setStores(data.stores || [])
       }
-
       if (prefsRes.ok) {
         const data = await prefsRes.json()
         const prefs = data.preferences || {}
-        setSubscriptionMode(prefs.subscription_mode || 'category')
-        setGenderFilter(prefs.gender_filter || ['men', 'women', 'unisex'])
-        setSubscribedRetailers(prefs.selected_retailers || [])
-        const cats = prefs.categories || {}
-        setEnabledCategories(
-          Object.entries(cats)
-            .filter(([, v]) => Boolean(v))
-            .map(([k]) => k)
-        )
+        if (prefs.spend_tier_filter?.length) setSpendFilter(prefs.spend_tier_filter)
       }
 
       setLoading(false)
@@ -130,24 +107,31 @@ export default function StoresPage() {
     load()
   }, [])
 
-  // Which retailers to show: filtered by subscription + gender + search
-  const visibleRetailers = useMemo(() => {
-    return retailers.filter((r) => {
-      // search filter
-      if (search && !r.name.toLowerCase().includes(search.toLowerCase())) return false
+  // Unique app categories present in the store list
+  const availableCategories = useMemo(() => {
+    const seen = new Set<string>()
+    for (const s of stores) if (s.appCategory) seen.add(s.appCategory)
+    return Array.from(seen).sort()
+  }, [stores])
 
-      // subscription scope
-      if (subscriptionMode === 'retailer') {
-        if (subscribedRetailers.length > 0 && !subscribedRetailers.includes(r.name)) return false
-      } else {
-        // category mode: show retailers that have deals in enabled categories
-        const hasCategory = r.categories.some((c) => enabledCategories.includes(c))
-        if (!hasCategory) return false
-      }
-
+  const visibleStores = useMemo(() => {
+    return stores.filter((s) => {
+      if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false
+      if (!spendFilter.includes(s.spendTier as SpendTier)) return false
+      if (activeCategory !== 'all' && s.appCategory !== activeCategory) return false
       return true
     })
-  }, [retailers, search, subscriptionMode, subscribedRetailers, enabledCategories])
+  }, [stores, search, spendFilter, activeCategory])
+
+  const toggleSpend = (tier: SpendTier) => {
+    setSpendFilter((cur) => {
+      if (cur.includes(tier)) {
+        if (cur.length === 1) return cur   // keep at least one
+        return cur.filter((t) => t !== tier)
+      }
+      return [...cur, tier]
+    })
+  }
 
   if (loading) {
     return (
@@ -160,79 +144,49 @@ export default function StoresPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
       {/* Nav */}
-      <nav
-        style={{
-          height: 56,
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 60px',
-          borderBottom: 'var(--rule)',
-          position: 'sticky',
-          top: 0,
-          background: 'var(--paper)',
-          zIndex: 10,
-        }}
-      >
+      <nav style={{
+        height: 56, display: 'flex', alignItems: 'center', padding: '0 60px',
+        borderBottom: 'var(--rule)', position: 'sticky', top: 0,
+        background: 'var(--paper)', zIndex: 10,
+      }}>
         <Link href="/" style={{ textDecoration: 'none' }}>
           <DossierLogo size={22} wordmarkSize={18} />
         </Link>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 24 }}>
-          <Link
-            href="/preferences"
-            style={{
-              fontFamily: 'var(--font-condensed)',
-              fontSize: 11,
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-              color: 'var(--ink-40)',
-              textDecoration: 'none',
-            }}
-          >
+          <Link href="/preferences" style={{
+            fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.2em',
+            textTransform: 'uppercase', color: 'var(--ink-40)', textDecoration: 'none',
+          }}>
             Settings
           </Link>
         </div>
       </nav>
 
       <div className="wrap" style={{ paddingTop: 64, paddingBottom: 120 }}>
+
         {/* Header */}
         <div style={{ marginBottom: 48, borderBottom: 'var(--rule)', paddingBottom: 40 }}>
           <p className="t-section" style={{ marginBottom: 12 }}>Your Account</p>
-          <h1
-            style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 48,
-              fontWeight: 300,
-              letterSpacing: '-0.02em',
-              marginBottom: 12,
-            }}
-          >
+          <h1 style={{
+            fontFamily: 'var(--font-serif)', fontSize: 48, fontWeight: 300,
+            letterSpacing: '-0.02em', marginBottom: 12,
+          }}>
             Subscribed Stores
           </h1>
-          <p
-            style={{
-              fontFamily: 'var(--font-sans)',
-              fontSize: 15,
-              color: 'var(--ink-40)',
-              maxWidth: 520,
-              lineHeight: 1.55,
-            }}
-          >
+          <p style={{
+            fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-40)',
+            maxWidth: 520, lineHeight: 1.55,
+          }}>
             Every retail email we catch so you don&rsquo;t have to sort through them yourself.
           </p>
         </div>
 
-        {/* ─── Stats Cards ─────────────────────────────────────────── */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 2,
-            marginBottom: 56,
-          }}
-        >
+        {/* ── Stats Cards ──────────────────────────────────────────── */}
+        <div style={{ display: 'flex', gap: 2, marginBottom: 56 }}>
           <StatCard
             value={stats?.emails_caught ?? 0}
             label="Retail Emails Caught"
-            sub="Total promotional emails ingested from partner retailers"
+            sub="Total promotional emails ingested from subscribed retailers"
           />
           <StatCard
             value={stats?.editions_sent ?? 0}
@@ -242,100 +196,122 @@ export default function StoresPage() {
           <StatCard
             value={stats?.emails_saved ?? 0}
             label="Emails You Didn't Have to Sort Through"
-            sub="Emails caught minus editions sent"
+            sub="Retail emails caught minus editions sent"
           />
         </div>
 
-        {/* ─── Retailer List ───────────────────────────────────────── */}
-        <div>
-          {/* List header */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: 24,
-            }}
-          >
-            <div>
-              <p className="t-meta" style={{ marginBottom: 4 }}>
-                {subscriptionMode === 'retailer'
-                  ? `${visibleRetailers.length} Subscribed Retailer${visibleRetailers.length !== 1 ? 's' : ''}`
-                  : `${visibleRetailers.length} Retailer${visibleRetailers.length !== 1 ? 's' : ''} in Your Categories`}
-              </p>
-            </div>
-            <input
-              type="text"
-              placeholder="Search retailers..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="field-input"
-              style={{ maxWidth: 240, padding: '8px 14px' }}
-            />
+        {/* ── Filters row ──────────────────────────────────────────── */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 16,
+          flexWrap: 'wrap', marginBottom: 24,
+        }}>
+          {/* Search */}
+          <input
+            type="text"
+            placeholder="Search stores..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="field-input"
+            style={{ maxWidth: 220, padding: '8px 14px' }}
+          />
+
+          {/* Spend tier pills */}
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <span style={{
+              fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.18em',
+              textTransform: 'uppercase', color: 'var(--ink-40)',
+            }}>
+              Spend
+            </span>
+            {ALL_SPEND_TIERS.map((tier) => {
+              const active = spendFilter.includes(tier)
+              return (
+                <button key={tier} onClick={() => toggleSpend(tier)} title={SPEND_TIER_LABELS[tier]} style={{
+                  fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
+                  letterSpacing: '0.08em', padding: '5px 12px', border: '1.5px solid',
+                  borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
+                  background: active ? 'var(--ink)' : 'transparent',
+                  color: active ? 'var(--paper)' : 'var(--ink-40)',
+                  cursor: 'pointer',
+                }}>
+                  {tier}
+                </button>
+              )
+            })}
           </div>
 
-          {/* Column headers */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 160px 120px 100px',
-              gap: 16,
-              padding: '10px 16px',
-              borderBottom: 'var(--rule)',
-            }}
-          >
-            {['Retailer', 'Categories', 'Potential Savings', 'Deals'].map((h) => (
-              <span
-                key={h}
-                style={{
-                  fontFamily: 'var(--font-condensed)',
-                  fontSize: 9,
-                  fontWeight: 600,
-                  letterSpacing: '0.2em',
-                  textTransform: 'uppercase',
-                  color: 'var(--ink-40)',
-                }}
-              >
-                {h}
-              </span>
+          {/* Category filter */}
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setActiveCategory('all')}
+              style={{
+                fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.18em',
+                textTransform: 'uppercase', padding: '5px 12px', border: '1.5px solid',
+                borderColor: activeCategory === 'all' ? 'var(--ink)' : 'var(--ink-15)',
+                background: activeCategory === 'all' ? 'var(--ink)' : 'transparent',
+                color: activeCategory === 'all' ? 'var(--paper)' : 'var(--ink-40)',
+                cursor: 'pointer',
+              }}
+            >
+              All
+            </button>
+            {availableCategories.map((cat) => (
+              <button key={cat} onClick={() => setActiveCategory(cat === activeCategory ? 'all' : cat)} title={CATEGORY_LABELS[cat as Category] ?? cat} style={{
+                padding: '5px 8px', border: '1.5px solid',
+                borderColor: activeCategory === cat ? 'var(--ink)' : 'var(--ink-15)',
+                background: activeCategory === cat ? 'var(--ink)' : 'transparent',
+                cursor: 'pointer',
+              }}>
+                <CategoryIcon category={cat as Category} size={13} color={activeCategory === cat ? 'var(--paper)' : undefined} />
+              </button>
             ))}
           </div>
 
-          {/* Rows */}
-          {visibleRetailers.length === 0 ? (
-            <div
-              style={{
-                padding: '48px 16px',
-                textAlign: 'center',
-                color: 'var(--ink-40)',
-                fontFamily: 'var(--font-condensed)',
-                fontSize: 11,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-              }}
-            >
-              {search ? 'No retailers match your search' : 'No retailers found for your current subscription'}
-            </div>
-          ) : (
-            visibleRetailers.map((retailer, i) => (
-              <RetailerRow key={retailer.name} retailer={retailer} isEven={i % 2 === 0} />
-            ))
-          )}
+          <span style={{
+            marginLeft: 'auto',
+            fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em',
+            textTransform: 'uppercase', color: 'var(--ink-40)',
+          }}>
+            {visibleStores.length} store{visibleStores.length !== 1 ? 's' : ''}
+          </span>
         </div>
 
-        {/* Link to settings */}
+        {/* ── Column headers ───────────────────────────────────────── */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: '1fr 40px 56px 80px 100px',
+          gap: 16, padding: '10px 16px', borderBottom: 'var(--rule)',
+        }}>
+          {['Store', 'Cat.', 'Spend', 'Added', 'Status'].map((h) => (
+            <span key={h} style={{
+              fontFamily: 'var(--font-condensed)', fontSize: 9, fontWeight: 600,
+              letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)',
+            }}>
+              {h}
+            </span>
+          ))}
+        </div>
+
+        {/* ── Rows ─────────────────────────────────────────────────── */}
+        {visibleStores.length === 0 ? (
+          <div style={{
+            padding: '48px 16px', textAlign: 'center',
+            fontFamily: 'var(--font-condensed)', fontSize: 11,
+            letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-40)',
+          }}>
+            {search ? 'No stores match your search' : 'No stores match your current filters'}
+          </div>
+        ) : (
+          visibleStores.map((store, i) => (
+            <StoreRow key={`${store.name}-${i}`} store={store} isEven={i % 2 === 0} />
+          ))
+        )}
+
+        {/* Footer link */}
         <div style={{ marginTop: 48, paddingTop: 40, borderTop: 'var(--rule)' }}>
-          <Link
-            href="/preferences"
-            style={{
-              fontFamily: 'var(--font-condensed)',
-              fontSize: 11,
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-              color: 'var(--ink)',
-              textDecoration: 'underline',
-            }}
-          >
+          <Link href="/preferences" style={{
+            fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.2em',
+            textTransform: 'uppercase', color: 'var(--ink)', textDecoration: 'underline',
+          }}>
             Adjust your subscription settings
           </Link>
         </div>
@@ -344,83 +320,77 @@ export default function StoresPage() {
   )
 }
 
-function RetailerRow({
-  retailer,
-  isEven,
-}: {
-  retailer: RetailerSummary
-  isEven: boolean
-}) {
-  const cats = retailer.categories.slice(0, 3) as Category[]
-  const extra = Math.max(0, retailer.categories.length - 3)
-
+function StoreRow({ store, isEven }: { store: StoreRow; isEven: boolean }) {
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 160px 120px 100px',
-        gap: 16,
-        padding: '16px 16px',
-        background: isEven ? 'transparent' : 'var(--ink-06)',
-        alignItems: 'center',
-        borderBottom: '1px solid var(--ink-06)',
-      }}
-    >
-      {/* Name */}
-      <span
-        style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: 14,
-          fontWeight: 600,
-          color: 'var(--ink)',
-        }}
-      >
-        {retailer.name}
-      </span>
-
-      {/* Categories (icons) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-        {cats.map((cat) => (
-          <span key={cat} title={CATEGORY_LABELS[cat] ?? cat}>
-            <CategoryIcon category={cat} size={16} />
-          </span>
-        ))}
-        {extra > 0 && (
-          <span
+    <div style={{
+      display: 'grid', gridTemplateColumns: '1fr 40px 56px 80px 100px',
+      gap: 16, padding: '14px 16px',
+      background: isEven ? 'transparent' : 'var(--ink-06)',
+      alignItems: 'center',
+      borderBottom: '1px solid var(--ink-06)',
+    }}>
+      {/* Name + NEW badge */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+        {store.website ? (
+          <a
+            href={store.website}
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
-              fontFamily: 'var(--font-condensed)',
-              fontSize: 9,
-              letterSpacing: '0.12em',
-              color: 'var(--ink-40)',
+              fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
+              color: 'var(--ink)', textDecoration: 'none',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}
           >
-            +{extra}
+            {store.name}
+          </a>
+        ) : (
+          <span style={{
+            fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600, color: 'var(--ink)',
+          }}>
+            {store.name}
+          </span>
+        )}
+        {store.isNew && (
+          <span style={{
+            fontFamily: 'var(--font-condensed)', fontSize: 8, fontWeight: 700,
+            letterSpacing: '0.18em', textTransform: 'uppercase',
+            background: 'var(--accent)', color: 'var(--paper)',
+            padding: '2px 6px', flexShrink: 0,
+          }}>
+            New
           </span>
         )}
       </div>
 
-      {/* Potential Savings */}
-      <span
-        style={{
-          fontFamily: 'var(--font-serif)',
-          fontSize: 22,
-          fontWeight: 300,
-          color: 'var(--ink)',
-        }}
-      >
-        {retailer.potential_savings !== null ? `${retailer.potential_savings}%` : '—'}
+      {/* Category icon */}
+      <span title={CATEGORY_LABELS[store.appCategory as Category] ?? store.category}>
+        <CategoryIcon category={store.appCategory as Category} size={16} />
       </span>
 
-      {/* Deal count */}
-      <span
-        style={{
-          fontFamily: 'var(--font-condensed)',
-          fontSize: 12,
-          letterSpacing: '0.1em',
-          color: 'var(--ink-40)',
-        }}
-      >
-        {retailer.deal_count}
+      {/* Spend tier */}
+      <span style={{
+        fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: 600,
+        letterSpacing: '0.06em', color: 'var(--ink)',
+      }}>
+        {store.spendTier}
+      </span>
+
+      {/* Month added */}
+      <span style={{
+        fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.1em',
+        color: 'var(--ink-40)', textTransform: 'uppercase',
+      }}>
+        {monthAdded(store.dateAdded)}
+      </span>
+
+      {/* Status */}
+      <span style={{
+        fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.15em',
+        textTransform: 'uppercase',
+        color: store.status === 'Live' ? 'var(--accent)' : 'var(--ink-40)',
+      }}>
+        {store.status || '—'}
       </span>
     </div>
   )
