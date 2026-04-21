@@ -55,32 +55,35 @@ function parseCSV(text: string): string[][] {
 
 // ── Category mapping: sheet value → app slug ─────────────────────────────────
 const CATEGORY_MAP: Record<string, string> = {
-  'restaurants':   'restaurants',
-  'tech':          'tech',
-  'fashion':       'everyday-fashion',
-  'accessories':   'everyday-fashion',
-  'shoes':         'everyday-fashion',
+  'accessories':   'accessories',
   'beauty':        'beauty',
-  'home':          'home',
-  'tools':         'tools-yard',
-  'kids':          'kids',
   'baby':          'baby',
-  'athletic':      'athletic',
-  'travel':        'travel',
+  'entertainment': 'entertainment',
+  'fashion':       'fashion',
   'grocery':       'grocery',
-  'entertainment': 'tech',
-  'premium fashion': 'premium-fashion',
-  'everyday fashion': 'everyday-fashion',
+  'home':          'home',
+  'kids':          'kids',
+  'shoes':         'shoes',
+  'restaurants':   'restaurants',
+  'tools':         'tools',
+  'tech':          'tech',
+  'travel':        'travel',
+  // legacy / alternate names
+  'athletic':      'fashion',
+  'premium fashion': 'fashion',
+  'everyday fashion': 'fashion',
+  'fast food':     'restaurants',
+  'fast casual':   'restaurants',
 }
 
 function mapCategory(cat: string, subcat: string): string {
   const key = cat.toLowerCase().trim()
   const sub = subcat.toLowerCase().trim()
 
-  // Fast Food subcategory → fast-food
-  if (sub === 'fast food' || sub === 'fast casual') return 'fast-food'
+  // Fast Food / Fast Casual subcategory → restaurants
+  if (sub === 'fast food' || sub === 'fast casual') return 'restaurants'
 
-  return CATEGORY_MAP[key] ?? 'everyday-fashion'
+  return CATEGORY_MAP[key] ?? 'fashion'
 }
 
 // ── "New" badge: added in current or previous month ───────────────────────────

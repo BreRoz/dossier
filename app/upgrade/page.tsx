@@ -4,7 +4,7 @@ import { CategoryIcon } from '@/components/CategoryIcon'
 import { ALL_CATEGORIES, FREE_CATEGORIES, CATEGORY_LABELS } from '@/types'
 import type { Category } from '@/types'
 
-const FREE_CATS: Category[] = ['everyday-fashion', 'fast-food', 'restaurants']
+const FREE_CATS: Category[] = ['fashion', 'restaurants', 'grocery']
 const PAID_CATS = ALL_CATEGORIES.filter((c) => !FREE_CATS.includes(c))
 
 export default function UpgradePage() {

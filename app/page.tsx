@@ -26,7 +26,7 @@ function getCurrentSeason(): keyof typeof SEASONS {
 
 const SAMPLE_DEALS = [
   {
-    category: 'premium-fashion' as Category,
+    category: 'fashion' as Category,
     retailer: 'Nordstrom',
     description: "Up to 40% off select women's outerwear — Barbour, Eileen Fisher, Vince, and Theory. No additional exclusions.",
     code: 'DOSSIER20',
@@ -217,7 +217,7 @@ export default function LandingPage() {
               ))}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {(['premium-fashion', 'beauty', 'home', 'tech', 'fast-food', 'travel', 'grocery', 'tools-yard'] as Category[]).map((cat) => (
+              {(['fashion', 'beauty', 'home', 'tech', 'restaurants', 'travel', 'grocery', 'tools'] as Category[]).map((cat) => (
                 <div key={cat} style={{
                   display: 'flex', alignItems: 'center', gap: 8,
                   border: '1px solid oklch(25% 0.01 280)', padding: '8px 14px',

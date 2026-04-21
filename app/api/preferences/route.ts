@@ -120,7 +120,7 @@ export async function PUT(request: NextRequest) {
     const rows = Object.entries(preferences.categories).map(([cat, enabled]) => ({
       subscriber_id: subscriber.id,
       category: cat,
-      enabled: !isPaid && !['everyday-fashion', 'fast-food', 'restaurants'].includes(cat)
+      enabled: !isPaid && !['fashion', 'restaurants', 'grocery'].includes(cat)
         ? false
         : Boolean(enabled),
     }))

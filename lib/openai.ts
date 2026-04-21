@@ -18,9 +18,9 @@ const DealSchema = z.object({
   expiration_date: z.string().nullable(), // ISO date string YYYY-MM-DD
   link: z.string().url().nullable(),
   categories: z.array(z.enum([
-    'premium-fashion', 'everyday-fashion', 'athletic', 'beauty',
-    'baby', 'kids', 'home', 'tools-yard', 'fast-food',
-    'restaurants', 'grocery', 'tech', 'travel'
+    'accessories', 'beauty', 'baby', 'entertainment',
+    'fashion', 'grocery', 'home', 'kids', 'shoes',
+    'restaurants', 'tools', 'tech', 'travel'
   ])),
 })
 
@@ -41,7 +41,7 @@ Extract all distinct deals from promotional emails. For each deal:
 5. PROMO_CODE: The promotional code if present (null if none)
 6. EXPIRATION_DATE: The expiration date in YYYY-MM-DD format (null if unknown)
 7. LINK: The direct URL to the deal (null if not found)
-8. CATEGORIES: Array of relevant categories from: premium-fashion, everyday-fashion, athletic, beauty, baby, kids, home, tools-yard, fast-food, restaurants, grocery, tech, travel
+8. CATEGORIES: Array of relevant categories from: accessories, beauty, baby, entertainment, fashion, grocery, home, kids, shoes, restaurants, tools, tech, travel
 
 RULES:
 - If a retailer has multiple distinct deals, create separate entries for each

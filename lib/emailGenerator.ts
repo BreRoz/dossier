@@ -14,19 +14,19 @@ function getCurrentAccent(): string {
 }
 
 const CATEGORY_ICONS: Record<Category, string> = {
-  'premium-fashion': `<rect x="1" y="1" width="20" height="42" fill="currentColor"/>`,
-  'everyday-fashion': `<rect x="1" y="1" width="20" height="20" fill="currentColor"/><rect x="23" y="23" width="20" height="20" fill="currentColor"/>`,
-  'athletic': `<line x1="1" y1="43" x2="43" y2="1" stroke="currentColor" stroke-width="5" stroke-linecap="square"/>`,
-  'beauty': `<circle cx="22" cy="22" r="14" fill="currentColor"/>`,
-  'baby': `<rect x="14" y="14" width="16" height="16" fill="currentColor"/>`,
-  'kids': `<rect x="23" y="1" width="20" height="20" fill="currentColor"/><rect x="1" y="23" width="20" height="20" fill="currentColor"/>`,
-  'home': `<rect x="1" y="23" width="42" height="20" fill="currentColor"/>`,
-  'tools-yard': `<line x1="1" y1="1" x2="43" y2="43" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><line x1="43" y1="1" x2="1" y2="43" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>`,
-  'fast-food': `<rect x="1" y="8" width="42" height="8" fill="currentColor"/><rect x="1" y="20" width="42" height="8" fill="currentColor"/><rect x="1" y="32" width="42" height="8" fill="currentColor"/>`,
-  'restaurants': `<rect x="8" y="1" width="8" height="42" fill="currentColor"/><rect x="28" y="1" width="8" height="42" fill="currentColor"/>`,
-  'grocery': `<rect x="7" y="7" width="8" height="8" fill="currentColor"/><rect x="18" y="7" width="8" height="8" fill="currentColor"/><rect x="29" y="7" width="8" height="8" fill="currentColor"/><rect x="7" y="18" width="8" height="8" fill="currentColor"/><rect x="18" y="18" width="8" height="8" fill="currentColor"/><rect x="29" y="18" width="8" height="8" fill="currentColor"/><rect x="7" y="29" width="8" height="8" fill="currentColor"/><rect x="18" y="29" width="8" height="8" fill="currentColor"/><rect x="29" y="29" width="8" height="8" fill="currentColor"/>`,
-  'tech': `<line x1="22" y1="1" x2="22" y2="43" stroke="currentColor" stroke-width="1.5"/><line x1="1" y1="22" x2="43" y2="22" stroke="currentColor" stroke-width="1.5"/><circle cx="22" cy="22" r="7" fill="currentColor"/><circle cx="22" cy="7" r="3" fill="currentColor"/><circle cx="22" cy="37" r="3" fill="currentColor"/><circle cx="7" cy="22" r="3" fill="currentColor"/><circle cx="37" cy="22" r="3" fill="currentColor"/>`,
-  'travel': `<path d="M 1 30 A 21 21 0 0 1 43 30" fill="currentColor"/><line x1="1" y1="30" x2="43" y2="30" stroke="currentColor" stroke-width="1.5"/><line x1="22" y1="1" x2="22" y2="30" stroke="currentColor" stroke-width="1.5"/>`,
+  'fashion':       `<rect x="1" y="1" width="20" height="42" fill="currentColor"/>`,
+  'accessories':   `<circle cx="22" cy="22" r="10" stroke="currentColor" stroke-width="3"/><circle cx="22" cy="22" r="3" fill="currentColor"/><line x1="22" y1="1" x2="22" y2="12" stroke="currentColor" stroke-width="2"/><line x1="22" y1="32" x2="22" y2="43" stroke="currentColor" stroke-width="2"/><line x1="1" y1="22" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="32" y1="22" x2="43" y2="22" stroke="currentColor" stroke-width="2"/>`,
+  'beauty':        `<circle cx="22" cy="22" r="14" fill="currentColor"/>`,
+  'baby':          `<rect x="14" y="14" width="16" height="16" fill="currentColor"/>`,
+  'entertainment': `<polygon points="8,4 8,40 40,22" fill="currentColor"/>`,
+  'grocery':       `<rect x="7" y="7" width="8" height="8" fill="currentColor"/><rect x="18" y="7" width="8" height="8" fill="currentColor"/><rect x="29" y="7" width="8" height="8" fill="currentColor"/><rect x="7" y="18" width="8" height="8" fill="currentColor"/><rect x="18" y="18" width="8" height="8" fill="currentColor"/><rect x="29" y="18" width="8" height="8" fill="currentColor"/><rect x="7" y="29" width="8" height="8" fill="currentColor"/><rect x="18" y="29" width="8" height="8" fill="currentColor"/><rect x="29" y="29" width="8" height="8" fill="currentColor"/>`,
+  'home':          `<rect x="1" y="23" width="42" height="20" fill="currentColor"/>`,
+  'kids':          `<rect x="23" y="1" width="20" height="20" fill="currentColor"/><rect x="1" y="23" width="20" height="20" fill="currentColor"/>`,
+  'shoes':         `<line x1="4" y1="40" x2="40" y2="4" stroke="currentColor" stroke-width="6" stroke-linecap="square"/><line x1="4" y1="34" x2="34" y2="4" stroke="currentColor" stroke-width="2" stroke-linecap="square"/><line x1="10" y1="40" x2="40" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="square"/>`,
+  'restaurants':   `<rect x="8" y="1" width="8" height="42" fill="currentColor"/><rect x="28" y="1" width="8" height="42" fill="currentColor"/>`,
+  'tools':         `<line x1="1" y1="1" x2="43" y2="43" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><line x1="43" y1="1" x2="1" y2="43" stroke="currentColor" stroke-width="4" stroke-linecap="square"/>`,
+  'tech':          `<line x1="22" y1="1" x2="22" y2="43" stroke="currentColor" stroke-width="1.5"/><line x1="1" y1="22" x2="43" y2="22" stroke="currentColor" stroke-width="1.5"/><circle cx="22" cy="22" r="7" fill="currentColor"/><circle cx="22" cy="7" r="3" fill="currentColor"/><circle cx="22" cy="37" r="3" fill="currentColor"/><circle cx="7" cy="22" r="3" fill="currentColor"/><circle cx="37" cy="22" r="3" fill="currentColor"/>`,
+  'travel':        `<path d="M 1 30 A 21 21 0 0 1 43 30" fill="currentColor"/><line x1="1" y1="30" x2="43" y2="30" stroke="currentColor" stroke-width="1.5"/><line x1="22" y1="1" x2="22" y2="30" stroke="currentColor" stroke-width="1.5"/>`,
 }
 
 function categoryIcon(cat: Category, size = 16): string {

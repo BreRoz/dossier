@@ -6,17 +6,17 @@ export type SpendTier = '$' | '$$' | '$$$' | '$$$$'
 export type SendDay = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
 
 export type Category =
-  | 'premium-fashion'
-  | 'everyday-fashion'
-  | 'athletic'
+  | 'accessories'
   | 'beauty'
   | 'baby'
-  | 'kids'
-  | 'home'
-  | 'tools-yard'
-  | 'fast-food'
-  | 'restaurants'
+  | 'entertainment'
+  | 'fashion'
   | 'grocery'
+  | 'home'
+  | 'kids'
+  | 'shoes'
+  | 'restaurants'
+  | 'tools'
   | 'tech'
   | 'travel'
 
@@ -107,38 +107,38 @@ export interface UserPreferences {
   selected_retailers: string[]
 }
 
-export const FREE_CATEGORIES: Category[] = ['everyday-fashion', 'fast-food', 'restaurants']
+export const FREE_CATEGORIES: Category[] = ['fashion', 'restaurants', 'grocery']
 
 export const ALL_CATEGORIES: Category[] = [
-  'premium-fashion',
-  'everyday-fashion',
-  'athletic',
+  'accessories',
   'beauty',
   'baby',
-  'kids',
-  'home',
-  'tools-yard',
-  'fast-food',
-  'restaurants',
+  'entertainment',
+  'fashion',
   'grocery',
+  'home',
+  'kids',
+  'shoes',
+  'restaurants',
+  'tools',
   'tech',
   'travel',
 ]
 
 export const CATEGORY_LABELS: Record<Category, string> = {
-  'premium-fashion': 'Premium Fashion',
-  'everyday-fashion': 'Everyday Fashion',
-  'athletic': 'Athletic',
-  'beauty': 'Beauty',
-  'baby': 'Baby',
-  'kids': 'Kids',
-  'home': 'Home',
-  'tools-yard': 'Tools & Yard',
-  'fast-food': 'Fast Food',
-  'restaurants': 'Restaurants',
-  'grocery': 'Grocery',
-  'tech': 'Tech',
-  'travel': 'Travel',
+  'accessories':   'Accessories',
+  'beauty':        'Beauty',
+  'baby':          'Baby',
+  'entertainment': 'Entertainment',
+  'fashion':       'Fashion',
+  'grocery':       'Grocery',
+  'home':          'Home',
+  'kids':          'Kids',
+  'shoes':         'Shoes',
+  'restaurants':   'Restaurants',
+  'tools':         'Tools',
+  'tech':          'Tech',
+  'travel':        'Travel',
 }
 
 export const DEAL_TYPE_LABELS: Record<DealType, string> = {
