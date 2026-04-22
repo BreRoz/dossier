@@ -385,7 +385,7 @@ export default function LandingPage() {
             <div>
               <p className="t-meta" style={{ marginBottom: 16 }}>Free tier includes</p>
               <ul style={{ listStyle: 'none', padding: 0 }}>
-                {['Everyday Fashion', 'Fast Food', 'Restaurants', '40%+ minimum discount', 'Thursday delivery'].map((item) => (
+                {['Fashion', 'Grocery', 'Restaurants', '40%+ minimum discount', 'Thursday delivery'].map((item) => (
                   <li key={item} style={{
                     fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-70)',
                     paddingBottom: 8, display: 'flex', alignItems: 'center', gap: 8,
