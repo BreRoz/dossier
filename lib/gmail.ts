@@ -17,7 +17,7 @@ export async function fetchPromotionalEmails(sinceDate: Date): Promise<GmailMess
   const gmail = google.gmail({ version: 'v1', auth })
 
   const sinceTimestamp = Math.floor(sinceDate.getTime() / 1000)
-  const query = `after:${sinceTimestamp} (category:promotions OR label:manual) -is:sent`
+  const query = `after:${sinceTimestamp} (category:promotions OR label:manual OR label:restaurant OR label:restaurants) -is:sent`
 
   const listRes = await gmail.users.messages.list({
     userId: 'me',
