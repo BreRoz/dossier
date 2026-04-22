@@ -47,6 +47,8 @@ export async function GET(request: NextRequest) {
 
     for (const email of newEmails) {
       try {
+        // Small delay between OpenAI calls to avoid rate limiting
+        await new Promise((r) => setTimeout(r, 500))
         const extracted = await extractDealsFromEmail(email.from, email.subject, email.body)
 
         for (const deal of extracted) {
