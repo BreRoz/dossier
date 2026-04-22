@@ -9,8 +9,8 @@ UPDATE subscriber_categories SET category = 'fashion'
 UPDATE subscriber_categories SET category = 'tools'
   WHERE category = 'tools-yard';
 
--- fast-food → restaurants (merge)
-UPDATE subscriber_categories SET category = 'restaurants'
+-- fast-food → grocery (merge)
+UPDATE subscriber_categories SET category = 'grocery'
   WHERE category = 'fast-food';
 
 -- Deduplicate after merges (keep the enabled=true row if both exist)
@@ -34,11 +34,11 @@ UPDATE deals SET categories = array_replace(categories, 'premium-fashion', 'fash
 UPDATE deals SET categories = array_replace(categories, 'everyday-fashion', 'fashion');
 UPDATE deals SET categories = array_replace(categories, 'athletic',         'fashion');
 UPDATE deals SET categories = array_replace(categories, 'tools-yard',       'tools');
-UPDATE deals SET categories = array_replace(categories, 'fast-food',        'restaurants');
+UPDATE deals SET categories = array_replace(categories, 'fast-food',        'grocery');
 
 -- Remove duplicate values inside each categories array that may result from merges
 UPDATE deals
   SET categories = ARRAY(SELECT DISTINCT unnest(categories) ORDER BY 1)
   WHERE 'fashion' = ANY(categories)
      OR 'tools'   = ANY(categories)
-     OR 'restaurants' = ANY(categories);
+     OR 'grocery' = ANY(categories);
