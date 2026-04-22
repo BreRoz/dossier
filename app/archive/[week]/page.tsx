@@ -85,7 +85,7 @@ export default async function ArchiveWeekPage({ params }: Props) {
       <div style={{ padding: '40px 20px 80px', display: 'flex', justifyContent: 'center' }}>
         <div style={{ width: '100%', maxWidth: 680 }}>
           <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'oklch(55% 0.01 280)', marginBottom: 12, textAlign: 'center' }}>
-            Email Layout — 680px · {edition.issue_number ? `Issue No. ${edition.issue_number}` : 'Weekly Brief'}
+            Email Layout 680px · {edition.issue_number ? `Issue No. ${edition.issue_number}` : 'Weekly Brief'}
           </p>
 
           <div style={{ background: 'oklch(98% 0.004 90)' }}>
@@ -162,7 +162,7 @@ export default async function ArchiveWeekPage({ params }: Props) {
                   Get This Weekly
                 </p>
                 <p style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, letterSpacing: '-0.01em', color: 'oklch(9% 0.010 280)', marginBottom: 12 }}>
-                  Subscribe to DOSSIER — free forever.
+                  Subscribe to DOSSIER. Free forever.
                 </p>
                 <Link href="/login" style={{ fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', background: 'oklch(9% 0.010 280)', color: 'oklch(98% 0.004 90)', textDecoration: 'none', padding: '14px 32px', display: 'inline-block' }}>
                   Subscribe Free
@@ -181,8 +181,7 @@ export default async function ArchiveWeekPage({ params }: Props) {
                 </div>
               </div>
               <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.12em', color: 'oklch(45% 0.01 280)', lineHeight: 1.7 }}>
-                You are receiving this because you subscribed to Dossier Weekly. Deals are curated editorially and may include affiliate relationships. Pricing and availability subject to change without notice.<br /><br />
-                Dossier Media, Inc. · 340 Pine Street · San Francisco, CA 94104
+                You are receiving this because you subscribed to DOSSIER Weekly. Deals are curated editorially and may include affiliate relationships. Pricing and availability subject to change without notice.
               </p>
             </div>
           </div>

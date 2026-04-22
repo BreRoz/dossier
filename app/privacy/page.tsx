@@ -28,15 +28,15 @@ export default function PrivacyPage() {
           },
           {
             title: 'Affiliate Relationships',
-            body: `DOSSIER may earn a commission when you click certain retailer links in our email. These are clearly disclosed in each issue. Affiliate relationships do not influence editorial decisions — deals are selected on merit alone.`,
+            body: `DOSSIER may earn a commission when you click certain retailer links in our email. These are clearly disclosed in each issue. Affiliate relationships do not influence editorial decisions. Deals are selected on merit alone.`,
           },
           {
             title: 'Data Retention',
-            body: `Your account data is retained while your subscription is active. If you unsubscribe, we remove your email from active mailing lists within 24 hours. You may request complete deletion of your data by emailing privacy@dossier.email.`,
+            body: `Your account data is retained while your subscription is active. If you unsubscribe, we remove your email from active mailing lists within 24 hours. You may request complete deletion of your data using the unsubscribe link in any email we send.`,
           },
           {
             title: 'Security',
-            body: `We use industry-standard encryption (TLS) for data in transit and at rest. Authentication is handled via magic links — no passwords are stored. Our infrastructure runs on Supabase and Vercel with enterprise-grade security practices.`,
+            body: `We use industry-standard encryption (TLS) for data in transit and at rest. Authentication is handled via magic links with no passwords stored. Our infrastructure runs on Supabase and Vercel with enterprise-grade security practices.`,
           },
           {
             title: 'Cookies',
@@ -44,11 +44,11 @@ export default function PrivacyPage() {
           },
           {
             title: 'Your Rights',
-            body: `You may request access to, correction of, or deletion of your personal data at any time. To exercise these rights, contact us at privacy@dossier.email. You may unsubscribe from all emails at any time using the unsubscribe link in every email we send.`,
+            body: `You may request access to, correction of, or deletion of your personal data at any time. You may unsubscribe from all emails at any time using the unsubscribe link in every email we send.`,
           },
           {
             title: 'Contact',
-            body: `Dossier Media, Inc. · 340 Pine Street · San Francisco, CA 94104 · privacy@dossier.email`,
+            body: `For questions about this policy, use the unsubscribe link in any DOSSIER email to reach your account settings, or reply directly to any email you receive from us.`,
           },
         ].map(({ title, body }) => (
           <div key={title} style={{ marginBottom: 48, paddingBottom: 48, borderBottom: 'var(--rule)' }}>

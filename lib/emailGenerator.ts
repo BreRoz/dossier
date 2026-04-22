@@ -156,7 +156,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="x-apple-disable-message-reformatting">
-<title>DOSSIER — Weekly Brief</title>
+<title>DOSSIER Weekly Brief</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <!--[if mso]><style>* { font-family: Arial, sans-serif !important; }</style><![endif]-->
@@ -206,7 +206,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
           <td style="background-color:#0D0D0F;padding:48px 48px 40px;">
             <p style="font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.28em;text-transform:uppercase;color:${accent};margin:0 0 16px;">This Week's Brief</p>
             <h1 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:52px;font-weight:300;letter-spacing:-0.02em;line-height:0.95;color:oklch(98% 0.004 90);margin:0 0 24px;">The <em style="font-style:italic;">finest</em><br>deals, curated.</h1>
-            <p style="font-family:'Barlow',Arial,sans-serif;font-size:14px;color:oklch(72% 0.005 280);line-height:1.6;margin:0;max-width:440px;">Your personalized weekly brief — ${dealsShown} deal${dealsShown !== 1 ? 's' : ''} across ${orderedCategories.length} categor${orderedCategories.length !== 1 ? 'ies' : 'y'}, curated for you.</p>
+            <p style="font-family:'Barlow',Arial,sans-serif;font-size:14px;color:oklch(72% 0.005 280);line-height:1.6;margin:0;max-width:440px;">Your personalized weekly brief: ${dealsShown} deal${dealsShown !== 1 ? 's' : ''} across ${orderedCategories.length} categor${orderedCategories.length !== 1 ? 'ies' : 'y'}, curated for you.</p>
           </td>
         </tr>
 
@@ -299,7 +299,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
                 <td colspan="2" style="padding-top:20px;border-top:1px solid oklch(25% 0.01 280);margin-top:20px;">
                   <p style="font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:10px;letter-spacing:0.12em;color:oklch(45% 0.01 280);line-height:1.7;margin:0;">
                     You are receiving this because you subscribed to Dossier Weekly. Deals are curated editorially and may include affiliate relationships. Pricing and availability subject to change without notice. Prices confirmed at time of publication.<br><br>
-                    Dossier Media, Inc. &middot; 340 Pine Street &middot; San Francisco, CA 94104
+                    DOSSIER Weekly
                   </p>
                 </td>
               </tr>

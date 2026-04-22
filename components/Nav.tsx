@@ -39,6 +39,7 @@ export function Nav({ showCta = true }: NavProps) {
       >
         {[
           { label: 'Archive', href: '/archive' },
+          { label: 'Stores', href: '/stores' },
           { label: 'About', href: '#how-it-works' },
         ].map(({ label, href }) => (
           <li key={label}>

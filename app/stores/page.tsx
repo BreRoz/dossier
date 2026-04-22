@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
 import { DossierLogo } from '@/components/DossierLogo'
 import { CategoryIcon } from '@/components/CategoryIcon'
@@ -72,13 +72,26 @@ function monthAdded(dateStr: string): string {
 
 export default function StoresPage() {
   const supabase = createClient()
+  const catDropRef = useRef<HTMLDivElement>(null)
 
   const [stats, setStats]             = useState<Stats | null>(null)
   const [stores, setStores]           = useState<StoreRow[]>([])
   const [spendFilter, setSpendFilter] = useState<SpendTier[]>(['$', '$$', '$$$', '$$$$'])
   const [loading, setLoading]         = useState(true)
-  const [search, setSearch]           = useState('')
-  const [activeCategory, setActiveCategory] = useState<string>('all')
+  const [search, setSearch]             = useState('')
+  const [catDropOpen, setCatDropOpen]   = useState(false)
+  const [selectedCats, setSelectedCats] = useState<string[]>([])
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (catDropRef.current && !catDropRef.current.contains(e.target as Node)) {
+        setCatDropOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   useEffect(() => {
     async function load() {
@@ -118,10 +131,16 @@ export default function StoresPage() {
     return stores.filter((s) => {
       if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false
       if (!spendFilter.includes(s.spendTier as SpendTier)) return false
-      if (activeCategory !== 'all' && s.appCategory !== activeCategory) return false
+      if (selectedCats.length > 0 && !selectedCats.includes(s.appCategory)) return false
       return true
     })
-  }, [stores, search, spendFilter, activeCategory])
+  }, [stores, search, spendFilter, selectedCats])
+
+  const toggleCat = (cat: string) => {
+    setSelectedCats((cur) =>
+      cur.includes(cat) ? cur.filter((c) => c !== cat) : [...cur, cat]
+    )
+  }
 
   const toggleSpend = (tier: SpendTier) => {
     setSpendFilter((cur) => {
@@ -240,31 +259,76 @@ export default function StoresPage() {
             })}
           </div>
 
-          {/* Category filter */}
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+          {/* Category multi-select dropdown */}
+          <div ref={catDropRef} style={{ position: 'relative' }}>
             <button
-              onClick={() => setActiveCategory('all')}
+              onClick={() => setCatDropOpen((o) => !o)}
               style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.18em',
-                textTransform: 'uppercase', padding: '5px 12px', border: '1.5px solid',
-                borderColor: activeCategory === 'all' ? 'var(--ink)' : 'var(--ink-15)',
-                background: activeCategory === 'all' ? 'var(--ink)' : 'transparent',
-                color: activeCategory === 'all' ? 'var(--paper)' : 'var(--ink-40)',
-                cursor: 'pointer',
+                fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 500,
+                letterSpacing: '0.15em', textTransform: 'uppercase',
+                padding: '7px 14px', border: '1.5px solid',
+                borderColor: selectedCats.length > 0 ? 'var(--ink)' : 'var(--ink-15)',
+                background: selectedCats.length > 0 ? 'var(--ink)' : 'transparent',
+                color: selectedCats.length > 0 ? 'var(--paper)' : 'var(--ink-40)',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+                whiteSpace: 'nowrap',
               }}
             >
-              All
+              {selectedCats.length === 0
+                ? 'All Categories'
+                : selectedCats.length === 1
+                  ? CATEGORY_LABELS[selectedCats[0] as Category] ?? selectedCats[0]
+                  : `${selectedCats.length} Categories`}
+              <span style={{ fontSize: 8, opacity: 0.6 }}>{catDropOpen ? '▲' : '▼'}</span>
             </button>
-            {availableCategories.map((cat) => (
-              <button key={cat} onClick={() => setActiveCategory(cat === activeCategory ? 'all' : cat)} title={CATEGORY_LABELS[cat as Category] ?? cat} style={{
-                padding: '5px 8px', border: '1.5px solid',
-                borderColor: activeCategory === cat ? 'var(--ink)' : 'var(--ink-15)',
-                background: activeCategory === cat ? 'var(--ink)' : 'transparent',
-                cursor: 'pointer',
-              }}>
-                <CategoryIcon category={cat as Category} size={13} color={activeCategory === cat ? 'var(--paper)' : undefined} />
-              </button>
-            ))}
+
+            {catDropOpen && (
+              <div
+                style={{
+                  position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
+                  background: 'var(--paper)', border: '1.5px solid var(--ink-15)',
+                  minWidth: 220, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+                }}
+              >
+                {/* Clear all */}
+                {selectedCats.length > 0 && (
+                  <button
+                    onClick={() => setSelectedCats([])}
+                    style={{
+                      width: '100%', textAlign: 'left', padding: '10px 14px',
+                      fontFamily: 'var(--font-condensed)', fontSize: 9,
+                      letterSpacing: '0.18em', textTransform: 'uppercase',
+                      color: 'var(--accent)', background: 'none', border: 'none',
+                      borderBottom: '1px solid var(--ink-06)', cursor: 'pointer',
+                    }}
+                  >
+                    Clear filter
+                  </button>
+                )}
+                {availableCategories.map((cat) => {
+                  const active = selectedCats.includes(cat)
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => toggleCat(cat)}
+                      style={{
+                        width: '100%', textAlign: 'left', padding: '10px 14px',
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: active ? 600 : 400,
+                        color: 'var(--ink)', background: active ? 'var(--ink-06)' : 'none',
+                        border: 'none', borderBottom: '1px solid var(--ink-06)', cursor: 'pointer',
+                      }}
+                    >
+                      <CategoryIcon category={cat as Category} size={16} />
+                      <span>{CATEGORY_LABELS[cat as Category] ?? cat}</span>
+                      {active && (
+                        <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--accent)' }}>✓</span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           <span style={{

@@ -198,7 +198,7 @@ export default function UpgradePage() {
             },
             {
               q: 'Is the free tier really free?',
-              a: 'Yes, permanently. DOSSIER earns through affiliate relationships — you clicking a deal link supports the product. No paywalls on the core experience.',
+              a: 'Yes, permanently. DOSSIER earns through affiliate relationships: clicking a deal link supports the product. No paywalls on the core experience.',
             },
             {
               q: 'Can I change categories later?',
@@ -206,7 +206,7 @@ export default function UpgradePage() {
             },
             {
               q: 'How are deals selected?',
-              a: 'Our system reads promotional emails from bre.roz.ai@gmail.com — a dedicated inbox we subscribe to retailer lists. AI extracts structured deal data, which we filter by your preferences.',
+              a: 'Our system reads promotional emails from a dedicated inbox we subscribe to retailer lists with. AI extracts structured deal data, which we filter and rank by your preferences.',
             },
           ].map(({ q, a }) => (
             <div key={q} style={{

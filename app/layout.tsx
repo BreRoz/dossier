@@ -25,10 +25,10 @@ const barlowCondensed = Barlow_Condensed({
 })
 
 export const metadata: Metadata = {
-  title: 'DOSSIER — Deal Intelligence',
+  title: 'DOSSIER: Deal Intelligence',
   description: 'An editorially curated weekly briefing covering premium fashion, beauty, home, tech, dining, and more.',
   openGraph: {
-    title: 'DOSSIER — Deal Intelligence',
+    title: 'DOSSIER: Deal Intelligence',
     description: 'The deals worth your attention. Curated weekly.',
     type: 'website',
   },

@@ -28,21 +28,21 @@ const SAMPLE_DEALS = [
   {
     category: 'fashion' as Category,
     retailer: 'Nordstrom',
-    description: "Up to 40% off select women's outerwear — Barbour, Eileen Fisher, Vince, and Theory. No additional exclusions.",
+    description: "Up to 40% off select women's outerwear: Barbour, Eileen Fisher, Vince, and Theory. No additional exclusions.",
     code: 'DOSSIER20',
     savings: '40%',
   },
   {
     category: 'beauty' as Category,
     retailer: 'Sephora',
-    description: 'Savings Event — Rouge members receive 20% off all purchases including prestige skincare and fragrance.',
+    description: 'Savings Event: Rouge members receive 20% off all purchases including prestige skincare and fragrance.',
     expiry: 'Apr 21–29',
     savings: '20%',
   },
   {
     category: 'tech' as Category,
     retailer: 'Apple',
-    description: 'Refurbished MacBook Pro M4 — certified with full warranty, AppleCare eligible. Up to $400 off retail.',
+    description: 'Refurbished MacBook Pro M4, certified with full warranty and AppleCare eligible. Up to $400 off retail.',
     expiry: 'While supplies last',
     savings: '$400',
   },
@@ -99,7 +99,7 @@ export default function LandingPage() {
       }}>
         <DossierLogo size={22} wordmarkSize={18} />
         <ul style={{ display: 'flex', gap: 32, listStyle: 'none', margin: '0 0 0 auto', padding: 0 }}>
-          {[['Archive', '/archive'], ['Categories', '#categories']].map(([l, h]) => (
+          {[['Archive', '/archive'], ['Stores', '/stores'], ['Categories', '#categories']].map(([l, h]) => (
             <li key={l}>
               <a href={h} style={{
                 fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
@@ -131,7 +131,7 @@ export default function LandingPage() {
           <p style={{
             fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
             letterSpacing: '0.28em', textTransform: 'uppercase', color: accent, marginBottom: 24,
-          }}>Deal Intelligence — Weekly Edition</p>
+          }}>Deal Intelligence: Weekly Edition</p>
           <h1 className="t-hero" style={{ marginBottom: 40 }}>
             The deals<br />worth your<br />attention.
           </h1>
@@ -260,7 +260,7 @@ export default function LandingPage() {
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, background: 'var(--ink-15)' }}>
             {[
-              { n: '01', title: 'AI-Scanned', body: 'Our system reads hundreds of promotional emails weekly, using AI to extract every qualifying deal — retailer, discount, code, and expiration.' },
+              { n: '01', title: 'AI-Scanned', body: 'Our system reads hundreds of promotional emails weekly, using AI to extract every qualifying deal: retailer, discount, code, and expiration.' },
               { n: '02', title: 'Editorially Filtered', body: 'Only deals that clear our quality threshold make the brief. No noise, no expired codes, no vague "up to" offers unless you want them.' },
               { n: '03', title: 'Personalized to You', body: 'Choose your categories, minimum discount, and send day. Free subscribers get three core categories. Paid unlocks everything.' },
             ].map(({ n, title, body }) => (
@@ -333,7 +333,7 @@ export default function LandingPage() {
               fontFamily: 'var(--font-sans)', fontSize: 15, color: 'oklch(60% 0.005 280)',
               lineHeight: 1.65, maxWidth: 500, borderLeft: `2px solid ${accent}`, paddingLeft: 24,
             }}>
-              Every week, our system combs through hundreds of promotional emails so you don't have to. The result is a single, focused brief of deals that clear our quality bar — and only those that do.
+              Every week, our system combs through hundreds of promotional emails so you don't have to. The result is a single, focused brief of deals that clear our quality bar.
             </p>
           </div>
         </div>
@@ -413,7 +413,7 @@ export default function LandingPage() {
             ))}
           </ul>
           <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)', marginLeft: 'auto' }}>
-            © 2026 Dossier Media, Inc.
+            © 2026 DOSSIER
           </span>
         </footer>
       </div>
