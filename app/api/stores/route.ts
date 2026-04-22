@@ -72,16 +72,16 @@ const CATEGORY_MAP: Record<string, string> = {
   'athletic':      'fashion',
   'premium fashion': 'fashion',
   'everyday fashion': 'fashion',
-  'fast food':     'restaurants',
-  'fast casual':   'restaurants',
+  'fast food':     'grocery',
+  'fast casual':   'grocery',
 }
 
 function mapCategory(cat: string, subcat: string): string {
   const key = cat.toLowerCase().trim()
   const sub = subcat.toLowerCase().trim()
 
-  // Fast Food / Fast Casual subcategory → restaurants
-  if (sub === 'fast food' || sub === 'fast casual') return 'restaurants'
+  // Fast Food / Fast Casual subcategory → grocery
+  if (sub === 'fast food' || sub === 'fast casual') return 'grocery'
 
   return CATEGORY_MAP[key] ?? 'fashion'
 }

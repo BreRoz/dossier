@@ -380,7 +380,7 @@ export default function LandingPage() {
           </div>
           <div style={{ paddingRight: 60, display: 'flex', flexDirection: 'column', gap: 24 }}>
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.65 }}>
-              Join readers who trust DOSSIER to surface the deals worth knowing about. Free subscribers get fashion, fast food, and restaurants. Upgrade for all 13 categories, custom thresholds, and flexible send days.
+              Join readers who trust DOSSIER to surface the deals worth knowing about. Free subscribers get fashion, grocery, and restaurants. Upgrade for all 13 categories, custom thresholds, and flexible send days.
             </p>
             <div>
               <p className="t-meta" style={{ marginBottom: 16 }}>Free tier includes</p>
