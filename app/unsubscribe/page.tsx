@@ -3,7 +3,7 @@
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { DossierLogo } from '@/components/DossierLogo'
+import { Nav } from '@/components/Nav'
 
 function UnsubscribeForm() {
   const searchParams = useSearchParams()
@@ -103,11 +103,7 @@ function UnsubscribeForm() {
 export default function UnsubscribePage() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--paper)' }}>
-      <nav style={{ height: 56, display: 'flex', alignItems: 'center', padding: '0 60px', borderBottom: 'var(--rule)' }}>
-        <Link href="/" style={{ textDecoration: 'none' }}>
-          <DossierLogo size={22} wordmarkSize={18} />
-        </Link>
-      </nav>
+      <Nav />
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
         <Suspense fallback={<p className="t-meta">Loading...</p>}>
           <UnsubscribeForm />

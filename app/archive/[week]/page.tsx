@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { notFound } from 'next/navigation'
 import { DossierLogo } from '@/components/DossierLogo'
+import { Nav } from '@/components/Nav'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { DealCard } from '@/components/DealCard'
 import { ALL_CATEGORIES, CATEGORY_LABELS, FREE_CATEGORIES } from '@/types'
@@ -62,24 +63,7 @@ export default async function ArchiveWeekPage({ params }: Props) {
 
   return (
     <div style={{ minHeight: '100vh', background: 'oklch(88% 0.006 280)' }}>
-      {/* Nav */}
-      <nav style={{
-        height: 56, display: 'flex', alignItems: 'center', padding: '0 60px',
-        borderBottom: '1px solid oklch(85% 0.008 280)', position: 'sticky', top: 0,
-        background: 'oklch(98% 0.004 90)', zIndex: 10,
-      }}>
-        <Link href="/" style={{ textDecoration: 'none' }}>
-          <DossierLogo size={22} wordmarkSize={18} />
-        </Link>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 20 }}>
-          <Link href="/archive" style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'oklch(62% 0.010 280)', textDecoration: 'none' }}>
-            ← Archive
-          </Link>
-          <Link href="/login" style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', background: 'var(--ink)', color: 'var(--paper)', padding: '8px 20px', textDecoration: 'none' }}>
-            Subscribe Free
-          </Link>
-        </div>
-      </nav>
+      <Nav showSubscribe />
 
       {/* Email render */}
       <div className="remail-wrap" style={{ padding: '40px 20px 80px', display: 'flex', justifyContent: 'center' }}>

@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useMemo, useRef } from 'react'
 import Link from 'next/link'
-import { DossierLogo } from '@/components/DossierLogo'
+import { Nav } from '@/components/Nav'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { createClient } from '@/lib/supabase/client'
 import type { Category, SpendTier } from '@/types'
@@ -162,24 +162,7 @@ export default function StoresPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
-      {/* Nav */}
-      <nav style={{
-        height: 56, display: 'flex', alignItems: 'center', padding: '0 60px',
-        borderBottom: 'var(--rule)', position: 'sticky', top: 0,
-        background: 'var(--paper)', zIndex: 10,
-      }}>
-        <Link href="/" style={{ textDecoration: 'none' }}>
-          <DossierLogo size={22} wordmarkSize={18} />
-        </Link>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 24 }}>
-          <Link href="/preferences" style={{
-            fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.2em',
-            textTransform: 'uppercase', color: 'var(--ink-40)', textDecoration: 'none',
-          }}>
-            Settings
-          </Link>
-        </div>
-      </nav>
+      <Nav />
 
       <div className="wrap" style={{ paddingTop: 64, paddingBottom: 120 }}>
 

@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { DossierLogo } from '@/components/DossierLogo'
+import { Nav } from '@/components/Nav'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { createClient } from '@/lib/supabase/client'
 import type { Category, DealType, SendDay, UserPreferences, GenderOption, SpendTier } from '@/types'
@@ -211,37 +211,27 @@ export default function PreferencesPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
-      {/* Nav */}
-      <nav style={{
-        height: 56, display: 'flex', alignItems: 'center', padding: '0 60px',
-        borderBottom: 'var(--rule)', position: 'sticky', top: 0, background: 'var(--paper)', zIndex: 10,
+      <Nav />
+
+      {/* Save action bar */}
+      <div style={{
+        position: 'sticky', top: 56, zIndex: 9, background: 'var(--paper)',
+        borderBottom: 'var(--rule)', height: 48,
+        display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+        padding: '0 60px', gap: 16,
       }}>
-        <Link href="/" style={{ textDecoration: 'none' }}>
-          <DossierLogo size={22} wordmarkSize={18} />
-        </Link>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link
-            href="/stores"
-            style={{
-              fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.2em',
-              textTransform: 'uppercase', color: 'var(--ink-40)', textDecoration: 'none',
-            }}
-          >
-            Subscribed Stores
-          </Link>
-          {saved && (
-            <span style={{
-              fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em',
-              textTransform: 'uppercase', color: 'var(--accent)',
-            }}>
-              Saved
-            </span>
-          )}
-          <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ padding: '10px 24px' }}>
-            {saving ? 'Saving...' : 'Save Preferences'}
-          </button>
-        </div>
-      </nav>
+        {saved && (
+          <span style={{
+            fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em',
+            textTransform: 'uppercase', color: 'var(--accent)',
+          }}>
+            Saved
+          </span>
+        )}
+        <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ padding: '8px 24px' }}>
+          {saving ? 'Saving...' : 'Save Preferences'}
+        </button>
+      </div>
 
       <div className="wrap" style={{ paddingTop: 64, paddingBottom: 120 }}>
         {/* Header */}

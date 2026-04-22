@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { DossierLogo, DossierMark } from '@/components/DossierLogo'
 import { CategoryIcon } from '@/components/CategoryIcon'
+import { Nav } from '@/components/Nav'
 import type { Category } from '@/types'
 import { ALL_CATEGORIES, CATEGORY_LABELS } from '@/types'
 
@@ -92,32 +93,7 @@ export default function LandingPage() {
   return (
     <>
       {/* NAV */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, height: 56,
-        display: 'flex', alignItems: 'center', padding: '0 60px',
-        background: 'var(--paper)', borderBottom: 'var(--rule)', zIndex: 100,
-      }}>
-        <DossierLogo size={22} wordmarkSize={18} />
-        <ul className="nav-links">
-          {[['Archive', '/archive'], ['Stores', '/stores'], ['Categories', '#categories']].map(([l, h]) => (
-            <li key={l}>
-              <a href={h} style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
-                letterSpacing: '0.2em', textTransform: 'uppercase' as const,
-                color: 'var(--ink-40)', textDecoration: 'none',
-              }}>{l}</a>
-            </li>
-          ))}
-        </ul>
-        <Link href="/login" style={{
-          marginLeft: 32, fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-          letterSpacing: '0.18em', textTransform: 'uppercase' as const,
-          background: 'var(--ink)', color: 'var(--paper)',
-          padding: '10px 24px', textDecoration: 'none',
-        }}>
-          Subscribe Free
-        </Link>
-      </nav>
+      <Nav showSubscribe fixed />
 
       {/* HERO */}
       <section className="rhero" style={{

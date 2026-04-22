@@ -2,7 +2,7 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { format, parseISO, subDays } from 'date-fns'
-import { DossierLogo } from '@/components/DossierLogo'
+import { Nav } from '@/components/Nav'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { ALL_CATEGORIES, CATEGORY_LABELS } from '@/types'
 import type { Category } from '@/types'
@@ -181,38 +181,7 @@ export default async function AdminPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
 
-      {/* Nav */}
-      <nav style={{
-        height: 56,
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0 60px',
-        borderBottom: 'var(--rule)',
-        position: 'sticky',
-        top: 0,
-        background: 'var(--paper)',
-        zIndex: 10,
-        gap: 20,
-      }}>
-        <Link href="/" style={{ textDecoration: 'none' }}>
-          <DossierLogo size={22} wordmarkSize={18} />
-        </Link>
-        <span style={{
-          fontFamily: 'var(--font-condensed)',
-          fontSize: 10,
-          letterSpacing: '0.22em',
-          textTransform: 'uppercase',
-          color: 'var(--ink-40)',
-          borderLeft: '1px solid var(--ink-15)',
-          paddingLeft: 20,
-        }}>
-          Admin
-        </span>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 24 }}>
-          <Link href="/preferences" style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)', textDecoration: 'none' }}>Preferences</Link>
-          <Link href="/archive" style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)', textDecoration: 'none' }}>Archive</Link>
-        </div>
-      </nav>
+      <Nav />
 
       <div className="wrap" style={{ paddingTop: 64, paddingBottom: 120 }}>
 

@@ -1,14 +1,10 @@
 import Link from 'next/link'
-import { DossierLogo } from '@/components/DossierLogo'
+import { Nav } from '@/components/Nav'
 
 export default function PrivacyPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
-      <nav style={{ height: 56, display: 'flex', alignItems: 'center', padding: '0 60px', borderBottom: 'var(--rule)', position: 'sticky', top: 0, background: 'var(--paper)', zIndex: 10 }}>
-        <Link href="/" style={{ textDecoration: 'none' }}>
-          <DossierLogo size={22} wordmarkSize={18} />
-        </Link>
-      </nav>
+      <Nav showSubscribe />
 
       <div className="wrap" style={{ paddingTop: 80, paddingBottom: 120, maxWidth: 720 }}>
         <p className="t-section" style={{ marginBottom: 16 }}>Legal</p>

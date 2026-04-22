@@ -1,7 +1,7 @@
 import { createServiceClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
-import { DossierLogo } from '@/components/DossierLogo'
+import { Nav } from '@/components/Nav'
 import type { Edition } from '@/types'
 
 export const revalidate = 3600
@@ -19,19 +19,7 @@ export default async function ArchivePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
-      {/* Nav */}
-      <nav style={{ height: 56, display: 'flex', alignItems: 'center', padding: '0 60px', borderBottom: 'var(--rule)', position: 'sticky', top: 0, background: 'var(--paper)', zIndex: 10 }}>
-        <Link href="/" style={{ textDecoration: 'none' }}>
-          <DossierLogo size={22} wordmarkSize={18} />
-        </Link>
-        <ul style={{ display: 'flex', gap: 32, listStyle: 'none', margin: '0 0 0 auto', padding: 0 }}>
-          <li>
-            <Link href="/login" style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', background: 'var(--ink)', color: 'var(--paper)', padding: '8px 20px', textDecoration: 'none' }}>
-              Subscribe Free
-            </Link>
-          </li>
-        </ul>
-      </nav>
+      <Nav showSubscribe />
 
       <div className="wrap" style={{ paddingTop: 80, paddingBottom: 120 }}>
         {/* Header */}
