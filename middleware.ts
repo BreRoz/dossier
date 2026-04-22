@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-const PROTECTED_ROUTES = ['/preferences', '/stores']
+const PROTECTED_ROUTES = ['/preferences', '/stores', '/admin']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -44,5 +44,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/preferences/:path*', '/stores/:path*'],
+  matcher: ['/preferences/:path*', '/stores/:path*', '/admin/:path*'],
 }
