@@ -139,7 +139,7 @@ export default function LandingPage() {
             fontFamily: 'var(--font-sans)', fontSize: 16, color: 'var(--ink-70)',
             lineHeight: 1.65, maxWidth: 400, marginBottom: 48,
           }}>
-            DOSSIER is an editorially curated weekly briefing covering premium fashion, beauty, home, tech, dining, and more. No noise. No gimmicks. Just the deals that matter.
+            DOSSIER is an editorially curated weekly briefing covering fashion, beauty, home, tech, dining, and more. No noise. No gimmicks. Just the deals that matter.
           </p>
 
           {submitted ? (
