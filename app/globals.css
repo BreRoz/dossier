@@ -189,6 +189,71 @@ a {
   border-color: var(--accent);
 }
 
+/* ─── Mobile Responsive ──────────────────────────────────────────────── */
+
+/* Nav links — hidden on mobile via .nav-links class */
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+  margin: 0 0 0 auto;
+  padding: 0;
+}
+
+@media (max-width: 900px) {
+  /* 3-col → 2-col at tablet */
+  .r3col { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (max-width: 768px) {
+  /* Nav padding on every page */
+  nav { padding-left: 20px !important; padding-right: 20px !important; }
+
+  /* Hide nav links */
+  .nav-links { display: none !important; }
+  .hide-mobile { display: none !important; }
+
+  /* Grid collapses */
+  .r2col { grid-template-columns: 1fr !important; gap: 0 !important; }
+  .r3col { grid-template-columns: 1fr !important; }
+
+  /* Section padding */
+  .rsect { padding-top: 64px !important; padding-bottom: 64px !important; }
+
+  /* Hero */
+  .rhero { grid-template-columns: 1fr !important; min-height: auto !important; }
+  .rhero-dark { display: none !important; }
+  .rhero-left { border-right: none !important; padding: 48px 24px 56px !important; }
+
+  /* Upgrade CTA */
+  .rupgrade { grid-template-columns: 1fr !important; gap: 0 !important; padding: 64px 0 !important; }
+  .rupgrade-left  { padding: 0 24px 40px !important; }
+  .rupgrade-right { padding: 0 24px 40px !important; }
+
+  /* Stats rows */
+  .rstat-row { flex-wrap: wrap !important; }
+  .rstat-row > * { flex: 1 1 calc(50% - 1px) !important; }
+
+  /* Admin stat row */
+  .radmin-stat { flex-wrap: wrap !important; border-left: 1px solid var(--ink-06) !important; }
+  .radmin-stat > * { flex: 1 1 calc(50% - 1px) !important; }
+
+  /* Two-col grid sections */
+  .r2grid { grid-template-columns: 1fr !important; gap: 48px !important; }
+
+  /* Comparison grid (upgrade page) */
+  .rcompare { grid-template-columns: 1fr !important; }
+
+  /* Table horizontal scroll */
+  .rtable { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Filter pills wrap */
+  .rfilter { flex-wrap: wrap !important; }
+
+  /* Archive email preview */
+  .remail-wrap { padding: 24px 12px 60px !important; }
+}
+
 /* Toggle switch */
 .toggle {
   position: relative;

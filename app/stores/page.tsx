@@ -201,7 +201,7 @@ export default function StoresPage() {
         </div>
 
         {/* ── Stats Cards ──────────────────────────────────────────── */}
-        <div style={{ display: 'flex', gap: 2, marginBottom: 56 }}>
+        <div className="rstat-row" style={{ display: 'flex', gap: 2, marginBottom: 56 }}>
           <StatCard
             value={stats?.emails_caught ?? 0}
             label="Retail Emails Caught"
@@ -341,9 +341,11 @@ export default function StoresPage() {
         </div>
 
         {/* ── Column headers ───────────────────────────────────────── */}
+        <div className="rtable">
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 40px 56px 80px 100px',
           gap: 16, padding: '10px 16px', borderBottom: 'var(--rule)',
+          minWidth: 480,
         }}>
           {['Store', 'Cat.', 'Spend', 'Added', 'Status'].map((h) => (
             <span key={h} style={{
@@ -370,6 +372,8 @@ export default function StoresPage() {
           ))
         )}
 
+        </div>{/* end .rtable */}
+
         {/* Footer link */}
         <div style={{ marginTop: 48, paddingTop: 40, borderTop: 'var(--rule)' }}>
           <Link href="/preferences" style={{
@@ -392,6 +396,7 @@ function StoreRow({ store, isEven }: { store: StoreRow; isEven: boolean }) {
       background: isEven ? 'transparent' : 'var(--ink-06)',
       alignItems: 'center',
       borderBottom: '1px solid var(--ink-06)',
+      minWidth: 480,
     }}>
       {/* Name + NEW badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>

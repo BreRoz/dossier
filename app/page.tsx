@@ -98,7 +98,7 @@ export default function LandingPage() {
         background: 'var(--paper)', borderBottom: 'var(--rule)', zIndex: 100,
       }}>
         <DossierLogo size={22} wordmarkSize={18} />
-        <ul style={{ display: 'flex', gap: 32, listStyle: 'none', margin: '0 0 0 auto', padding: 0 }}>
+        <ul className="nav-links">
           {[['Archive', '/archive'], ['Stores', '/stores'], ['Categories', '#categories']].map(([l, h]) => (
             <li key={l}>
               <a href={h} style={{
@@ -120,11 +120,11 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO */}
-      <section style={{
+      <section className="rhero" style={{
         minHeight: '100vh', display: 'grid', gridTemplateColumns: '1fr 1fr', paddingTop: 56,
       }}>
         {/* Left */}
-        <div style={{
+        <div className="rhero-left" style={{
           display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
           padding: '80px 60px', borderRight: 'var(--rule)',
         }}>
@@ -196,7 +196,7 @@ export default function LandingPage() {
         </div>
 
         {/* Right (dark panel) */}
-        <div style={{
+        <div className="rhero-dark" style={{
           background: 'var(--ink)', display: 'flex', flexDirection: 'column',
           justifyContent: 'flex-end', padding: '80px 60px', position: 'relative', overflow: 'hidden',
         }}>
@@ -252,13 +252,13 @@ export default function LandingPage() {
       </div>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" style={{ padding: '140px 0', borderBottom: 'var(--rule)' }}>
+      <section id="how-it-works" className="rsect" style={{ padding: '140px 0', borderBottom: 'var(--rule)' }}>
         <div className="wrap">
           <p className="t-section" style={{ marginBottom: 24 }}>How It Works</p>
           <h2 className="t-display" style={{ marginBottom: 80, maxWidth: 600 }}>
             Intelligence over volume. Quality over quantity.
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, background: 'var(--ink-15)' }}>
+          <div className="r3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, background: 'var(--ink-15)' }}>
             {[
               { n: '01', title: 'AI-Scanned', body: 'Our system reads hundreds of promotional emails weekly, using AI to extract every qualifying deal: retailer, discount, code, and expiration.' },
               { n: '02', title: 'Editorially Filtered', body: 'Only deals that clear our quality threshold make the brief. No noise, no expired codes, no vague "up to" offers unless you want them.' },
@@ -275,19 +275,19 @@ export default function LandingPage() {
       </section>
 
       {/* SAMPLE DEALS PREVIEW */}
-      <section style={{ padding: '140px 0', borderBottom: 'var(--rule)' }}>
+      <section className="rsect" style={{ padding: '140px 0', borderBottom: 'var(--rule)' }}>
         <div className="wrap">
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 64 }}>
+          <div className="rfilter" style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 64 }}>
             <div>
               <p className="t-section" style={{ marginBottom: 12 }}>This Week's Brief</p>
               <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 4vw, 60px)', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.0 }}>
                 A preview of the latest issue
               </h2>
             </div>
-            <Link href="/archive" className="btn-ghost">View Archive</Link>
+            <Link href="/archive" className="btn-ghost hide-mobile">View Archive</Link>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, background: 'var(--ink-15)', marginBottom: 64 }}>
+          <div className="r3col" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, background: 'var(--ink-15)', marginBottom: 64 }}>
             {SAMPLE_DEALS.map((deal) => (
               <div key={deal.retailer} style={{ background: 'var(--paper)', padding: '40px 36px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
@@ -320,7 +320,7 @@ export default function LandingPage() {
       </section>
 
       {/* MANIFESTO */}
-      <section style={{ background: 'var(--ink)', padding: '140px 0', borderBottom: 'var(--rule)' }}>
+      <section className="rsect" style={{ background: 'var(--ink)', padding: '140px 0', borderBottom: 'var(--rule)' }}>
         <div className="wrap">
           <div style={{ maxWidth: 860 }}>
             <p style={{
@@ -340,7 +340,7 @@ export default function LandingPage() {
       </section>
 
       {/* CATEGORIES GRID */}
-      <section id="categories" style={{ padding: '140px 0', borderBottom: 'var(--rule)' }}>
+      <section id="categories" className="rsect" style={{ padding: '140px 0', borderBottom: 'var(--rule)' }}>
         <div className="wrap">
           <p className="t-section" style={{ marginBottom: 24 }}>Coverage</p>
           <h2 className="t-display" style={{ maxWidth: 500, marginBottom: 0 }}>
@@ -368,9 +368,9 @@ export default function LandingPage() {
       </section>
 
       {/* UPGRADE */}
-      <section style={{ padding: '140px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center', borderBottom: 'var(--rule)' }}>
+      <section className="rupgrade" style={{ padding: '140px 0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center', borderBottom: 'var(--rule)' }}>
         <div className="wrap" style={{ display: 'contents' }}>
-          <div style={{ paddingLeft: 60 }}>
+          <div className="rupgrade-left" style={{ paddingLeft: 60 }}>
             <h2 style={{
               fontFamily: 'var(--font-serif)', fontSize: 'clamp(48px, 5.5vw, 80px)',
               fontWeight: 300, letterSpacing: '-0.025em', lineHeight: 0.96,
@@ -378,7 +378,7 @@ export default function LandingPage() {
               Start reading.<br /><em style={{ fontStyle: 'italic' }}>It's free.</em>
             </h2>
           </div>
-          <div style={{ paddingRight: 60, display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div className="rupgrade-right" style={{ paddingRight: 60, display: 'flex', flexDirection: 'column', gap: 24 }}>
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.65 }}>
               Join readers who trust DOSSIER to surface the deals worth knowing about. Free subscribers get fashion, grocery, and restaurants. Upgrade for all 13 categories, custom thresholds, and flexible send days.
             </p>

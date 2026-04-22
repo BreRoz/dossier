@@ -46,7 +46,7 @@ export default function UpgradePage() {
         </div>
 
         {/* Comparison grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'var(--ink-15)', marginBottom: 80 }}>
+        <div className="rcompare" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'var(--ink-15)', marginBottom: 80 }}>
 
           {/* Free */}
           <div style={{ background: 'var(--paper)', padding: '48px 48px 56px' }}>

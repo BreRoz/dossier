@@ -82,7 +82,7 @@ export default async function ArchiveWeekPage({ params }: Props) {
       </nav>
 
       {/* Email render */}
-      <div style={{ padding: '40px 20px 80px', display: 'flex', justifyContent: 'center' }}>
+      <div className="remail-wrap" style={{ padding: '40px 20px 80px', display: 'flex', justifyContent: 'center' }}>
         <div style={{ width: '100%', maxWidth: 680 }}>
           <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'oklch(55% 0.01 280)', marginBottom: 12, textAlign: 'center' }}>
             Email Layout 680px · {edition.issue_number ? `Issue No. ${edition.issue_number}` : 'Weekly Brief'}

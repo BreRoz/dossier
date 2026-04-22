@@ -231,7 +231,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Top stat row */}
-        <div style={{
+        <div className="radmin-stat" style={{
           display: 'flex',
           borderTop: 'var(--rule)',
           borderLeft: '1px solid var(--ink-06)',
@@ -245,7 +245,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Two-column layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, marginBottom: 64 }}>
+        <div className="r2grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, marginBottom: 64 }}>
 
           {/* Category popularity */}
           <div>
@@ -409,7 +409,7 @@ export default async function AdminPage() {
         )}
 
         {/* Two-column bottom: editions + recent signups */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64 }}>
+        <div className="r2grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64 }}>
 
           {/* Recent editions */}
           <div>
