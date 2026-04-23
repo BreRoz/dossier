@@ -165,7 +165,7 @@ export default function LandingPage() {
                 <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'oklch(50% 0.2 20)', marginBottom: 8 }}>{error}</p>
               )}
               <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)' }}>
-                Free forever · Unsubscribe anytime · No spam
+                Free. No paywall. · Unsubscribe anytime · No spam
               </p>
             </form>
           )}

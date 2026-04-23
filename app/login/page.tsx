@@ -136,7 +136,7 @@ export default function LoginPage() {
                 </button>
 
                 <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)', marginTop: 16, textAlign: 'center' }}>
-                  No password required · Free forever
+                  No password required · Free. No paywall.
                 </p>
               </form>
             </>

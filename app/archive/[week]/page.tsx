@@ -146,7 +146,7 @@ export default async function ArchiveWeekPage({ params }: Props) {
                   Get This Weekly
                 </p>
                 <p style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, letterSpacing: '-0.01em', color: 'oklch(9% 0.010 280)', marginBottom: 12 }}>
-                  Subscribe to DOSSIER. Free forever.
+                  Subscribe to DOSSIER. Free. No paywall.
                 </p>
                 <Link href="/login" style={{ fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', background: 'oklch(9% 0.010 280)', color: 'oklch(98% 0.004 90)', textDecoration: 'none', padding: '14px 32px', display: 'inline-block' }}>
                   Subscribe Free

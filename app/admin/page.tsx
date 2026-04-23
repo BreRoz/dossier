@@ -121,6 +121,7 @@ export default async function AdminPage() {
     { data: topRetailers },
     { data: editionStats },
     { data: retailerScanLog },
+    { data: toggledStores },
   ] = await Promise.all([
     db.from('subscribers').select('*', { count: 'exact', head: true }),
     db.from('subscribers').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -135,6 +136,7 @@ export default async function AdminPage() {
     db.from('deals').select('retailer').gte('created_at', thirtyDaysAgo),
     db.from('editions').select('emails_scanned, deals_found'),
     db.from('retailer_scan_log').select('retailer, sender_email, emails_processed, deals_extracted').order('emails_processed', { ascending: false }),
+    db.from('subscriber_store_preferences').select('retailer').eq('enabled', true),
   ])
 
   // ─── derived stats ─────────────────────────────────────────────────────────
@@ -177,6 +179,16 @@ export default async function AdminPage() {
   // Edition totals
   const totalEmailsScanned = (editionStats || []).reduce((s, r) => s + (r.emails_scanned || 0), 0)
   const totalDealsFound = (editionStats || []).reduce((s, r) => s + (r.deals_found || 0), 0)
+
+  // Top toggled-on stores
+  const toggledStoreCounts: Record<string, number> = {}
+  for (const row of (toggledStores || [])) {
+    if (row.retailer) toggledStoreCounts[row.retailer] = (toggledStoreCounts[row.retailer] || 0) + 1
+  }
+  const topToggledStores = Object.entries(toggledStoreCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+  const maxToggleCount = Math.max(...topToggledStores.map((r) => r[1]), 1)
 
   // Newsletter performance: split into deal producers vs zero-deal senders
   const dealProducers = (retailerScanLog || []).filter((r) => r.deals_extracted > 0)
@@ -379,6 +391,41 @@ export default async function AdminPage() {
                     flexShrink: 0,
                   }}>
                     {count} deal{count !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Top toggled-on stores */}
+        {topToggledStores.length > 0 && (
+          <div style={{ marginBottom: 64 }}>
+            <SectionHeader>Most-Wanted Stores (Paid Users Toggled On)</SectionHeader>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)', marginBottom: 20, lineHeight: 1.5 }}>
+              Stores paid subscribers have explicitly kept active — a signal of demand for similar retailers.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {topToggledStores.map(([retailer, count], i) => (
+                <div key={retailer} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <span style={{
+                    fontFamily: 'var(--font-condensed)', fontSize: 10,
+                    color: 'var(--ink-40)', width: 20, textAlign: 'right', flexShrink: 0,
+                  }}>
+                    {i + 1}
+                  </span>
+                  <span style={{
+                    fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600,
+                    width: 180, flexShrink: 0, color: 'var(--ink)',
+                  }}>
+                    {retailer}
+                  </span>
+                  <Bar pct={(count / maxToggleCount) * 100} accent />
+                  <span style={{
+                    fontFamily: 'var(--font-condensed)', fontSize: 11,
+                    color: 'var(--ink-40)', width: 64, textAlign: 'right', flexShrink: 0,
+                  }}>
+                    {count} user{count !== 1 ? 's' : ''}
                   </span>
                 </div>
               ))}
