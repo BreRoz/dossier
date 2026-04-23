@@ -8,6 +8,13 @@ import type { Category } from '@/types'
 
 export const maxDuration = 300 // 5 minute max
 
+// Extract display name from "Store Name <email@domain.com>" format
+function parseSenderName(from: string): string {
+  const match = from.match(/^([^<]+)</)
+  if (match) return match[1].trim()
+  return from.split('@')[0].trim()
+}
+
 function verifyCronSecret(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization')
   if (!process.env.CRON_SECRET) return true // Dev mode
@@ -79,6 +86,38 @@ export async function GET(request: NextRequest) {
           })
 
           newDeals++
+        }
+
+        // Log this sender to the retailer scan log
+        const retailerName = extracted.length > 0 && extracted[0].retailer
+          ? extracted[0].retailer
+          : parseSenderName(email.from)
+
+        const { data: existingLog } = await supabase
+          .from('retailer_scan_log')
+          .select('id, emails_processed, deals_extracted')
+          .eq('week_of', weekOfStr)
+          .eq('retailer', retailerName)
+          .single()
+
+        if (existingLog) {
+          await supabase
+            .from('retailer_scan_log')
+            .update({
+              emails_processed: existingLog.emails_processed + 1,
+              deals_extracted: existingLog.deals_extracted + extracted.length,
+            })
+            .eq('id', existingLog.id)
+        } else {
+          await supabase
+            .from('retailer_scan_log')
+            .insert({
+              week_of: weekOfStr,
+              retailer: retailerName,
+              sender_email: email.from,
+              emails_processed: 1,
+              deals_extracted: extracted.length,
+            })
         }
 
         processedEmailIds.push(email.id)

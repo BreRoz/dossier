@@ -37,7 +37,7 @@ export interface Subscriber {
   zip_code: string | null
   tier: Tier
   send_day: SendDay
-  min_discount: 30 | 40 | 50
+  min_discount: 20 | 30 | 40 | 50
   subscription_mode: SubscriptionMode
   gender_filter: GenderOption[]
   spend_tier_filter: SpendTier[]
@@ -98,7 +98,7 @@ export interface Edition {
 export interface UserPreferences {
   zip_code: string | null
   send_day: SendDay
-  min_discount: 30 | 40 | 50
+  min_discount: 20 | 30 | 40 | 50
   categories: Record<Category, boolean>
   deal_types: Record<DealType, boolean>
   subscription_mode: SubscriptionMode

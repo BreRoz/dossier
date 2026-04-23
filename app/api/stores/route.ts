@@ -20,6 +20,7 @@ export interface StoreRow {
   dateAdded: string         // MM-DD-YYYY
   status: string
   notes: string
+  ageGroup: string          // e.g. "All Ages", "20s", "30s", "Teen", "50+"
   isNew: boolean            // added in current or previous month
 }
 
@@ -144,6 +145,7 @@ export async function GET() {
     const iDate    = idx('date added')
     const iStatus  = idx('status')
     const iNotes   = idx('notes')
+    const iAge     = idx('age group')
 
     const stores: StoreRow[] = []
 
@@ -170,6 +172,7 @@ export async function GET() {
         dateAdded:    date,
         status:       r[iStatus] ?? '',
         notes:        r[iNotes]  ?? '',
+        ageGroup:     iAge >= 0 ? (r[iAge] ?? '') : '',
         isNew:        isNew(date),
       })
     }

@@ -11,7 +11,7 @@ const PreferencesSchema = z.object({
   preferences: z.object({
     zip_code: z.string().nullable().optional(),
     send_day: z.enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']).optional(),
-    min_discount: z.union([z.literal(30), z.literal(40), z.literal(50)]).optional(),
+    min_discount: z.union([z.literal(20), z.literal(30), z.literal(40), z.literal(50)]).optional(),
     categories: z.record(z.boolean()).optional(),
     deal_types: z.record(z.boolean()).optional(),
     subscription_mode: z.enum(['category', 'retailer']).optional(),

@@ -120,6 +120,7 @@ export default async function AdminPage() {
     { count: sentThisMonth },
     { data: topRetailers },
     { data: editionStats },
+    { data: retailerScanLog },
   ] = await Promise.all([
     db.from('subscribers').select('*', { count: 'exact', head: true }),
     db.from('subscribers').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -133,6 +134,7 @@ export default async function AdminPage() {
     db.from('sent_emails').select('*', { count: 'exact', head: true }).gte('created_at', thirtyDaysAgo),
     db.from('deals').select('retailer').gte('created_at', thirtyDaysAgo),
     db.from('editions').select('emails_scanned, deals_found'),
+    db.from('retailer_scan_log').select('retailer, sender_email, emails_processed, deals_extracted').order('emails_processed', { ascending: false }),
   ])
 
   // ─── derived stats ─────────────────────────────────────────────────────────
@@ -175,6 +177,13 @@ export default async function AdminPage() {
   // Edition totals
   const totalEmailsScanned = (editionStats || []).reduce((s, r) => s + (r.emails_scanned || 0), 0)
   const totalDealsFound = (editionStats || []).reduce((s, r) => s + (r.deals_found || 0), 0)
+
+  // Newsletter performance: split into deal producers vs zero-deal senders
+  const dealProducers = (retailerScanLog || []).filter((r) => r.deals_extracted > 0)
+    .sort((a, b) => b.deals_extracted - a.deals_extracted)
+  const zeroDealSenders = (retailerScanLog || []).filter((r) => r.deals_extracted === 0)
+    .sort((a, b) => b.emails_processed - a.emails_processed)
+  const maxEmailsProcessed = Math.max(...(retailerScanLog || []).map((r) => r.emails_processed), 1)
 
   // ─── render ────────────────────────────────────────────────────────────────
 
@@ -374,6 +383,69 @@ export default async function AdminPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Newsletter performance */}
+        {(retailerScanLog || []).length > 0 && (
+          <div className="r2grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, marginBottom: 64 }}>
+
+            {/* Deal producers */}
+            <div>
+              <SectionHeader>Deal-Producing Newsletters</SectionHeader>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {dealProducers.slice(0, 15).map((r) => (
+                  <div key={r.retailer} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{
+                      fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 600,
+                      flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      color: 'var(--ink)',
+                    }}>
+                      {r.retailer}
+                    </span>
+                    <Bar pct={(r.deals_extracted / Math.max(...dealProducers.map(d => d.deals_extracted), 1)) * 100} accent />
+                    <span style={{
+                      fontFamily: 'var(--font-condensed)', fontSize: 10, color: 'var(--ink-40)',
+                      width: 56, textAlign: 'right', flexShrink: 0,
+                    }}>
+                      {r.deals_extracted} deal{r.deals_extracted !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Zero-deal senders */}
+            <div>
+              <SectionHeader>Zero-Deal Senders (Consider Unsubscribing)</SectionHeader>
+              {zeroDealSenders.length === 0 ? (
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)' }}>
+                  All scanned senders have produced at least one deal.
+                </p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {zeroDealSenders.slice(0, 15).map((r) => (
+                    <div key={r.retailer} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{
+                        fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 600,
+                        flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        color: 'var(--ink-40)',
+                      }}>
+                        {r.retailer}
+                      </span>
+                      <Bar pct={(r.emails_processed / maxEmailsProcessed) * 100} />
+                      <span style={{
+                        fontFamily: 'var(--font-condensed)', fontSize: 10, color: 'var(--ink-40)',
+                        width: 64, textAlign: 'right', flexShrink: 0,
+                      }}>
+                        {r.emails_processed} email{r.emails_processed !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
         )}
 

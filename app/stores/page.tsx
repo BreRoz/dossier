@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { Nav } from '@/components/Nav'
 import { CategoryIcon } from '@/components/CategoryIcon'
@@ -70,19 +70,61 @@ function monthAdded(dateStr: string): string {
   return new Date(year, month, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
 }
 
+// Simple toggle switch component
+function ToggleSwitch({
+  enabled,
+  locked,
+  onChange,
+}: {
+  enabled: boolean
+  locked: boolean
+  onChange?: (val: boolean) => void
+}) {
+  return (
+    <button
+      onClick={() => !locked && onChange?.(!enabled)}
+      title={locked ? 'Upgrade to paid to control individual stores' : enabled ? 'Receiving deals — click to mute' : 'Muted — click to unmute'}
+      style={{
+        width: 36, height: 20, borderRadius: 10, border: 'none', padding: 0,
+        background: locked ? 'var(--ink-15)' : enabled ? 'var(--ink)' : 'var(--ink-15)',
+        cursor: locked ? 'not-allowed' : 'pointer',
+        position: 'relative', flexShrink: 0, transition: 'background 0.2s',
+        opacity: locked ? 0.5 : 1,
+      }}
+    >
+      <span style={{
+        position: 'absolute', top: 2,
+        left: enabled && !locked ? 18 : 2,
+        width: 16, height: 16, borderRadius: '50%',
+        background: 'var(--paper)',
+        transition: 'left 0.2s',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 8,
+      }}>
+        {locked ? '🔒' : ''}
+      </span>
+    </button>
+  )
+}
+
 export default function StoresPage() {
   const supabase = createClient()
   const catDropRef = useRef<HTMLDivElement>(null)
 
-  const [stats, setStats]             = useState<Stats | null>(null)
-  const [stores, setStores]           = useState<StoreRow[]>([])
-  const [spendFilter, setSpendFilter] = useState<SpendTier[]>(['$', '$$', '$$$', '$$$$'])
-  const [loading, setLoading]         = useState(true)
+  const [stats, setStats]               = useState<Stats | null>(null)
+  const [stores, setStores]             = useState<StoreRow[]>([])
+  const [spendFilter, setSpendFilter]   = useState<SpendTier[]>(['$', '$$', '$$$', '$$$$'])
+  const [loading, setLoading]           = useState(true)
   const [search, setSearch]             = useState('')
   const [catDropOpen, setCatDropOpen]   = useState(false)
   const [selectedCats, setSelectedCats] = useState<string[]>([])
+  const [selectedAge, setSelectedAge]   = useState<string>('')
+  const [dealCounts, setDealCounts]     = useState<Record<string, number>>({})
+  const [isPaid, setIsPaid]             = useState(false)
+  const [storePrefs, setStorePrefs]     = useState<Record<string, boolean>>({})
+  const [togglingStore, setTogglingStore] = useState<string | null>(null)
 
-  // Close dropdown on outside click
+  // Close category dropdown on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (catDropRef.current && !catDropRef.current.contains(e.target as Node)) {
@@ -105,20 +147,78 @@ export default function StoresPage() {
       ])
 
       if (statsRes.ok)  setStats(await statsRes.json())
+
       if (storesRes.ok) {
         const data = await storesRes.json()
         setStores(data.stores || [])
       }
+
       if (prefsRes.ok) {
         const data = await prefsRes.json()
         const prefs = data.preferences || {}
         if (prefs.spend_tier_filter?.length) setSpendFilter(prefs.spend_tier_filter)
       }
 
+      // Subscriber tier + store preferences
+      const { data: sub } = await supabase
+        .from('subscribers')
+        .select('tier, id')
+        .eq('email', user.email!)
+        .single()
+
+      if (sub) {
+        const paid = sub.tier === 'paid'
+        setIsPaid(paid)
+
+        if (paid) {
+          const { data: sp } = await supabase
+            .from('subscriber_store_preferences')
+            .select('retailer, enabled')
+            .eq('subscriber_id', sub.id)
+
+          const prefMap: Record<string, boolean> = {}
+          for (const row of sp || []) prefMap[row.retailer] = row.enabled
+          setStorePrefs(prefMap)
+        }
+      }
+
+      // Deal counts per retailer (all time)
+      const { data: deals } = await supabase
+        .from('deals')
+        .select('retailer')
+
+      const counts: Record<string, number> = {}
+      for (const row of deals || []) {
+        if (row.retailer) {
+          const key = row.retailer.toLowerCase()
+          counts[key] = (counts[key] || 0) + 1
+        }
+      }
+      setDealCounts(counts)
+
       setLoading(false)
     }
     load()
   }, [])
+
+  const handleToggle = useCallback(async (retailer: string, enabled: boolean) => {
+    if (!isPaid) return
+    setTogglingStore(retailer)
+    setStorePrefs((prev) => ({ ...prev, [retailer]: enabled }))
+
+    try {
+      await fetch('/api/stores/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ retailer, enabled }),
+      })
+    } catch {
+      // revert on error
+      setStorePrefs((prev) => ({ ...prev, [retailer]: !enabled }))
+    } finally {
+      setTogglingStore(null)
+    }
+  }, [isPaid])
 
   // Unique app categories present in the store list
   const availableCategories = useMemo(() => {
@@ -127,14 +227,22 @@ export default function StoresPage() {
     return Array.from(seen).sort()
   }, [stores])
 
+  // Unique age groups present in the store list
+  const availableAgeGroups = useMemo(() => {
+    const seen = new Set<string>()
+    for (const s of stores) if (s.ageGroup) seen.add(s.ageGroup)
+    return Array.from(seen)
+  }, [stores])
+
   const visibleStores = useMemo(() => {
     return stores.filter((s) => {
       if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false
       if (!spendFilter.includes(s.spendTier as SpendTier)) return false
       if (selectedCats.length > 0 && !selectedCats.includes(s.appCategory)) return false
+      if (selectedAge && s.ageGroup !== selectedAge) return false
       return true
     })
-  }, [stores, search, spendFilter, selectedCats])
+  }, [stores, search, spendFilter, selectedCats, selectedAge])
 
   const toggleCat = (cat: string) => {
     setSelectedCats((cur) =>
@@ -145,7 +253,7 @@ export default function StoresPage() {
   const toggleSpend = (tier: SpendTier) => {
     setSpendFilter((cur) => {
       if (cur.includes(tier)) {
-        if (cur.length === 1) return cur   // keep at least one
+        if (cur.length === 1) return cur
         return cur.filter((t) => t !== tier)
       }
       return [...cur, tier]
@@ -183,7 +291,7 @@ export default function StoresPage() {
           </p>
         </div>
 
-        {/* ── Stats Cards ──────────────────────────────────────────── */}
+        {/* Stats Cards */}
         <div className="rstat-row" style={{ display: 'flex', gap: 2, marginBottom: 56 }}>
           <StatCard
             value={stats?.emails_caught ?? 0}
@@ -202,10 +310,10 @@ export default function StoresPage() {
           />
         </div>
 
-        {/* ── Filters row ──────────────────────────────────────────── */}
+        {/* Filters row */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 16,
-          flexWrap: 'wrap', marginBottom: 24,
+          flexWrap: 'wrap', marginBottom: 16,
         }}>
           {/* Search */}
           <input
@@ -266,14 +374,11 @@ export default function StoresPage() {
             </button>
 
             {catDropOpen && (
-              <div
-                style={{
-                  position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
-                  background: 'var(--paper)', border: '1.5px solid var(--ink-15)',
-                  minWidth: 220, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-                }}
-              >
-                {/* Clear all */}
+              <div style={{
+                position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
+                background: 'var(--paper)', border: '1.5px solid var(--ink-15)',
+                minWidth: 220, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+              }}>
                 {selectedCats.length > 0 && (
                   <button
                     onClick={() => setSelectedCats([])}
@@ -323,38 +428,90 @@ export default function StoresPage() {
           </span>
         </div>
 
-        {/* ── Column headers ───────────────────────────────────────── */}
-        <div className="rtable">
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 40px 56px 80px 100px',
-          gap: 16, padding: '10px 16px', borderBottom: 'var(--rule)',
-          minWidth: 480,
-        }}>
-          {['Store', 'Cat.', 'Spend', 'Added', 'Status'].map((h) => (
-            <span key={h} style={{
-              fontFamily: 'var(--font-condensed)', fontSize: 9, fontWeight: 600,
-              letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)',
+        {/* Age filter row — only shown if Sheet has age group data */}
+        {availableAgeGroups.length > 0 && (
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <span style={{
+                fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.18em',
+                textTransform: 'uppercase', color: 'var(--ink-40)',
+              }}>
+                Where people my age shop
+              </span>
+              {['', ...availableAgeGroups].map((age) => {
+                const active = selectedAge === age
+                return (
+                  <button
+                    key={age || 'all'}
+                    onClick={() => setSelectedAge(age)}
+                    style={{
+                      fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 500,
+                      letterSpacing: '0.12em', textTransform: 'uppercase',
+                      padding: '5px 14px', border: '1.5px solid',
+                      borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
+                      background: active ? 'var(--ink)' : 'transparent',
+                      color: active ? 'var(--paper)' : 'var(--ink-40)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {age || 'All Ages'}
+                  </button>
+                )
+              })}
+            </div>
+            <p style={{
+              fontFamily: 'var(--font-sans)', fontSize: 11, color: 'var(--ink-40)',
+              lineHeight: 1.5, marginTop: 6,
             }}>
-              {h}
-            </span>
-          ))}
-        </div>
-
-        {/* ── Rows ─────────────────────────────────────────────────── */}
-        {visibleStores.length === 0 ? (
-          <div style={{
-            padding: '48px 16px', textAlign: 'center',
-            fontFamily: 'var(--font-condensed)', fontSize: 11,
-            letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-40)',
-          }}>
-            {search ? 'No stores match your search' : 'No stores match your current filters'}
+              Age suggestions are approximate — shop wherever you like!
+            </p>
           </div>
-        ) : (
-          visibleStores.map((store, i) => (
-            <StoreRow key={`${store.name}-${i}`} store={store} isEven={i % 2 === 0} />
-          ))
         )}
 
+        {/* Column headers */}
+        <div className="rtable">
+          <div style={{
+            display: 'grid', gridTemplateColumns: '1fr 40px 56px 72px 80px 48px',
+            gap: 16, padding: '10px 16px', borderBottom: 'var(--rule)',
+            minWidth: 500,
+          }}>
+            {['Store', 'Cat.', 'Spend', 'Deals', 'Status', isPaid ? 'Active' : '🔒'].map((h) => (
+              <span key={h} style={{
+                fontFamily: 'var(--font-condensed)', fontSize: 9, fontWeight: 600,
+                letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)',
+              }}>
+                {h}
+              </span>
+            ))}
+          </div>
+
+          {/* Rows */}
+          {visibleStores.length === 0 ? (
+            <div style={{
+              padding: '48px 16px', textAlign: 'center',
+              fontFamily: 'var(--font-condensed)', fontSize: 11,
+              letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-40)',
+            }}>
+              {search ? 'No stores match your search' : 'No stores match your current filters'}
+            </div>
+          ) : (
+            visibleStores.map((store, i) => {
+              const dealCount = dealCounts[store.name.toLowerCase()] ?? 0
+              const storeEnabled = storePrefs[store.name] ?? true
+              return (
+                <StoreRowItem
+                  key={`${store.name}-${i}`}
+                  store={store}
+                  isEven={i % 2 === 0}
+                  dealCount={dealCount}
+                  isPaid={isPaid}
+                  storeEnabled={storeEnabled}
+                  isToggling={togglingStore === store.name}
+                  onToggle={handleToggle}
+                />
+              )
+            })
+          )}
         </div>{/* end .rtable */}
 
         {/* Footer link */}
@@ -371,15 +528,33 @@ export default function StoresPage() {
   )
 }
 
-function StoreRow({ store, isEven }: { store: StoreRow; isEven: boolean }) {
+function StoreRowItem({
+  store,
+  isEven,
+  dealCount,
+  isPaid,
+  storeEnabled,
+  isToggling,
+  onToggle,
+}: {
+  store: StoreRow
+  isEven: boolean
+  dealCount: number
+  isPaid: boolean
+  storeEnabled: boolean
+  isToggling: boolean
+  onToggle: (retailer: string, enabled: boolean) => void
+}) {
   return (
     <div style={{
-      display: 'grid', gridTemplateColumns: '1fr 40px 56px 80px 100px',
+      display: 'grid', gridTemplateColumns: '1fr 40px 56px 72px 80px 48px',
       gap: 16, padding: '14px 16px',
       background: isEven ? 'transparent' : 'var(--ink-06)',
       alignItems: 'center',
       borderBottom: '1px solid var(--ink-06)',
-      minWidth: 480,
+      minWidth: 500,
+      opacity: isPaid && !storeEnabled ? 0.5 : 1,
+      transition: 'opacity 0.2s',
     }}>
       {/* Name + NEW badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
@@ -428,12 +603,16 @@ function StoreRow({ store, isEven }: { store: StoreRow; isEven: boolean }) {
         {store.spendTier}
       </span>
 
-      {/* Month added */}
-      <span style={{
-        fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.1em',
-        color: 'var(--ink-40)', textTransform: 'uppercase',
-      }}>
-        {monthAdded(store.dateAdded)}
+      {/* Deal count */}
+      <span
+        title={dealCount > 0 ? `${dealCount} deal${dealCount !== 1 ? 's' : ''} shared` : 'No deals yet'}
+        style={{
+          fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.08em',
+          color: dealCount > 0 ? 'var(--ink)' : 'var(--ink-15)',
+          fontWeight: dealCount > 0 ? 600 : 400,
+        }}
+      >
+        {dealCount > 0 ? `${dealCount}` : '—'}
       </span>
 
       {/* Status */}
@@ -444,6 +623,15 @@ function StoreRow({ store, isEven }: { store: StoreRow; isEven: boolean }) {
       }}>
         {store.status || '—'}
       </span>
+
+      {/* Toggle */}
+      <div style={{ opacity: isToggling ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+        <ToggleSwitch
+          enabled={storeEnabled}
+          locked={!isPaid}
+          onChange={(val) => onToggle(store.name, val)}
+        />
+      </div>
     </div>
   )
 }

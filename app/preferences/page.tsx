@@ -536,11 +536,11 @@ export default function PreferencesPage() {
             <div>
               <SectionHeader label="Minimum Discount" tag={tier === 'free' ? 'Paid Only' : undefined} />
               <div style={{ display: 'flex', gap: 8 }}>
-                {[30, 40, 50].map((v) => (
+                {[20, 30, 40, 50].map((v) => (
                   <button
                     key={v}
                     disabled={tier === 'free' && v !== 40}
-                    onClick={() => tier === 'paid' && setPrefs((p) => ({ ...p, min_discount: v as 30 | 40 | 50 }))}
+                    onClick={() => tier === 'paid' && setPrefs((p) => ({ ...p, min_discount: v as 20 | 30 | 40 | 50 }))}
                     style={{
                       fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
                       letterSpacing: '0.18em', textTransform: 'uppercase',
