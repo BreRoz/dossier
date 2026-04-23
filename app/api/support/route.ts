@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const { error } = await resend.emails.send({
       from: 'DOSSIER Support <noreply@dealdossier.io>',
       to: 'bre999@gmail.com',
-      replyTo: email,
+      reply_to: email,
       subject: `[Support] ${issueLabel}`,
       html: `
         <div style="font-family: sans-serif; max-width: 560px; margin: 0 auto; padding: 40px 20px;">
