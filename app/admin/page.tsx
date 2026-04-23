@@ -122,6 +122,7 @@ export default async function AdminPage() {
     { data: editionStats },
     { data: retailerScanLog },
     { data: toggledStores },
+    { data: storeSuggestions },
   ] = await Promise.all([
     db.from('subscribers').select('*', { count: 'exact', head: true }),
     db.from('subscribers').select('*', { count: 'exact', head: true }).eq('is_active', true),
@@ -137,6 +138,7 @@ export default async function AdminPage() {
     db.from('editions').select('emails_scanned, deals_found'),
     db.from('retailer_scan_log').select('retailer, sender_email, emails_processed, deals_extracted').order('emails_processed', { ascending: false }),
     db.from('subscriber_store_preferences').select('retailer').eq('enabled', true),
+    db.from('store_suggestions').select('store_name, website, notes, status, created_at').order('created_at', { ascending: false }).limit(50),
   ])
 
   // ─── derived stats ─────────────────────────────────────────────────────────
@@ -493,6 +495,54 @@ export default async function AdminPage() {
               )}
             </div>
 
+          </div>
+        )}
+
+        {/* Store suggestions */}
+        {(storeSuggestions || []).length > 0 && (
+          <div style={{ marginBottom: 64 }}>
+            <SectionHeader>Store Suggestions from Paid Users</SectionHeader>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  {['Store', 'Website', 'Notes', 'Status', 'Date'].map((h) => (
+                    <th key={h} style={{
+                      fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.18em',
+                      textTransform: 'uppercase', color: 'var(--ink-40)', textAlign: 'left',
+                      paddingBottom: 10, paddingRight: 16, borderBottom: 'var(--rule)', fontWeight: 500,
+                    }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(storeSuggestions || []).map((s, i) => (
+                  <tr key={i}>
+                    <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
+                      {s.store_name}
+                    </td>
+                    <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-40)' }}>
+                      {s.website || '—'}
+                    </td>
+                    <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-70)', maxWidth: 240 }}>
+                      {s.notes || '—'}
+                    </td>
+                    <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)' }}>
+                      <span style={{
+                        fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.15em',
+                        textTransform: 'uppercase', padding: '2px 8px', border: '1px solid',
+                        borderColor: s.status === 'added' ? 'var(--accent)' : s.status === 'declined' ? 'var(--ink-15)' : 'var(--ink-40)',
+                        color: s.status === 'added' ? 'var(--accent)' : 'var(--ink-40)',
+                      }}>
+                        {s.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: '10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-condensed)', fontSize: 11, color: 'var(--ink-40)', whiteSpace: 'nowrap' }}>
+                      {format(new Date(s.created_at), 'MMM d, yyyy')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 

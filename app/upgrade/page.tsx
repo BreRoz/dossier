@@ -107,6 +107,7 @@ export default function UpgradePage() {
                 'Age-based store filter ("where people my age shop")',
                 'Full deal type controls — BOGO, flash sales, loyalty & more',
                 'Stackable & up-to deal alerts',
+                'Suggest stores for us to track',
               ].map((item) => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{

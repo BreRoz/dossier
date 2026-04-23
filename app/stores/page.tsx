@@ -123,6 +123,12 @@ export default function StoresPage() {
   const [isPaid, setIsPaid]             = useState(false)
   const [storePrefs, setStorePrefs]     = useState<Record<string, boolean>>({})
   const [togglingStore, setTogglingStore] = useState<string | null>(null)
+  const [suggestName, setSuggestName]     = useState('')
+  const [suggestSite, setSuggestSite]     = useState('')
+  const [suggestNotes, setSuggestNotes]   = useState('')
+  const [suggesting, setSuggesting]       = useState(false)
+  const [suggestDone, setSuggestDone]     = useState(false)
+  const [suggestError, setSuggestError]   = useState('')
 
   // Close category dropdown on outside click
   useEffect(() => {
@@ -513,6 +519,149 @@ export default function StoresPage() {
             })
           )}
         </div>{/* end .rtable */}
+
+        {/* Suggest a store */}
+        <div style={{ marginTop: 64, paddingTop: 48, borderTop: 'var(--rule)' }}>
+          <p className="t-section" style={{ marginBottom: 12 }}>Suggest a Store</p>
+          <h2 style={{
+            fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 300,
+            letterSpacing: '-0.02em', marginBottom: 12,
+          }}>
+            Know a brand we should watch?
+          </h2>
+          <p style={{
+            fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
+            lineHeight: 1.6, maxWidth: 480, marginBottom: 32,
+          }}>
+            We'll subscribe to their emails and start pulling deals automatically.
+          </p>
+
+          {!isPaid ? (
+            <div style={{
+              padding: '24px 28px', background: 'var(--ink-06)',
+              display: 'flex', alignItems: 'center', gap: 16, maxWidth: 480,
+            }}>
+              <span style={{ fontSize: 20 }}>🔒</span>
+              <div>
+                <p style={{
+                  fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
+                  color: 'var(--ink)', marginBottom: 4,
+                }}>
+                  Paid feature
+                </p>
+                <p style={{
+                  fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)',
+                  lineHeight: 1.5,
+                }}>
+                  Upgrade to suggest stores for us to track.{' '}
+                  <Link href="/upgrade" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>
+                    See what's included →
+                  </Link>
+                </p>
+              </div>
+            </div>
+          ) : suggestDone ? (
+            <div style={{
+              padding: '24px 28px', background: 'var(--ink-06)', maxWidth: 480,
+            }}>
+              <p style={{
+                fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
+                color: 'var(--accent)', marginBottom: 4,
+              }}>Suggestion received!</p>
+              <p style={{
+                fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)',
+              }}>
+                We'll review it and add them to the watchlist if they run regular sales.
+              </p>
+              <button
+                onClick={() => { setSuggestDone(false); setSuggestName(''); setSuggestSite(''); setSuggestNotes('') }}
+                style={{
+                  marginTop: 16, fontFamily: 'var(--font-condensed)', fontSize: 10,
+                  letterSpacing: '0.15em', textTransform: 'uppercase',
+                  background: 'none', border: 'none', color: 'var(--ink-40)',
+                  cursor: 'pointer', textDecoration: 'underline', padding: 0,
+                }}
+              >
+                Suggest another
+              </button>
+            </div>
+          ) : (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault()
+                if (!suggestName.trim()) return
+                setSuggesting(true)
+                setSuggestError('')
+                try {
+                  const res = await fetch('/api/stores/suggest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ store_name: suggestName, website: suggestSite, notes: suggestNotes }),
+                  })
+                  if (res.ok) {
+                    setSuggestDone(true)
+                  } else {
+                    const d = await res.json()
+                    setSuggestError(d.error || 'Something went wrong.')
+                  }
+                } catch {
+                  setSuggestError('Something went wrong.')
+                } finally {
+                  setSuggesting(false)
+                }
+              }}
+              style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 480 }}
+            >
+              <div>
+                <label className="t-meta" style={{ display: 'block', marginBottom: 6 }}>Store Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Reformation"
+                  value={suggestName}
+                  onChange={(e) => setSuggestName(e.target.value)}
+                  className="field-input"
+                />
+              </div>
+              <div>
+                <label className="t-meta" style={{ display: 'block', marginBottom: 6 }}>Website (optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. reformation.com"
+                  value={suggestSite}
+                  onChange={(e) => setSuggestSite(e.target.value)}
+                  className="field-input"
+                />
+              </div>
+              <div>
+                <label className="t-meta" style={{ display: 'block', marginBottom: 6 }}>Why should we add them? (optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Great sales on basics, ships fast"
+                  value={suggestNotes}
+                  onChange={(e) => setSuggestNotes(e.target.value)}
+                  className="field-input"
+                />
+              </div>
+              {suggestError && (
+                <p style={{
+                  fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em',
+                  textTransform: 'uppercase', color: 'oklch(50% 0.2 20)',
+                }}>
+                  {suggestError}
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={suggesting}
+                className="btn-primary"
+                style={{ alignSelf: 'flex-start', padding: '10px 28px' }}
+              >
+                {suggesting ? 'Submitting...' : 'Submit Suggestion'}
+              </button>
+            </form>
+          )}
+        </div>
 
         {/* Footer link */}
         <div style={{ marginTop: 48, paddingTop: 40, borderTop: 'var(--rule)' }}>
