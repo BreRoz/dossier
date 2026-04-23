@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     // Send the link ourselves via Resend — no Supabase SMTP needed
     const { error: emailError } = await resend.emails.send({
-      from: 'DOSSIER <onboarding@resend.dev>',
+      from: 'DOSSIER <noreply@dealdossier.io>',
       to: email,
       subject: 'Your DOSSIER sign-in link',
       html: `
