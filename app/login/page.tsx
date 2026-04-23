@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { DossierLogo } from '@/components/DossierLogo'
-import { createClient } from '@/lib/supabase/client'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,26 +21,28 @@ export default function LoginPage() {
     setError('')
 
     try {
-      // First ensure subscriber exists
+      // Ensure subscriber record exists
       await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, zip_code: zip }),
       })
 
-      // Send magic link via Supabase Auth
-      const supabase = createClient()
-      const { error: authError } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/api/auth/callback`,
-        },
+      // Generate magic link via Supabase admin + send via Resend
+      const res = await fetch('/api/auth/magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          redirectTo: `${window.location.origin}/api/auth/callback`,
+        }),
       })
 
-      if (authError) {
-        setError(authError.message)
-      } else {
+      if (res.ok) {
         setSent(true)
+      } else {
+        const data = await res.json()
+        setError(data.error || 'Something went wrong. Please try again.')
       }
     } catch {
       setError('Something went wrong. Please try again.')
