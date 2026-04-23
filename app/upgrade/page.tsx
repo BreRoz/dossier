@@ -1,11 +1,5 @@
 import Link from 'next/link'
 import { Nav } from '@/components/Nav'
-import { CategoryIcon } from '@/components/CategoryIcon'
-import { ALL_CATEGORIES, FREE_CATEGORIES, CATEGORY_LABELS } from '@/types'
-import type { Category } from '@/types'
-
-const FREE_CATS: Category[] = ['fashion', 'restaurants', 'grocery']
-const PAID_CATS = ALL_CATEGORIES.filter((c) => !FREE_CATS.includes(c))
 
 export default function UpgradePage() {
   return (
@@ -32,7 +26,8 @@ export default function UpgradePage() {
             color: 'var(--ink-70)', lineHeight: 1.65, maxWidth: 520,
           }}>
             The free tier covers the essentials. Paid unlocks all 13 categories,
-            custom discount thresholds, deal type controls, and flexible send days.
+            store-level controls, age-based filtering, custom discount thresholds,
+            full deal type controls, and flexible send days.
           </p>
         </div>
 
@@ -49,38 +44,22 @@ export default function UpgradePage() {
               <span style={{
                 fontFamily: 'var(--font-condensed)', fontSize: 10,
                 letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)',
-              }}>Forever</span>
+              }}>No Paywall</span>
             </div>
             <p style={{
               fontFamily: 'var(--font-sans)', fontSize: 14,
               color: 'var(--ink-70)', lineHeight: 1.6, marginBottom: 40,
             }}>
-              The DOSSIER brief for deal-curious readers.
+              The DOSSIER brief for deal-curious readers. No credit card, no catch.
             </p>
-
-            <div style={{ marginBottom: 32 }}>
-              <p className="t-meta" style={{ marginBottom: 16 }}>Categories</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {FREE_CATS.map((cat) => (
-                  <div key={cat} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '10px 0',
-                    borderBottom: '1px solid var(--ink-06)',
-                  }}>
-                    <CategoryIcon category={cat} size={16} />
-                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600 }}>
-                      {CATEGORY_LABELS[cat]}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 40 }}>
               {[
+                '3 core categories (Fashion, Grocery, Restaurants)',
                 '40%+ minimum discount',
                 'Thursday delivery',
-                'Basic deal types',
+                'Curated deal types',
+                'Subscribed stores directory',
               ].map((item) => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{
@@ -119,38 +98,15 @@ export default function UpgradePage() {
               The full DOSSIER experience, personalized entirely to you.
             </p>
 
-            <div style={{ marginBottom: 32 }}>
-              <p style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
-                letterSpacing: '0.18em', textTransform: 'uppercase',
-                color: 'oklch(55% 0.005 280)', marginBottom: 16,
-              }}>All 13 Categories</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {PAID_CATS.map((cat) => (
-                  <div key={cat} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '10px 0',
-                    borderBottom: '1px solid oklch(18% 0.01 280)',
-                  }}>
-                    <CategoryIcon category={cat} size={16} color="oklch(60% 0.005 280)" />
-                    <span style={{
-                      fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
-                      color: 'oklch(85% 0.005 280)',
-                    }}>
-                      {CATEGORY_LABELS[cat]}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 40 }}>
               {[
-                'Choose 30%, 40%, or 50%+ threshold',
+                'All 13 deal categories — fully adjustable',
+                'Choose your minimum discount: 20%, 30%, 40%, or 50%+',
                 'Any send day of the week',
-                'All deal type toggles',
-                'Up-to deals if you want them',
-                'Stackable & loyalty deal alerts',
+                'Toggle individual stores on or off',
+                'Age-based store filter ("where people my age shop")',
+                'Full deal type controls — BOGO, flash sales, loyalty & more',
+                'Stackable & up-to deal alerts',
               ].map((item) => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{
