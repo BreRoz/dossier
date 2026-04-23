@@ -60,6 +60,7 @@ export interface GmailMessage {
   date: string
   body: string
   isManual: boolean
+  viewInBrowserUrl: string | null
 }
 
 function parseGmailMessage(msg: any): GmailMessage | null {
@@ -81,6 +82,7 @@ function parseGmailMessage(msg: any): GmailMessage | null {
     date: getHeader('date'),
     body,
     isManual,
+    viewInBrowserUrl: extractViewInBrowserUrl(body),
   }
 }
 
@@ -111,4 +113,31 @@ function extractBody(payload: any): string {
   }
 
   return ''
+}
+
+// Find the "view in browser" URL from a retail email's HTML body.
+// Retailers use this for subscribers to see the full email with fine print.
+function extractViewInBrowserUrl(html: string): string | null {
+  if (!html) return null
+
+  // Strategy 1: anchor tag whose visible text mentions "view" + browser/online/email
+  const anchorRegex = /<a\s+(?:[^>]*?\s+)?href="(https?:\/\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/gi
+  let match
+  while ((match = anchorRegex.exec(html)) !== null) {
+    const href = match[1]
+    const text = match[2].replace(/<[^>]+>/g, '').trim().toLowerCase()
+    if (
+      text.includes('view') &&
+      (text.includes('browser') || text.includes('online') || text.includes('email'))
+    ) {
+      return href
+    }
+  }
+
+  // Strategy 2: URL with "view" subdomain (e.g. view.s.freepeople.com)
+  // Very common pattern across ESPs (Salesforce MC, Klaviyo, etc.)
+  const viewSubdomainMatch = html.match(/href="(https?:\/\/view\.[^"]+)"/i)
+  if (viewSubdomainMatch?.[1]) return viewSubdomainMatch[1]
+
+  return null
 }

@@ -81,6 +81,7 @@ export interface Deal {
   gender: GenderOption[]
   week_of: string
   source_email_id: string | null
+  source_email_link: string | null
   is_manual: boolean
   created_at: string
 }

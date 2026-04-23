@@ -80,6 +80,25 @@ export function DealCard({ deal }: DealCardProps) {
               Ends {expiry}
             </span>
           )}
+          {deal.source_email_link && (
+            <a
+              href={deal.source_email_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontFamily: 'var(--font-condensed)',
+                fontSize: 10,
+                fontWeight: 500,
+                letterSpacing: '0.15em',
+                textTransform: 'uppercase',
+                color: 'oklch(62% 0.010 280)',
+                textDecoration: 'none',
+                borderBottom: '1px solid oklch(80% 0.005 280)',
+              }}
+            >
+              View original email →
+            </a>
+          )}
         </div>
       </div>
       <div style={{ textAlign: 'right' }}>

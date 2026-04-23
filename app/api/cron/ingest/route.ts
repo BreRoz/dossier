@@ -77,6 +77,7 @@ export async function GET(request: NextRequest) {
             categories: deal.categories as Category[],
             week_of: weekOfStr,
             source_email_id: email.id,
+            source_email_link: email.viewInBrowserUrl ?? null,
             is_manual: email.isManual,
           }
 
