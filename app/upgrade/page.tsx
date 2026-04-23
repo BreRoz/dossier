@@ -1,6 +1,15 @@
 import Link from 'next/link'
 import { Nav } from '@/components/Nav'
 
+export const metadata = {
+  title: 'Upgrade — DOSSIER',
+  description: 'Unlock all 13 deal categories, store controls, age filters, and more with DOSSIER paid.',
+  openGraph: {
+    title: 'Upgrade — DOSSIER',
+    description: 'Unlock all 13 deal categories, store controls, age filters, and more.',
+  },
+}
+
 export default function UpgradePage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>

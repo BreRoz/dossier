@@ -25,12 +25,27 @@ const barlowCondensed = Barlow_Condensed({
 })
 
 export const metadata: Metadata = {
-  title: 'DOSSIER: Deal Intelligence',
-  description: 'An editorially curated weekly briefing covering premium fashion, beauty, home, tech, dining, and more.',
+  title: 'DOSSIER — The Curated Deals Brief',
+  description: 'A weekly deals brief covering fashion, grocery, restaurants, home, tech, beauty and more. Curated by AI, edited for real life. Free. No paywall.',
+  metadataBase: new URL('https://dealdossier.io'),
   openGraph: {
-    title: 'DOSSIER: Deal Intelligence',
-    description: 'The deals worth your attention. Curated weekly.',
+    title: 'DOSSIER — The Curated Deals Brief',
+    description: 'The deals worth your attention. Curated weekly. Free. No paywall.',
     type: 'website',
+    url: 'https://dealdossier.io',
+    siteName: 'DOSSIER',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'DOSSIER — The Curated Deals Brief',
+    description: 'The deals worth your attention. Curated weekly. Free. No paywall.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: 'https://dealdossier.io',
   },
 }
 

@@ -6,6 +6,15 @@ import type { Edition } from '@/types'
 
 export const revalidate = 3600
 
+export const metadata = {
+  title: 'Archive — DOSSIER',
+  description: 'Browse every past edition of the DOSSIER weekly deals brief.',
+  openGraph: {
+    title: 'Archive — DOSSIER',
+    description: 'Browse every past edition of the DOSSIER weekly deals brief.',
+  },
+}
+
 export default async function ArchivePage() {
   const supabase = createServiceClient()
 
