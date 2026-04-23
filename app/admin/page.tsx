@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { format, parseISO, subDays } from 'date-fns'
 import { Nav } from '@/components/Nav'
 import { CategoryIcon } from '@/components/CategoryIcon'
+import { SuggestionActions } from '@/components/SuggestionActions'
 import { ALL_CATEGORIES, CATEGORY_LABELS } from '@/types'
 import type { Category } from '@/types'
 
@@ -138,7 +139,7 @@ export default async function AdminPage() {
     db.from('editions').select('emails_scanned, deals_found'),
     db.from('retailer_scan_log').select('retailer, sender_email, emails_processed, deals_extracted').order('emails_processed', { ascending: false }),
     db.from('subscriber_store_preferences').select('retailer').eq('enabled', true),
-    db.from('store_suggestions').select('store_name, website, notes, status, created_at').order('created_at', { ascending: false }).limit(50),
+    db.from('store_suggestions').select('id, store_name, website, notes, status, created_at').order('created_at', { ascending: false }).limit(50),
   ])
 
   // ─── derived stats ─────────────────────────────────────────────────────────
@@ -526,15 +527,12 @@ export default async function AdminPage() {
                     <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-70)', maxWidth: 240 }}>
                       {s.notes || '—'}
                     </td>
-                    <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)' }}>
-                      <span style={{
-                        fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.15em',
-                        textTransform: 'uppercase', padding: '2px 8px', border: '1px solid',
-                        borderColor: s.status === 'added' ? 'var(--accent)' : s.status === 'declined' ? 'var(--ink-15)' : 'var(--ink-40)',
-                        color: s.status === 'added' ? 'var(--accent)' : 'var(--ink-40)',
-                      }}>
-                        {s.status}
-                      </span>
+                    <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)', position: 'relative' }}>
+                      <SuggestionActions
+                        suggestionId={s.id}
+                        storeName={s.store_name}
+                        initialStatus={s.status}
+                      />
                     </td>
                     <td style={{ padding: '10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-condensed)', fontSize: 11, color: 'var(--ink-40)', whiteSpace: 'nowrap' }}>
                       {format(new Date(s.created_at), 'MMM d, yyyy')}
