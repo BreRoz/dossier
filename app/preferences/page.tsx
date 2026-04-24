@@ -295,12 +295,20 @@ export default function PreferencesPage() {
                 <SectionHeader label="Retailers" />
                 <p style={{
                   fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
-                  lineHeight: 1.5, marginBottom: 20,
+                  lineHeight: 1.5, marginBottom: 8,
                 }}>
                   Select the specific retailers you want deals from.{' '}
                   <span style={{ color: 'var(--ink)' }}>
                     {(prefs.selected_retailers ?? []).length} selected
                   </span>
+                </p>
+                <p style={{ marginBottom: 20 }}>
+                  <Link href="/stores" style={{
+                    fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.18em',
+                    textTransform: 'uppercase', color: 'var(--ink-40)', textDecoration: 'underline',
+                  }}>
+                    View all stores →
+                  </Link>
                 </p>
                 <input
                   type="text"
