@@ -348,7 +348,16 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
     </tr>` : ''}
 
     <!-- Category spacer before footer -->
-    <tr><td style="height:8px;"></td></tr>
+    <tr><td style="height:32px;"></td></tr>
+
+    <!-- ── STORE CONTROL NUDGE ── -->
+    <tr>
+      <td class="hpad" style="padding:0 40px 32px;border-top:1px solid ${C.ink15};padding-top:24px;">
+        <p style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:${C.ink40};margin:0;">
+          Not every brand your thing?&nbsp;&nbsp;<a href="https://dealdossier.io/stores" style="color:${C.ink};text-decoration:none;border-bottom:1px solid ${C.ink15};">Toggle stores on or off</a> with a paid account.
+        </p>
+      </td>
+    </tr>
 
     <!-- ── FOOTER ── -->
     <tr>
