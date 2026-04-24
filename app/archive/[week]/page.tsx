@@ -146,7 +146,7 @@ export default async function ArchiveWeekPage({ params }: Props) {
                   Get This Weekly
                 </p>
                 <p style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, letterSpacing: '-0.01em', color: 'oklch(9% 0.010 280)', marginBottom: 12 }}>
-                  Subscribe to DOSSIER. Free. No paywall.
+                  Subscribe to Deal Dossier. Free. No paywall.
                 </p>
                 <Link href="/login" style={{ fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', background: 'oklch(9% 0.010 280)', color: 'oklch(98% 0.004 90)', textDecoration: 'none', padding: '14px 32px', display: 'inline-block' }}>
                   Subscribe Free
@@ -165,7 +165,7 @@ export default async function ArchiveWeekPage({ params }: Props) {
                 </div>
               </div>
               <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.12em', color: 'oklch(45% 0.01 280)', lineHeight: 1.7 }}>
-                You are receiving this because you subscribed to DOSSIER Weekly. Deals are curated editorially and may include affiliate relationships. Pricing and availability subject to change without notice.
+                You are receiving this because you subscribed to Deal Dossier Weekly. Deals are curated editorially and may include affiliate relationships. Pricing and availability subject to change without notice.
               </p>
             </div>
           </div>

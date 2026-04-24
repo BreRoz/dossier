@@ -16,15 +16,15 @@ export default function PrivacyPage() {
         {[
           {
             title: 'Information We Collect',
-            body: `We collect your email address when you subscribe to DOSSIER. Optionally, you may provide your zip code to help us tailor deals to your region. We also collect your category and deal-type preferences when you configure your account.`,
+            body: `We collect your email address when you subscribe to Deal Dossier. Optionally, you may provide your zip code to help us tailor deals to your region. We also collect your category and deal-type preferences when you configure your account.`,
           },
           {
             title: 'How We Use Your Information',
-            body: `Your email address is used solely to send you the weekly DOSSIER briefing and transactional emails (sign-in links, preference confirmations). We do not sell, rent, or share your personal information with third parties for marketing purposes.`,
+            body: `Your email address is used solely to send you the weekly Deal Dossier briefing and transactional emails (sign-in links, preference confirmations). We do not sell, rent, or share your personal information with third parties for marketing purposes.`,
           },
           {
             title: 'Affiliate Relationships',
-            body: `DOSSIER may earn a commission when you click certain retailer links in our email. These are clearly disclosed in each issue. Affiliate relationships do not influence editorial decisions. Deals are selected on merit alone.`,
+            body: `Deal Dossier may earn a commission when you click certain retailer links in our email. These are clearly disclosed in each issue. Affiliate relationships do not influence editorial decisions. Deals are selected on merit alone.`,
           },
           {
             title: 'Data Retention',
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
           },
           {
             title: 'Contact',
-            body: `For questions about this policy, use the unsubscribe link in any DOSSIER email to reach your account settings, or reply directly to any email you receive from us.`,
+            body: `For questions about this policy, use the unsubscribe link in any Deal Dossier email to reach your account settings, or reply directly to any email you receive from us.`,
           },
         ].map(({ title, body }) => (
           <div key={title} style={{ marginBottom: 48, paddingBottom: 48, borderBottom: 'var(--rule)' }}>

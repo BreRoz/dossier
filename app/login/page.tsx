@@ -89,7 +89,7 @@ export default function LoginPage() {
                 Sign In
               </p>
               <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 40, fontWeight: 300, letterSpacing: '-0.01em', lineHeight: 1.1, marginBottom: 12 }}>
-                Welcome to DOSSIER.
+                Welcome to Deal Dossier.
               </h1>
               <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.65, marginBottom: 40 }}>
                 Enter your email address and we'll send you a magic link to sign in. No password required.

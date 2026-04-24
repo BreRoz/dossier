@@ -26,7 +26,7 @@ const ExtractionSchema = z.object({
 
 export type ExtractedDeal = z.infer<typeof DealSchema>
 
-const SYSTEM_PROMPT = `You are a deal extraction specialist for an editorial newsletter called DOSSIER.
+const SYSTEM_PROMPT = `You are a deal extraction specialist for an editorial newsletter called Deal Dossier.
 
 Extract ALL deals and promotions from retail/promotional emails. Be inclusive — if there is any offer, discount, sale, code, or promotion, extract it.
 

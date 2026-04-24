@@ -50,14 +50,14 @@ function UnsubscribeForm() {
             <strong style={{ color: 'var(--ink)' }}>{email}</strong> will no longer receive Dossier emails. We're sorry to see you go.
           </p>
           <Link href="/" style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-40)', textDecoration: 'none' }}>
-            ← Back to DOSSIER
+            ← Back to Deal Dossier
           </Link>
         </div>
       ) : (
         <>
           <p className="t-section" style={{ marginBottom: 16 }}>Unsubscribe</p>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 40, fontWeight: 300, letterSpacing: '-0.01em', lineHeight: 1.1, marginBottom: 20 }}>
-            Leave DOSSIER?
+            Leave Deal Dossier?
           </h1>
           <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.65, marginBottom: 8 }}>
             You can also <Link href="/preferences" style={{ color: 'var(--ink)' }}>adjust your preferences</Link> to receive fewer emails or change your categories instead.

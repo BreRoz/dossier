@@ -228,7 +228,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="x-apple-disable-message-reformatting">
-<title>DOSSIER Weekly Brief</title>
+<title>Deal Dossier Weekly Brief</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <!--[if mso]><style>* { font-family: Arial, sans-serif !important; }</style><![endif]-->
@@ -269,7 +269,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
                     </svg>
                   </td>
                   <td style="vertical-align:middle;">
-                    <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:300;letter-spacing:0.08em;color:${C.ink};">DOSSIER</span>
+                    <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:300;letter-spacing:0.08em;color:${C.ink};">Deal Dossier</span>
                   </td>
                 </tr>
               </table>
@@ -369,7 +369,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
                     </svg>
                   </td>
                   <td style="vertical-align:middle;">
-                    <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:300;letter-spacing:0.08em;color:${C.paper};">DOSSIER</span>
+                    <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:300;letter-spacing:0.08em;color:${C.paper};">Deal Dossier</span>
                   </td>
                 </tr>
               </table>
@@ -386,7 +386,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
               <div style="height:1px;background-color:${C.footer22};margin-bottom:16px;"></div>
               <p style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;letter-spacing:0.10em;color:${C.footer40};line-height:1.7;margin:0;">
                 You are receiving this because you subscribed to Dossier Weekly. Deals are curated editorially and may include affiliate relationships. Pricing and availability subject to change without notice. Prices confirmed at time of publication.<br><br>
-                DOSSIER Weekly
+                Deal Dossier Weekly
               </p>
             </td>
           </tr>

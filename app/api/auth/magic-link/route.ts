@@ -30,9 +30,9 @@ export async function POST(req: NextRequest) {
 
     // Send the link ourselves via Resend — no Supabase SMTP needed
     const { error: emailError } = await resend.emails.send({
-      from: 'DOSSIER <noreply@dealdossier.io>',
+      from: 'Deal Dossier <noreply@dealdossier.io>',
       to: email,
-      subject: 'Your DOSSIER sign-in link',
+      subject: 'Your Deal Dossier sign-in link',
       html: `
         <!DOCTYPE html>
         <html>
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
                 <!-- Header -->
                 <tr>
                   <td style="padding:32px 48px 24px;border-bottom:1px solid #e8e6e0;">
-                    <span style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#0a0a0a;">DOSSIER</span>
+                    <span style="font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#0a0a0a;">Deal Dossier</span>
                   </td>
                 </tr>
 
@@ -54,10 +54,10 @@ export async function POST(req: NextRequest) {
                     <p style="font-size:11px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:#b5440a;margin:0 0 16px;">Sign In</p>
                     <h1 style="font-size:32px;font-weight:300;letter-spacing:-0.01em;line-height:1.1;color:#0a0a0a;margin:0 0 20px;">Your magic link<br>is ready.</h1>
                     <p style="font-size:14px;color:#666;line-height:1.65;margin:0 0 32px;">
-                      Click the button below to sign in to your DOSSIER account. This link expires in 24 hours and can only be used once.
+                      Click the button below to sign in to your Deal Dossier account. This link expires in 24 hours and can only be used once.
                     </p>
                     <a href="${magicLink}" style="display:inline-block;background:#0a0a0a;color:#faf9f6;padding:14px 32px;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;">
-                      Sign In to DOSSIER
+                      Sign In to Deal Dossier
                     </a>
                     <p style="font-size:12px;color:#999;margin:24px 0 0;line-height:1.6;">
                       If you didn't request this, you can safely ignore this email. Someone may have entered your address by mistake.
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
                 <tr>
                   <td style="padding:24px 48px;background:#0a0a0a;border-top:1px solid #1a1a1a;">
                     <p style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#555;margin:0;line-height:1.7;">
-                      DOSSIER · The curated deals brief · Link expires in 24 hours
+                      Deal Dossier · The curated deals brief · Link expires in 24 hours
                     </p>
                   </td>
                 </tr>

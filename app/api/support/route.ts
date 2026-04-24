@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const issueLabel = ISSUE_LABELS[issue_type] || issue_type
 
     const { error } = await resend.emails.send({
-      from: 'DOSSIER Support <noreply@dealdossier.io>',
+      from: 'Deal Dossier Support <noreply@dealdossier.io>',
       to: 'bre999@gmail.com',
       reply_to: email,
       subject: `[Support] ${issueLabel}`,

@@ -40,7 +40,7 @@ export function DossierLogo({
           lineHeight: 1,
         }}
       >
-        DOSSIER
+        Deal Dossier
       </span>
     </div>
   )

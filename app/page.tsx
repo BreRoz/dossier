@@ -30,7 +30,7 @@ const SAMPLE_DEALS = [
     category: 'fashion' as Category,
     retailer: 'Nordstrom',
     description: "Up to 40% off select women's outerwear: Barbour, Eileen Fisher, Vince, and Theory. No additional exclusions.",
-    code: 'DOSSIER20',
+    code: 'Deal Dossier20',
     savings: '40%',
   },
   {
@@ -124,7 +124,7 @@ export default function LandingPage() {
             fontFamily: 'var(--font-sans)', fontSize: 16, color: 'var(--ink-70)',
             lineHeight: 1.65, maxWidth: 400, marginBottom: 48,
           }}>
-            DOSSIER is an editorially curated weekly briefing covering fashion, beauty, home, tech, dining, and more. No noise. No gimmicks. Just the deals that matter.
+            Deal Dossier is an editorially curated weekly briefing covering fashion, beauty, home, tech, dining, and more. No noise. No gimmicks. Just the deals that matter.
           </p>
 
           {submitted ? (
@@ -365,7 +365,7 @@ export default function LandingPage() {
           </div>
           <div className="rupgrade-right" style={{ paddingRight: 60, display: 'flex', flexDirection: 'column', gap: 24 }}>
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.65 }}>
-              Join readers who trust DOSSIER to surface the deals worth knowing about. Free subscribers get fashion, grocery, and restaurants. Upgrade for all 13 categories, custom thresholds, and flexible send days.
+              Join readers who trust Deal Dossier to surface the deals worth knowing about. Free subscribers get fashion, grocery, and restaurants. Upgrade for all 13 categories, custom thresholds, and flexible send days.
             </p>
             <div>
               <p className="t-meta" style={{ marginBottom: 16 }}>Free tier includes</p>
@@ -398,7 +398,7 @@ export default function LandingPage() {
             ))}
           </ul>
           <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)', marginLeft: 'auto' }}>
-            © 2026 DOSSIER
+            © 2026 Deal Dossier
           </span>
         </footer>
       </div>

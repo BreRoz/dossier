@@ -2,10 +2,10 @@ import Link from 'next/link'
 import { Nav } from '@/components/Nav'
 
 export const metadata = {
-  title: 'Upgrade — DOSSIER',
-  description: 'Unlock all 13 deal categories, store controls, age filters, and more with DOSSIER paid.',
+  title: 'Upgrade — Deal Dossier',
+  description: 'Unlock all 13 deal categories, store controls, age filters, and more with Deal Dossier paid.',
   openGraph: {
-    title: 'Upgrade — DOSSIER',
+    title: 'Upgrade — Deal Dossier',
     description: 'Unlock all 13 deal categories, store controls, age filters, and more.',
   },
 }
@@ -59,7 +59,7 @@ export default function UpgradePage() {
               fontFamily: 'var(--font-sans)', fontSize: 14,
               color: 'var(--ink-70)', lineHeight: 1.6, marginBottom: 40,
             }}>
-              The DOSSIER brief for deal-curious readers. No credit card, no catch.
+              The Deal Dossier brief for deal-curious readers. No credit card, no catch.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 40 }}>
@@ -104,7 +104,7 @@ export default function UpgradePage() {
               fontFamily: 'var(--font-sans)', fontSize: 14,
               color: 'oklch(60% 0.005 280)', lineHeight: 1.6, marginBottom: 40,
             }}>
-              The full DOSSIER experience, personalized entirely to you.
+              The full Deal Dossier experience, personalized entirely to you.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 40 }}>
@@ -155,7 +155,7 @@ export default function UpgradePage() {
             },
             {
               q: 'Is the free tier really free?',
-              a: 'Yes, permanently. DOSSIER earns through affiliate relationships: clicking a deal link supports the product. No paywalls on the core experience.',
+              a: 'Yes, permanently. Deal Dossier earns through affiliate relationships: clicking a deal link supports the product. No paywalls on the core experience.',
             },
             {
               q: 'Can I change categories later?',

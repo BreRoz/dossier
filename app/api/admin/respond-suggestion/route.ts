@@ -7,31 +7,31 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 const RESPONSES = {
   added: {
     status: 'added',
-    subject: 'Your store suggestion has been added to DOSSIER',
+    subject: 'Your store suggestion has been added to Deal Dossier',
     headline: 'Great news — we added them!',
     body: (store: string, note?: string) =>
       `We just added <strong>${store}</strong> to our watchlist. We'll start scanning their promotional emails and you'll see their deals in upcoming editions.${note ? `<br><br>${note}` : ''}`,
   },
   not_us: {
     status: 'declined',
-    subject: `We can't add that store to DOSSIER`,
+    subject: `We can't add that store to Deal Dossier`,
     headline: 'Thanks for the suggestion.',
     body: (store: string, note?: string) =>
       `Unfortunately <strong>${store}</strong> doesn't ship to the US, so we're not able to add them right now. We'll keep them on our radar if that changes.${note ? `<br><br>${note}` : ''}`,
   },
   no_online_store: {
     status: 'declined',
-    subject: `We can't add that store to DOSSIER`,
+    subject: `We can't add that store to Deal Dossier`,
     headline: 'Thanks for the suggestion.',
     body: (store: string, note?: string) =>
       `<strong>${store}</strong> doesn't appear to have an online store, so we're not able to track their deals at the moment.${note ? `<br><br>${note}` : ''}`,
   },
   no_deals: {
     status: 'declined',
-    subject: `We can't add that store to DOSSIER`,
+    subject: `We can't add that store to Deal Dossier`,
     headline: 'Thanks for the suggestion.',
     body: (store: string, note?: string) =>
-      `We took a look at <strong>${store}</strong> but they don't regularly offer discounts or promotional deals, so they're not a great fit for DOSSIER right now. We'll revisit if that changes.${note ? `<br><br>${note}` : ''}`,
+      `We took a look at <strong>${store}</strong> but they don't regularly offer discounts or promotional deals, so they're not a great fit for Deal Dossier right now. We'll revisit if that changes.${note ? `<br><br>${note}` : ''}`,
   },
 }
 
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
   if (subscriberEmail) {
     const bodyHtml = response.body(suggestion.store_name, note)
     await resend.emails.send({
-      from: 'DOSSIER <noreply@dealdossier.io>',
+      from: 'Deal Dossier <noreply@dealdossier.io>',
       to: subscriberEmail,
       subject: response.subject,
       html: `
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
               <table width="560" cellpadding="0" cellspacing="0" style="background:#faf9f6;max-width:560px;width:100%;">
                 <tr>
                   <td style="padding:32px 48px 24px;border-bottom:1px solid #e8e6e0;">
-                    <span style="font-size:18px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#0a0a0a;">DOSSIER</span>
+                    <span style="font-size:18px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#0a0a0a;">Deal Dossier</span>
                   </td>
                 </tr>
                 <tr>
@@ -98,14 +98,14 @@ export async function POST(req: NextRequest) {
                     <h1 style="font-size:28px;font-weight:300;letter-spacing:-0.01em;color:#0a0a0a;margin:0 0 20px;">${response.headline}</h1>
                     <p style="font-size:14px;color:#555;line-height:1.7;margin:0 0 24px;">${bodyHtml}</p>
                     <p style="font-size:13px;color:#999;line-height:1.6;margin:0;">
-                      Thanks for helping make DOSSIER better.<br>— The DOSSIER Team
+                      Thanks for helping make Deal Dossier better.<br>— The Deal Dossier Team
                     </p>
                   </td>
                 </tr>
                 <tr>
                   <td style="padding:24px 48px;background:#0a0a0a;">
                     <p style="font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:#555;margin:0;">
-                      DOSSIER · dealdossier.io
+                      Deal Dossier · dealdossier.io
                     </p>
                   </td>
                 </tr>

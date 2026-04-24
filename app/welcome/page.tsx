@@ -111,7 +111,7 @@ export default function WelcomePage() {
               }}>
                 Hey{firstName ? `, ${firstName}` : ''}.<br />
                 Welcome to<br />
-                <em style={{ fontStyle: 'italic' }}>DOSSIER.</em>
+                <em style={{ fontStyle: 'italic' }}>Deal Dossier.</em>
               </h1>
               <p style={{
                 fontFamily: 'var(--font-sans)', fontSize: 16,
@@ -435,7 +435,7 @@ export default function WelcomePage() {
           fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 700,
           letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink)',
         }}>
-          DOSSIER
+          Deal Dossier
         </span>
         {step !== 'done' && (
           <span style={{

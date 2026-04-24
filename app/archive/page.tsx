@@ -7,11 +7,11 @@ import type { Edition } from '@/types'
 export const revalidate = 3600
 
 export const metadata = {
-  title: 'Archive — DOSSIER',
-  description: 'Browse every past edition of the DOSSIER weekly deals brief.',
+  title: 'Archive — Deal Dossier',
+  description: 'Browse every past edition of the Deal Dossier weekly deals brief.',
   openGraph: {
-    title: 'Archive — DOSSIER',
-    description: 'Browse every past edition of the DOSSIER weekly deals brief.',
+    title: 'Archive — Deal Dossier',
+    description: 'Browse every past edition of the Deal Dossier weekly deals brief.',
   },
 }
 
@@ -38,7 +38,7 @@ export default async function ArchivePage() {
             Past Issues
           </h1>
           <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.65, maxWidth: 480 }}>
-            Browse all past editions of DOSSIER. Free subscribers can access the last two weeks. Older issues are available to paid subscribers.
+            Browse all past editions of Deal Dossier. Free subscribers can access the last two weeks. Older issues are available to paid subscribers.
           </p>
         </div>
 
