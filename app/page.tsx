@@ -50,9 +50,9 @@ const SAMPLE_DEALS = [
 ]
 
 const MARQUEE_RETAILERS = [
-  'Nordstrom', 'Sephora', 'Crate & Barrel', 'Apple', 'Net-a-Porter',
-  'Restoration Hardware', 'Saks Fifth Avenue', 'Whole Foods', 'Delta',
-  'Home Depot', 'Equinox', 'Bluemercury', 'Nike', 'Target', 'Macy\'s',
+  'Uniqlo', 'Alo Yoga', 'Whole Foods', 'Warby Parker', 'Gap',
+  'Ralph Lauren', 'The Home Depot', 'Credo Beauty', 'Mango',
+  'Barnes & Noble', 'SOREL', 'Lands\' End', 'Nuna',
 ]
 
 export default function LandingPage() {
