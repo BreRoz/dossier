@@ -10,7 +10,7 @@ import { CategoryIcon } from '@/components/CategoryIcon'
 import { createClient } from '@/lib/supabase/client'
 import type { Category, DealType, SendDay, UserPreferences, GenderOption, SpendTier } from '@/types'
 import { ALL_CATEGORIES, FREE_CATEGORIES, CATEGORY_LABELS, DEAL_TYPE_LABELS } from '@/types'
-import type { RetailerSummary } from '@/app/api/retailers/route'
+import type { StoreRow } from '@/app/api/stores/route'
 
 const ALL_DEAL_TYPES: DealType[] = [
   'percent-off', 'bogo-free', 'bogo-half', 'free-item',
@@ -42,20 +42,10 @@ const SPEND_TIER_OPTIONS: { value: SpendTier; label: string; sub: string }[] = [
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="toggle" style={{ cursor: 'pointer' }}>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} style={{ opacity: 0, width: 0, height: 0 }} />
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: checked ? 'var(--ink)' : 'var(--ink-15)',
-        transition: 'background 0.2s',
-        cursor: 'pointer',
-      }} onClick={() => onChange(!checked)} />
-      <div style={{
-        position: 'absolute', top: 3, left: checked ? 21 : 3,
-        width: 16, height: 16, background: 'var(--paper)',
-        transition: 'left 0.2s',
-        pointerEvents: 'none',
-      }} />
+    <label className="toggle">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+      <div className="toggle-track" />
+      <div className="toggle-thumb" />
     </label>
   )
 }
@@ -84,7 +74,7 @@ export default function PreferencesPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [tier, setTier] = useState<'free' | 'paid'>('free')
-  const [retailers, setRetailers] = useState<RetailerSummary[]>([])
+  const [retailers, setRetailers] = useState<StoreRow[]>([])
   const [retailerSearch, setRetailerSearch] = useState('')
 
   const [prefs, setPrefs] = useState<UserPreferences>({
@@ -106,7 +96,7 @@ export default function PreferencesPage() {
 
       const [prefsRes, retailersRes] = await Promise.all([
         fetch('/api/preferences'),
-        fetch('/api/retailers'),
+        fetch('/api/stores'),
       ])
 
       if (prefsRes.ok) {
@@ -124,7 +114,7 @@ export default function PreferencesPage() {
 
       if (retailersRes.ok) {
         const data = await retailersRes.json()
-        setRetailers(data.retailers || [])
+        setRetailers(data.stores || [])
       }
 
       setLoading(false)
@@ -195,7 +185,7 @@ export default function PreferencesPage() {
     () =>
       retailers.filter((r) =>
         retailerSearch ? r.name.toLowerCase().includes(retailerSearch.toLowerCase()) : true
-      ),
+      ).sort((a, b) => a.name.localeCompare(b.name)),
     [retailers, retailerSearch]
   )
 
@@ -348,7 +338,6 @@ export default function PreferencesPage() {
                         onClick={() => toggleRetailer(r.name)}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          {/* Checkbox indicator */}
                           <div style={{
                             width: 18, height: 18, border: '1.5px solid',
                             borderColor: isSelected ? 'var(--ink)' : 'var(--ink-15)',
@@ -366,14 +355,12 @@ export default function PreferencesPage() {
                             {r.name}
                           </span>
                         </div>
-                        {r.potential_savings !== null && (
-                          <span style={{
-                            fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.12em',
-                            color: 'var(--ink-40)',
-                          }}>
-                            Up to {r.potential_savings}% off
-                          </span>
-                        )}
+                        <span style={{
+                          fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.12em',
+                          color: 'var(--ink-40)',
+                        }}>
+                          {r.spendTier}
+                        </span>
                       </div>
                     )
                   })
