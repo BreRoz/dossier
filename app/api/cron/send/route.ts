@@ -77,7 +77,18 @@ export async function GET(request: NextRequest) {
     .eq('week_of', weekOfStr)
 
   if (!allDeals || allDeals.length === 0) {
-    return NextResponse.json({ sent: 0, message: 'No deals found for this week' })
+    // Debug: check what week_of values exist in deals table
+    const { data: sampleDeals } = await supabase
+      .from('deals')
+      .select('week_of, retailer')
+      .limit(5)
+
+    return NextResponse.json({
+      sent: 0,
+      message: 'No deals found for this week',
+      queried_week_of: weekOfStr,
+      sample_deals_in_db: sampleDeals ?? [],
+    })
   }
 
   const deals = allDeals as Deal[]
