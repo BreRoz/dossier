@@ -51,6 +51,12 @@ RULES:
 - Dates should account for the current year if not specified
 - If the email is purely transactional (order confirmation, shipping notice) with no promotion, return empty array
 
+DO NOT EXTRACT:
+- Welcome offers, new customer offers, or first-order discounts (these are single-use and won't work for most readers)
+- Return policies, exchange policies, or free returns/exchanges (these are store policies, not deals)
+- Loyalty point notices or reward balance updates (not actionable deals)
+- Referral programs or "give $X, get $X" referral offers
+
 Return ONLY this exact JSON structure:
 {
   "deals": [

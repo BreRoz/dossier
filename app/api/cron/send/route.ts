@@ -11,6 +11,24 @@ export const maxDuration = 300
 
 const DAYS_OF_WEEK: SendDay[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
 
+// Fetch store name → website URL map from the stores sheet
+async function fetchStoreUrls(appUrl: string): Promise<Record<string, string>> {
+  try {
+    const res = await fetch(`${appUrl}/api/stores`, { next: { revalidate: 3600 } })
+    if (!res.ok) return {}
+    const { stores } = await res.json()
+    const map: Record<string, string> = {}
+    for (const store of stores ?? []) {
+      if (store.name && store.website) {
+        map[store.name.toLowerCase()] = store.website.startsWith('http') ? store.website : `https://${store.website}`
+      }
+    }
+    return map
+  } catch {
+    return {}
+  }
+}
+
 function verifyCronSecret(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization')
   if (!process.env.CRON_SECRET) return true
@@ -93,6 +111,9 @@ export async function GET(request: NextRequest) {
 
   const deals = allDeals as Deal[]
 
+  // Fetch store URLs once for all subscribers
+  const storeUrls = await fetchStoreUrls(appUrl)
+
   // Get subscribers who already received this edition
   const { data: alreadySent } = await supabase
     .from('sent_emails')
@@ -167,6 +188,7 @@ export async function GET(request: NextRequest) {
             enabledCategories: effectiveCategories,
             totalDeals: deals.length,
             appUrl,
+            storeUrls,
           })
 
           const result = await sendEmail({

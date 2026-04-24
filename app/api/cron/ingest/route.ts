@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
       await supabase
         .from('editions')
         .update({
-          emails_scanned: (existingEdition as any).emails_scanned + newEmails.length,
+          emails_scanned: ((existingEdition as any).emails_scanned ?? 0) + newEmails.length,
           deals_found: totalDeals,
           retailers_count: retailers.size,
         })
