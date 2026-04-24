@@ -71,7 +71,7 @@ function categorySection(category: Category, deals: Deal[], accent: string): str
   return `
 <tr><td style="height:40px;"></td></tr>
 <tr>
-  <td style="padding:0 48px;">
+  <td class="section-pad" style="padding:0 48px;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
       <tr>
         <td style="vertical-align:middle;padding-right:16px;width:1%;">
@@ -91,7 +91,7 @@ function categorySection(category: Category, deals: Deal[], accent: string): str
   </td>
 </tr>
 <tr>
-  <td style="padding:0 48px;">
+  <td class="section-pad" style="padding:0 48px;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
       ${ranked.map((d) => dealBlock(d, accent)).join('')}
     </table>
@@ -160,16 +160,29 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
 <!--[if mso]><style>* { font-family: Arial, sans-serif !important; }</style><![endif]-->
+<style type="text/css">
+  @media only screen and (max-width: 600px) {
+    .email-wrapper { padding: 16px 8px !important; }
+    .header-pad { padding: 16px 20px !important; }
+    .hero-pad { padding: 28px 20px 24px !important; }
+    .hero-title { font-size: 36px !important; line-height: 1.05 !important; }
+    .stat-cell { display: block !important; width: 100% !important; border-right: none !important; padding: 12px 20px !important; }
+    .section-pad { padding-left: 20px !important; padding-right: 20px !important; }
+    .footer-pad { padding: 20px !important; }
+    .footer-links { display: block !important; text-align: left !important; padding-top: 12px !important; }
+    .footer-links a { display: block !important; margin: 6px 0 0 0 !important; }
+  }
+</style>
 </head>
 <body style="margin:0;padding:0;background-color:oklch(88% 0.006 280);font-family:'Barlow',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
-<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:oklch(88% 0.006 280);padding:40px 20px;">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" class="email-wrapper" style="background-color:oklch(88% 0.006 280);padding:40px 20px;">
   <tr>
     <td align="center">
       <table width="680" cellpadding="0" cellspacing="0" role="presentation" style="max-width:680px;width:100%;background-color:oklch(98% 0.004 90);">
 
         <!-- HEADER -->
         <tr>
-          <td style="padding:32px 48px 24px;border-bottom:1px solid oklch(85% 0.008 280);">
+          <td class="header-pad" style="padding:32px 48px 24px;border-bottom:1px solid oklch(85% 0.008 280);">
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
               <tr>
                 <td style="vertical-align:middle;">
@@ -203,9 +216,9 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
 
         <!-- HERO -->
         <tr>
-          <td style="background-color:#0D0D0F;padding:48px 48px 40px;">
+          <td class="hero-pad" style="background-color:#0D0D0F;padding:48px 48px 40px;">
             <p style="font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.28em;text-transform:uppercase;color:${accent};margin:0 0 16px;">This Week's Brief</p>
-            <h1 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:52px;font-weight:300;letter-spacing:-0.02em;line-height:0.95;color:oklch(98% 0.004 90);margin:0 0 24px;">The <em style="font-style:italic;">finest</em><br>deals, curated.</h1>
+            <h1 class="hero-title" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:52px;font-weight:300;letter-spacing:-0.02em;line-height:0.95;color:oklch(98% 0.004 90);margin:0 0 24px;">The <em style="font-style:italic;">finest</em><br>deals, curated.</h1>
             <p style="font-family:'Barlow',Arial,sans-serif;font-size:14px;color:oklch(72% 0.005 280);line-height:1.6;margin:0;max-width:440px;">Your personalized weekly brief: ${dealsShown} deal${dealsShown !== 1 ? 's' : ''} across ${orderedCategories.length} categor${orderedCategories.length !== 1 ? 'ies' : 'y'}, curated for you.</p>
           </td>
         </tr>
@@ -215,19 +228,19 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
           <td style="border-bottom:1px solid oklch(85% 0.008 280);">
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
               <tr>
-                <td style="padding:24px 32px;border-right:1px solid oklch(85% 0.008 280);text-align:center;">
+                <td class="stat-cell" style="padding:24px 32px;border-right:1px solid oklch(85% 0.008 280);text-align:center;">
                   <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:300;line-height:1;letter-spacing:-0.02em;color:#0D0D0F;">${edition.emails_scanned}</div>
                   <div style="font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:oklch(62% 0.010 280);margin-top:4px;">Emails Scanned</div>
                 </td>
-                <td style="padding:24px 32px;border-right:1px solid oklch(85% 0.008 280);text-align:center;">
+                <td class="stat-cell" style="padding:24px 32px;border-right:1px solid oklch(85% 0.008 280);text-align:center;">
                   <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:300;line-height:1;letter-spacing:-0.02em;color:#0D0D0F;">${edition.deals_found}</div>
                   <div style="font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:oklch(62% 0.010 280);margin-top:4px;">Deals Found</div>
                 </td>
-                <td style="padding:24px 32px;border-right:1px solid oklch(85% 0.008 280);text-align:center;">
+                <td class="stat-cell" style="padding:24px 32px;border-right:1px solid oklch(85% 0.008 280);text-align:center;">
                   <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:300;line-height:1;letter-spacing:-0.02em;color:#0D0D0F;">${edition.retailers_count}</div>
                   <div style="font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:oklch(62% 0.010 280);margin-top:4px;">Retailers</div>
                 </td>
-                <td style="padding:24px 32px;text-align:center;">
+                <td class="stat-cell" style="padding:24px 32px;text-align:center;">
                   <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:300;line-height:1;letter-spacing:-0.02em;color:#0D0D0F;">${dealsShown}</div>
                   <div style="font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:oklch(62% 0.010 280);margin-top:4px;">Your Deals</div>
                 </td>
@@ -245,7 +258,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
         ${missingCategories.length > 0 ? `
         <tr><td style="height:40px;"></td></tr>
         <tr>
-          <td style="padding:0 48px 32px;">
+          <td class="section-pad" style="padding:0 48px 32px;">
             <div style="border-top:1px solid oklch(85% 0.008 280);padding-top:24px;">
               <p style="font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:oklch(62% 0.010 280);margin:0 0 12px;">No Deals This Week</p>
               ${missingCategories.map((c) => `<p style="font-family:'Barlow',Arial,sans-serif;font-size:13px;color:oklch(62% 0.010 280);margin:0 0 6px;line-height:1.5;">There are no deals for <strong>${CATEGORY_LABELS[c as Category]}</strong> this week. <a href="${preferencesUrl}" style="color:#0D0D0F;">Adjust preferences.</a></p>`).join('')}
@@ -256,7 +269,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
         <!-- UPGRADE BLOCK (free tier only) -->
         ${subscriber.tier === 'free' && dealsLocked > 0 ? `
         <tr>
-          <td style="padding:0 48px 48px;">
+          <td class="section-pad" style="padding:0 48px 48px;">
             <div style="background-color:oklch(94% 0.005 280);padding:32px;margin-top:8px;">
               <p style="font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.28em;text-transform:uppercase;color:${accent};margin:0 0 8px;">Unlock More</p>
               <h3 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;letter-spacing:-0.01em;color:#0D0D0F;margin:0 0 12px;">You're seeing ${dealsShown} deals. Unlock ${dealsLocked} more.</h3>
@@ -268,7 +281,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
 
         <!-- FOOTER -->
         <tr>
-          <td style="background-color:#0D0D0F;padding:32px 48px;">
+          <td class="footer-pad" style="background-color:#0D0D0F;padding:32px 48px;">
             <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
               <tr>
                 <td style="vertical-align:middle;">
@@ -289,7 +302,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
                     </tr>
                   </table>
                 </td>
-                <td style="vertical-align:middle;text-align:right;">
+                <td class="footer-links" style="vertical-align:middle;text-align:right;">
                   <a href="${archiveUrl}" style="font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:oklch(55% 0.01 280);text-decoration:none;margin-left:20px;">Archive</a>
                   <a href="${preferencesUrl}" style="font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:oklch(55% 0.01 280);text-decoration:none;margin-left:20px;">Preferences</a>
                   <a href="${unsubscribeUrl}" style="font-family:'Barlow Condensed',Arial Narrow,sans-serif;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:oklch(55% 0.01 280);text-decoration:none;margin-left:20px;">Unsubscribe</a>

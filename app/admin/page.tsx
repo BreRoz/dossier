@@ -98,7 +98,7 @@ export default async function AdminPage() {
   const { data: { user } } = await authClient.auth.getUser()
 
   const adminEmail = process.env.ADMIN_EMAIL
-  if (!user || (adminEmail && user.email !== adminEmail)) {
+  if (!user || !adminEmail || user.email !== adminEmail) {
     redirect('/')
   }
 
