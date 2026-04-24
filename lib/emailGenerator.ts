@@ -328,24 +328,20 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
       </td>
     </tr>
 
-    <!-- ── STATS BAR (4 cells) ── -->
+    <!-- ── STATS BAR (3 cells) ── -->
     <tr>
       <td style="border-bottom:1px solid ${C.ink15};">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
-            <td class="statcell" style="padding:16px 0;border-right:1px solid ${C.ink15};text-align:center;width:25%;">
+            <td class="statcell" style="padding:16px 0;border-right:1px solid ${C.ink15};text-align:center;width:33%;">
               <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;letter-spacing:-0.02em;line-height:1;color:${C.ink};">${emailsScanned}</div>
               <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:${C.ink40};line-height:1.3;margin-top:3px;">Emails<br>Scanned</div>
             </td>
-            <td class="statcell" style="padding:16px 0;border-right:1px solid ${C.ink15};text-align:center;width:25%;">
+            <td class="statcell" style="padding:16px 0;border-right:1px solid ${C.ink15};text-align:center;width:33%;">
               <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;letter-spacing:-0.02em;line-height:1;color:${C.ink};">${dealsFound}</div>
               <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:${C.ink40};line-height:1.3;margin-top:3px;">Deals<br>Found</div>
             </td>
-            <td class="statcell" style="padding:16px 0;border-right:1px solid ${C.ink15};text-align:center;width:25%;">
-              <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;letter-spacing:-0.02em;line-height:1;color:${C.ink};">${storesCovered}</div>
-              <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:${C.ink40};line-height:1.3;margin-top:3px;">Stores<br>Covered</div>
-            </td>
-            <td class="statcell" style="padding:16px 0;text-align:center;width:25%;">
+            <td class="statcell" style="padding:16px 0;text-align:center;width:33%;">
               <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;letter-spacing:-0.02em;line-height:1;color:${accent};">${dealsShown}</div>
               <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:${C.ink40};line-height:1.3;margin-top:3px;">Your<br>Deals</div>
             </td>
