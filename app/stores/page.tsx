@@ -245,7 +245,7 @@ export default function StoresPage() {
       if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false
       if (!spendFilter.includes(s.spendTier as SpendTier)) return false
       if (selectedCats.length > 0 && !selectedCats.includes(s.appCategory)) return false
-      if (selectedAge && s.ageGroup !== selectedAge) return false
+      if (selectedAge && !s.ageGroup.includes(selectedAge)) return false
       return true
     })
   }, [stores, search, spendFilter, selectedCats, selectedAge])
