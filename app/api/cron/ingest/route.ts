@@ -86,10 +86,20 @@ export async function GET(request: NextRequest) {
             is_manual: email.isManual,
           }
 
-          await supabase.from('deals').upsert(dealRow, {
-            onConflict: 'source_email_id,retailer',
-            ignoreDuplicates: false,
-          })
+          const { error: insertError } = await supabase.from('deals').insert(dealRow)
+          if (insertError) {
+            // If duplicate, try update instead
+            if (insertError.code === '23505') {
+              await supabase
+                .from('deals')
+                .update(dealRow)
+                .eq('source_email_id', dealRow.source_email_id)
+                .eq('retailer', dealRow.retailer)
+            } else {
+              console.error('Deal insert error:', JSON.stringify(insertError))
+              continue
+            }
+          }
 
           newDeals++
         }
