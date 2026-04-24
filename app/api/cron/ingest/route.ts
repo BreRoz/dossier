@@ -50,6 +50,8 @@ export async function GET(request: NextRequest) {
     const newEmails = emails.filter((e) => !processedIds.has(e.id))
 
     let newDeals = 0
+    let emailsWithDeals = 0
+    let emailsWithNoDeals = 0
     const processedEmailIds: string[] = []
 
     for (const email of newEmails) {
@@ -57,6 +59,9 @@ export async function GET(request: NextRequest) {
         // Small delay between OpenAI calls to avoid rate limiting
         await new Promise((r) => setTimeout(r, 500))
         const extracted = await extractDealsFromEmail(email.from, email.subject, email.body)
+        console.log(`[ingest] ${email.from} | subject: ${email.subject} | extracted: ${extracted.length}`)
+        if (extracted.length > 0) emailsWithDeals++
+        else emailsWithNoDeals++
 
         for (const deal of extracted) {
           // Skip deals with no real value
@@ -173,6 +178,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       emails_processed: newEmails.length,
+      emails_with_deals: emailsWithDeals,
+      emails_with_no_deals: emailsWithNoDeals,
       new_deals: newDeals,
       total_deals_this_week: totalDeals,
     })

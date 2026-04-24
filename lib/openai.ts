@@ -91,7 +91,8 @@ BODY: ${cleanBody}`
     if (!validated.success) return []
 
     return validated.data.deals
-  } catch {
+  } catch (err) {
+    console.error('OpenAI extraction error:', err)
     return []
   }
 }
