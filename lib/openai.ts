@@ -32,8 +32,9 @@ export type ExtractedDeal = z.infer<typeof DealSchema>
 
 const SYSTEM_PROMPT = `You are a deal extraction specialist for an editorial newsletter called DOSSIER.
 
-Extract all distinct deals from promotional emails. For each deal:
+Extract ALL deals and promotions from retail/promotional emails. Be inclusive — if there is any offer, discount, sale, code, or promotion, extract it.
 
+For each deal:
 1. RETAILER: The store/brand name (clean, no domain)
 2. DESCRIPTION: Clear, factual description of the deal (1–2 sentences, no hype)
 3. PERCENT_OFF: The discount percentage as a number (null if not a percentage deal)
@@ -44,14 +45,15 @@ Extract all distinct deals from promotional emails. For each deal:
 8. CATEGORIES: Array of relevant categories from: accessories, beauty, baby, entertainment, fashion, grocery, home, kids, shoes, restaurants, tools, tech, travel
 
 RULES:
-- If a retailer has multiple distinct deals, create separate entries for each
-- If a retailer spans multiple categories (e.g., Target has fashion AND grocery), assign ALL relevant categories
+- Extract any sale, discount, promo code, or special offer — even if the percentage is not stated
 - "Up to X% off" deals use deal_type "up-to" not "percent-off"
+- "Sale" or "event" with no stated percentage: use deal_type "flash-sale" and percent_off null
 - For BOGO deals, use bogo-free or bogo-half accordingly
-- Extract only genuine deals, not generic marketing copy
-- Be conservative: only extract deals with clear discount value
+- Free shipping promotions count as deals (deal_type "free-shipping")
+- If a retailer has multiple distinct deals, create separate entries for each
 - Promo codes should be exact as shown (uppercase)
-- Dates should account for the current year if not specified`
+- Dates should account for the current year if not specified
+- If the email is purely transactional (order confirmation, shipping notice) with no promotion, return empty array`
 
 export async function extractDealsFromEmail(
   from: string,
