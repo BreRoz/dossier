@@ -45,11 +45,35 @@ const CATEGORY_SYMBOLS: Record<Category, string> = {
   'travel':        '&#9698;',
 }
 
-// Get best link for a deal
+// Normalize for fuzzy matching — strip accents, punctuation, spaces
+function normalizeForLookup(name: string): string {
+  return name
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+}
+
+// Get best link for a retailer using tiered matching:
+// 1. Exact lowercase  2. Normalized (no punctuation/accents)
+// 3. Partial — storeUrls key starts with retailer's normalized name (e.g. "alo" matches "aloyoga")
+// 4. Partial — retailer's normalized name starts with a storeUrls key
+// 5. deal.original_link if not a Google search  6. Google search fallback
 function getRetailerLink(retailer: string, deal: Deal, storeUrls: Record<string, string>): string {
-  return storeUrls[retailer.toLowerCase()]
-    || (deal.original_link && !deal.original_link.includes('google.com/search') ? deal.original_link : null)
-    || `https://www.google.com/search?q=${encodeURIComponent(retailer)}`
+  const exact = storeUrls[retailer.toLowerCase()]
+  if (exact) return exact
+
+  const norm = normalizeForLookup(retailer)
+  const normMatch = storeUrls[norm]
+  if (normMatch) return normMatch
+
+  // Partial match against all keys
+  const keys = Object.keys(storeUrls)
+  const partial = keys.find(k => k.startsWith(norm) || norm.startsWith(k))
+  if (partial) return storeUrls[partial]
+
+  if (deal.original_link && !deal.original_link.includes('google.com/search')) return deal.original_link
+
+  return `https://www.google.com/search?q=${encodeURIComponent(retailer)}`
 }
 
 // ── Highlight key deal phrases in accent color ────────────────────────────────

@@ -11,7 +11,17 @@ export const maxDuration = 300
 
 const DAYS_OF_WEEK: SendDay[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
 
-// Fetch store name → website URL map from the stores sheet
+// Strip accents, punctuation, spaces for fuzzy matching
+// e.g. "BÉIS" → "beis", "White & Warren" → "whitewarren", "Alo Yoga" → "aloyoga"
+function normalizeStoreName(name: string): string {
+  return name
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove accents
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')                        // strip punctuation/spaces
+}
+
+// Fetch store name → website URL map from the stores sheet.
+// Indexes each store under multiple keys for fuzzy matching.
 async function fetchStoreUrls(appUrl: string): Promise<Record<string, string>> {
   try {
     const res = await fetch(`${appUrl}/api/stores`, { next: { revalidate: 3600 } })
@@ -19,9 +29,11 @@ async function fetchStoreUrls(appUrl: string): Promise<Record<string, string>> {
     const { stores } = await res.json()
     const map: Record<string, string> = {}
     for (const store of stores ?? []) {
-      if (store.name && store.website) {
-        map[store.name.toLowerCase()] = store.website.startsWith('http') ? store.website : `https://${store.website}`
-      }
+      if (!store.name || !store.website) continue
+      const url = store.website.startsWith('http') ? store.website : `https://${store.website}`
+      // Index by exact lowercase name AND normalized name
+      map[store.name.toLowerCase()] = url
+      map[normalizeStoreName(store.name)] = url
     }
     return map
   } catch {
