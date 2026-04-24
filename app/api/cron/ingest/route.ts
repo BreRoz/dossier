@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
   const weekOf = getCurrentWeekOf('thursday')
   const weekOfStr = format(weekOf, 'yyyy-MM-dd')
 
-  // Get emails from the last 2 hours (we run hourly)
-  const since = subHours(new Date(), 2)
+  // Get emails from the last 7 days for initial backfill
+  const since = subHours(new Date(), 168)
 
   try {
     const emails = await fetchPromotionalEmails(since)
