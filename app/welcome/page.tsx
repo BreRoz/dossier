@@ -123,7 +123,7 @@ export default function WelcomePage() {
                 fontFamily: 'var(--font-sans)', fontSize: 16,
                 color: 'var(--ink-70)', lineHeight: 1.7, marginBottom: 16,
               }}>
-                Every week, your personalized brief lands in your inbox — only the deals that meet your standards. No noise, no fluff. Just the good stuff.
+                Every week, your personalized brief lands in your inbox with only the deals that meet your standards. No noise, no fluff. Just the good stuff.
               </p>
               <p style={{
                 fontFamily: 'var(--font-sans)', fontSize: 16,

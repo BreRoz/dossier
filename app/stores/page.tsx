@@ -453,7 +453,7 @@ export default function StoresPage() {
                 fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.18em',
                 textTransform: 'uppercase', color: 'var(--ink-40)',
               }}>
-                Where people my age shop
+                Clothing for people my age
               </span>
               {(['', 'Kids', 'Teens', "20's", "30's", "40's", '50+'] as const).map((age) => {
                 const active = selectedAge === age
