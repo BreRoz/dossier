@@ -37,8 +37,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ sent: 0, message: `No subscribers for ${today}` })
   }
 
-  // Get this week's edition and deals
-  const weekOf = getCurrentWeekOf(today)
+  // Always use Thursday as the canonical week anchor (matches ingest)
+  const weekOf = getCurrentWeekOf('thursday')
   const weekOfStr = format(weekOf, 'yyyy-MM-dd')
 
   let { data: edition } = await supabase
