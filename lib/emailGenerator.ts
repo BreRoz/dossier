@@ -59,14 +59,15 @@ function dealRow(deal: Deal): string {
   return `
 <tr>
   <td style="padding:4px 0 2px;">
-    <p style="font-family:'Barlow',Arial,sans-serif;font-size:13px;color:${C.ink70};line-height:1.45;margin:0 0 5px;">${deal.description}</p>
-    ${deal.promo_code || expiry ? `
-    <table cellpadding="0" cellspacing="0" role="presentation">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
       <tr>
-        ${deal.promo_code ? `<td style="padding-right:10px;vertical-align:middle;"><span style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;border:1.5px solid ${C.ink};padding:2px 8px;color:${C.ink};display:inline-block;">${deal.promo_code}</span></td>` : ''}
-        ${expiry ? `<td style="vertical-align:middle;"><span style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:${C.ink40};">Ends ${expiry}</span></td>` : ''}
+        <td style="vertical-align:top;">
+          <p style="font-family:'Barlow',Arial,sans-serif;font-size:13px;color:${C.ink70};line-height:1.45;margin:0 0 5px;">${deal.description}</p>
+          ${expiry ? `<span style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:${C.ink40};">Ends ${expiry}</span>` : ''}
+        </td>
+        ${deal.promo_code ? `<td style="vertical-align:top;text-align:right;padding-left:12px;white-space:nowrap;"><span style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;border:1.5px solid ${C.ink};padding:2px 8px;color:${C.ink};display:inline-block;">${deal.promo_code}</span></td>` : ''}
       </tr>
-    </table>` : ''}
+    </table>
   </td>
 </tr>`
 }
@@ -124,7 +125,7 @@ function categorySection(
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
       <tr>
         <td style="vertical-align:middle;white-space:nowrap;padding-right:12px;">
-          <span style="font-size:13px;color:${accent};">${symbol}</span>&nbsp;<span style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:${accent};">${label}</span>
+          <span style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.3em;text-transform:uppercase;color:${accent};">${label}</span>
         </td>
         <td style="vertical-align:middle;width:100%;">
           <div style="height:1px;background:${C.ink15};"></div>
