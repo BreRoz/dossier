@@ -128,7 +128,7 @@ export function formatSavings(deal: Deal): string {
   if (deal.deal_type === 'bogo-free') return 'BOGO'
   if (deal.deal_type === 'bogo-half') return 'BOGO 50%'
   if (deal.deal_type === 'free-item') return 'Free'
-  if (deal.deal_type === 'free-shipping') return 'Free Ship'
+  if (deal.deal_type === 'free-shipping') return 'Free Shipping'
   if (deal.percent_off) return `${deal.percent_off}%`
   return deal.deal_type.replace('-', ' ')
 }
