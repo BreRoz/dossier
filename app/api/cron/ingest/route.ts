@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       .not('source_email_id', 'is', null)
 
     const processedIds = new Set((existing || []).map((d) => d.source_email_id))
-    const newEmails = emails.filter((e) => !processedIds.has(e.id))
+    const newEmails = emails.filter((e) => !processedIds.has(e.id)).slice(0, 50)
 
     let newDeals = 0
     let emailsWithDeals = 0
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     for (const email of newEmails) {
       try {
         // Small delay between OpenAI calls to avoid rate limiting
-        await new Promise((r) => setTimeout(r, 500))
+        await new Promise((r) => setTimeout(r, 100))
         const extracted = await extractDealsFromEmail(email.from, email.subject, email.body)
         console.log(`[ingest] ${email.from} | subject: ${email.subject} | extracted: ${extracted.length}`)
         if (extracted.length > 0) emailsWithDeals++
