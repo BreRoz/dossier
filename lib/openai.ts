@@ -49,7 +49,24 @@ RULES:
 - If a retailer has multiple distinct deals, create separate entries for each
 - Promo codes should be exact as shown (uppercase)
 - Dates should account for the current year if not specified
-- If the email is purely transactional (order confirmation, shipping notice) with no promotion, return empty array`
+- If the email is purely transactional (order confirmation, shipping notice) with no promotion, return empty array
+
+Return ONLY this exact JSON structure:
+{
+  "deals": [
+    {
+      "retailer": "Store Name",
+      "description": "Brief description of the deal",
+      "percent_off": 40,
+      "deal_type": "percent-off",
+      "promo_code": "CODE123",
+      "expiration_date": "2024-12-31",
+      "link": "https://example.com",
+      "categories": ["fashion"]
+    }
+  ]
+}
+Use null for any field that doesn't apply. percent_off must be a number or null.`
 
 export async function extractDealsFromEmail(
   from: string,
