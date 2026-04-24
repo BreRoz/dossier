@@ -286,263 +286,106 @@ export default function PreferencesPage() {
           </div>
         )}
 
-        {/* ── SECTION 2: Category OR Retailer Selector ─────────────── */}
-        <div style={{ marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
-          {subscriptionMode === 'retailer' && tier === 'paid' ? (
-            <>
-              <SectionHeader label="Retailers" />
-              <p style={{
-                fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
-                lineHeight: 1.5, marginBottom: 20, maxWidth: 480,
-              }}>
-                Select the specific retailers you want to receive deals from.{' '}
-                <span style={{ color: 'var(--ink)' }}>
-                  {(prefs.selected_retailers ?? []).length} selected
-                </span>
-              </p>
-
-              {/* Search */}
-              <input
-                type="text"
-                placeholder="Search retailers..."
-                value={retailerSearch}
-                onChange={(e) => setRetailerSearch(e.target.value)}
-                className="field-input"
-                style={{ maxWidth: 320, marginBottom: 16 }}
-              />
-
-              {/* Retailer list */}
-              <div style={{
-                display: 'flex', flexDirection: 'column', gap: 2,
-                maxHeight: 480, overflowY: 'auto',
-              }}>
-                {filteredRetailers.length === 0 ? (
-                  <p style={{
-                    fontFamily: 'var(--font-condensed)', fontSize: 11,
-                    letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)',
-                    padding: '16px 0',
-                  }}>
-                    No retailers found
-                  </p>
-                ) : (
-                  filteredRetailers.map((r) => {
-                    const isSelected = (prefs.selected_retailers ?? []).includes(r.name)
-                    return (
-                      <div
-                        key={r.name}
-                        style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '12px 16px', background: 'var(--ink-06)',
-                          cursor: 'pointer',
-                        }}
-                        onClick={() => toggleRetailer(r.name)}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <div style={{
-                            width: 18, height: 18, border: '1.5px solid',
-                            borderColor: isSelected ? 'var(--ink)' : 'var(--ink-15)',
-                            background: isSelected ? 'var(--ink)' : 'transparent',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            flexShrink: 0,
-                          }}>
-                            {isSelected && (
-                              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                                <path d="M1 4L4 7L9 1" stroke="var(--paper)" strokeWidth="1.5" strokeLinecap="square"/>
-                              </svg>
-                            )}
+        {/* ── ROW 1: Categories | Deal Types ───────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
+          {/* Left: Categories OR Retailer Selector */}
+          <div>
+            {subscriptionMode === 'retailer' && tier === 'paid' ? (
+              <>
+                <SectionHeader label="Retailers" />
+                <p style={{
+                  fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
+                  lineHeight: 1.5, marginBottom: 20,
+                }}>
+                  Select the specific retailers you want deals from.{' '}
+                  <span style={{ color: 'var(--ink)' }}>
+                    {(prefs.selected_retailers ?? []).length} selected
+                  </span>
+                </p>
+                <input
+                  type="text"
+                  placeholder="Search retailers..."
+                  value={retailerSearch}
+                  onChange={(e) => setRetailerSearch(e.target.value)}
+                  className="field-input"
+                  style={{ marginBottom: 16 }}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 480, overflowY: 'auto' }}>
+                  {filteredRetailers.length === 0 ? (
+                    <p style={{
+                      fontFamily: 'var(--font-condensed)', fontSize: 11,
+                      letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)',
+                      padding: '16px 0',
+                    }}>No retailers found</p>
+                  ) : (
+                    filteredRetailers.map((r) => {
+                      const isSelected = (prefs.selected_retailers ?? []).includes(r.name)
+                      return (
+                        <div
+                          key={r.name}
+                          onClick={() => toggleRetailer(r.name)}
+                          style={{
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            padding: '12px 16px', background: 'var(--ink-06)', cursor: 'pointer',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div style={{
+                              width: 18, height: 18, border: '1.5px solid', flexShrink: 0,
+                              borderColor: isSelected ? 'var(--ink)' : 'var(--ink-15)',
+                              background: isSelected ? 'var(--ink)' : 'transparent',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            }}>
+                              {isSelected && (
+                                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                  <path d="M1 4L4 7L9 1" stroke="var(--paper)" strokeWidth="1.5" strokeLinecap="square"/>
+                                </svg>
+                              )}
+                            </div>
+                            <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600 }}>{r.name}</span>
                           </div>
-                          <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600 }}>
-                            {r.name}
+                          <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.12em', color: 'var(--ink-40)' }}>
+                            {r.spendTier}
                           </span>
                         </div>
-                        <span style={{
-                          fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.12em',
-                          color: 'var(--ink-40)',
-                        }}>
-                          {r.spendTier}
-                        </span>
+                      )
+                    })
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <SectionHeader label="Categories" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {ALL_CATEGORIES.map((cat) => {
+                    const locked = tier === 'free' && !FREE_CATEGORIES.includes(cat)
+                    return (
+                      <div
+                        key={cat}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '12px 16px', background: locked ? 'transparent' : 'var(--ink-06)',
+                          opacity: locked ? 0.4 : 1,
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <CategoryIcon category={cat} size={18} />
+                          <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600 }}>
+                            {CATEGORY_LABELS[cat]}
+                          </span>
+                          {locked && (
+                            <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)' }}>
+                              Paid
+                            </span>
+                          )}
+                        </div>
+                        <Toggle checked={prefs.categories[cat]} onChange={() => toggleCategory(cat)} />
                       </div>
                     )
-                  })
-                )}
-              </div>
-            </>
-          ) : (
-            // Category mode (default for free + paid when mode = 'category')
-            <>
-              <SectionHeader
-                label="Categories"
-                tag={tier === 'free' ? undefined : undefined}
-              />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {ALL_CATEGORIES.map((cat) => {
-                  const locked = tier === 'free' && !FREE_CATEGORIES.includes(cat)
-                  return (
-                    <div
-                      key={cat}
-                      style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '12px 16px', background: locked ? 'transparent' : 'var(--ink-06)',
-                        opacity: locked ? 0.4 : 1,
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <CategoryIcon category={cat} size={18} />
-                        <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600 }}>
-                          {CATEGORY_LABELS[cat]}
-                        </span>
-                        {locked && (
-                          <span style={{
-                            fontFamily: 'var(--font-condensed)', fontSize: 9,
-                            letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)',
-                          }}>
-                            Paid
-                          </span>
-                        )}
-                      </div>
-                      <Toggle checked={prefs.categories[cat]} onChange={() => toggleCategory(cat)} />
-                    </div>
-                  )
-                })}
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* ── SECTION 3: Gender Filter (all users) ─────────────────── */}
-        <div style={{ marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
-          <SectionHeader label="Gender" />
-          <p style={{
-            fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
-            lineHeight: 1.5, marginBottom: 20, maxWidth: 480,
-          }}>
-            Only show deals relevant to the genders you shop for. Select all that apply.
-          </p>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {GENDER_OPTIONS.map(({ value, label }) => {
-              const active = (prefs.gender_filter ?? ['men', 'women', 'unisex']).includes(value)
-              return (
-                <button
-                  key={value}
-                  onClick={() => toggleGender(value)}
-                  style={{
-                    fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
-                    letterSpacing: '0.18em', textTransform: 'uppercase',
-                    padding: '10px 28px', border: '1.5px solid',
-                    borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
-                    background: active ? 'var(--ink)' : 'transparent',
-                    color: active ? 'var(--paper)' : 'var(--ink-40)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* ── SECTION 4: Spend Tier Filter (all users) ─────────────── */}
-        <div style={{ marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
-          <SectionHeader label="Spend Tier" />
-          <p style={{
-            fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
-            lineHeight: 1.5, marginBottom: 20, maxWidth: 480,
-          }}>
-            Filter deals by how much brands typically charge. Select all tiers you shop.
-          </p>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {SPEND_TIER_OPTIONS.map(({ value, label, sub }) => {
-              const active = (prefs.spend_tier_filter ?? ['$', '$$', '$$$', '$$$$']).includes(value)
-              return (
-                <button
-                  key={value}
-                  onClick={() => toggleSpendTier(value)}
-                  title={sub}
-                  style={{
-                    fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: 600,
-                    letterSpacing: '0.1em', padding: '10px 20px', border: '1.5px solid',
-                    borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
-                    background: active ? 'var(--ink)' : 'transparent',
-                    color: active ? 'var(--paper)' : 'var(--ink-40)',
-                    cursor: 'pointer',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                  }}
-                >
-                  <span>{label}</span>
-                  <span style={{ fontSize: 8, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.7 }}>{sub}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* ── Delivery Settings ────────────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
-          {/* Left: Zip + Send Day + Min Discount */}
-          <div>
-            {/* Zip code */}
-            <div style={{ marginBottom: 48, paddingBottom: 48, borderBottom: 'var(--rule)' }}>
-              <SectionHeader label="Zip Code" />
-              <input
-                type="text"
-                placeholder="10001"
-                value={prefs.zip_code || ''}
-                onChange={(e) => setPrefs((p) => ({ ...p, zip_code: e.target.value }))}
-                className="field-input"
-                style={{ maxWidth: 200 }}
-              />
-            </div>
-
-            {/* Send day */}
-            <div style={{ marginBottom: 48, paddingBottom: 48, borderBottom: 'var(--rule)' }}>
-              <SectionHeader label="Send Day" tag={tier === 'free' ? 'Paid Only' : undefined} />
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {SEND_DAYS.map(({ value, label }) => (
-                  <button
-                    key={value}
-                    disabled={tier === 'free' && value !== 'thursday'}
-                    onClick={() => tier === 'paid' && setPrefs((p) => ({ ...p, send_day: value }))}
-                    style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
-                      letterSpacing: '0.18em', textTransform: 'uppercase',
-                      padding: '8px 16px', border: '1.5px solid',
-                      borderColor: prefs.send_day === value ? 'var(--ink)' : 'var(--ink-15)',
-                      background: prefs.send_day === value ? 'var(--ink)' : 'transparent',
-                      color: prefs.send_day === value ? 'var(--paper)' : tier === 'free' && value !== 'thursday' ? 'var(--ink-15)' : 'var(--ink-40)',
-                      cursor: tier === 'free' ? 'default' : 'pointer',
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Minimum discount */}
-            <div>
-              <SectionHeader label="Minimum Discount" tag={tier === 'free' ? 'Paid Only' : undefined} />
-              <div style={{ display: 'flex', gap: 8 }}>
-                {[20, 30, 40, 50].map((v) => (
-                  <button
-                    key={v}
-                    disabled={tier === 'free' && v !== 40}
-                    onClick={() => tier === 'paid' && setPrefs((p) => ({ ...p, min_discount: v as 20 | 30 | 40 | 50 }))}
-                    style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
-                      letterSpacing: '0.18em', textTransform: 'uppercase',
-                      padding: '8px 20px', border: '1.5px solid',
-                      borderColor: prefs.min_discount === v ? 'var(--ink)' : 'var(--ink-15)',
-                      background: prefs.min_discount === v ? 'var(--ink)' : 'transparent',
-                      color: prefs.min_discount === v ? 'var(--paper)' : tier === 'free' && v !== 40 ? 'var(--ink-15)' : 'var(--ink-40)',
-                      cursor: tier === 'free' ? 'default' : 'pointer',
-                    }}
-                  >
-                    {v}%+
-                  </button>
-                ))}
-              </div>
-            </div>
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Right: Deal Types */}
@@ -566,6 +409,143 @@ export default function PreferencesPage() {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* ── ROW 2: Send Day | Spend Tier ─────────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
+          {/* Left: Send Day */}
+          <div>
+            <SectionHeader label="Send Day" tag={tier === 'free' ? 'Paid Only' : undefined} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {SEND_DAYS.map(({ value, label }) => (
+                <button
+                  key={value}
+                  disabled={tier === 'free' && value !== 'thursday'}
+                  onClick={() => tier === 'paid' && setPrefs((p) => ({ ...p, send_day: value }))}
+                  style={{
+                    fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
+                    letterSpacing: '0.18em', textTransform: 'uppercase',
+                    padding: '8px 16px', border: '1.5px solid',
+                    borderColor: prefs.send_day === value ? 'var(--ink)' : 'var(--ink-15)',
+                    background: prefs.send_day === value ? 'var(--ink)' : 'transparent',
+                    color: prefs.send_day === value ? 'var(--paper)' : tier === 'free' && value !== 'thursday' ? 'var(--ink-15)' : 'var(--ink-40)',
+                    cursor: tier === 'free' ? 'default' : 'pointer',
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Spend Tier */}
+          <div>
+            <SectionHeader label="Spend Tier" />
+            <p style={{
+              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
+              lineHeight: 1.5, marginBottom: 20,
+            }}>
+              Filter deals by how much brands typically charge.
+            </p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {SPEND_TIER_OPTIONS.map(({ value, label, sub }) => {
+                const active = (prefs.spend_tier_filter ?? ['$', '$$', '$$$', '$$$$']).includes(value)
+                return (
+                  <button
+                    key={value}
+                    onClick={() => toggleSpendTier(value)}
+                    title={sub}
+                    style={{
+                      fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: 600,
+                      letterSpacing: '0.1em', padding: '10px 20px', border: '1.5px solid',
+                      borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
+                      background: active ? 'var(--ink)' : 'transparent',
+                      color: active ? 'var(--paper)' : 'var(--ink-40)',
+                      cursor: 'pointer',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                    }}
+                  >
+                    <span>{label}</span>
+                    <span style={{ fontSize: 8, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.7 }}>{sub}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* ── ROW 3: Minimum Discount | Gender ─────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
+          {/* Left: Minimum Discount */}
+          <div>
+            <SectionHeader label="Minimum Discount" tag={tier === 'free' ? 'Paid Only' : undefined} />
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[20, 30, 40, 50].map((v) => (
+                <button
+                  key={v}
+                  disabled={tier === 'free' && v !== 40}
+                  onClick={() => tier === 'paid' && setPrefs((p) => ({ ...p, min_discount: v as 20 | 30 | 40 | 50 }))}
+                  style={{
+                    fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
+                    letterSpacing: '0.18em', textTransform: 'uppercase',
+                    padding: '8px 20px', border: '1.5px solid',
+                    borderColor: prefs.min_discount === v ? 'var(--ink)' : 'var(--ink-15)',
+                    background: prefs.min_discount === v ? 'var(--ink)' : 'transparent',
+                    color: prefs.min_discount === v ? 'var(--paper)' : tier === 'free' && v !== 40 ? 'var(--ink-15)' : 'var(--ink-40)',
+                    cursor: tier === 'free' ? 'default' : 'pointer',
+                  }}
+                >
+                  {v}%+
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Gender */}
+          <div>
+            <SectionHeader label="Gender" />
+            <p style={{
+              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
+              lineHeight: 1.5, marginBottom: 20,
+            }}>
+              Only show deals relevant to the genders you shop for.
+            </p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {GENDER_OPTIONS.map(({ value, label }) => {
+                const active = (prefs.gender_filter ?? ['men', 'women', 'unisex']).includes(value)
+                return (
+                  <button
+                    key={value}
+                    onClick={() => toggleGender(value)}
+                    style={{
+                      fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
+                      letterSpacing: '0.18em', textTransform: 'uppercase',
+                      padding: '10px 28px', border: '1.5px solid',
+                      borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
+                      background: active ? 'var(--ink)' : 'transparent',
+                      color: active ? 'var(--paper)' : 'var(--ink-40)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Zip Code ─────────────────────────────────────────────── */}
+        <div style={{ marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
+          <SectionHeader label="Zip Code" />
+          <input
+            type="text"
+            placeholder="10001"
+            value={prefs.zip_code || ''}
+            onChange={(e) => setPrefs((p) => ({ ...p, zip_code: e.target.value }))}
+            className="field-input"
+            style={{ maxWidth: 200 }}
+          />
         </div>
 
         {/* Save button bottom */}
