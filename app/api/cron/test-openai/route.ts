@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { extractDealsFromEmail } from '@/lib/openai'
+import OpenAI from 'openai'
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
@@ -8,23 +8,31 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const deals = await extractDealsFromEmail(
-      'Gap <promo@gap.com>',
-      '40% off everything this weekend only',
-      'Shop now and save 40% off your entire purchase. Use code SAVE40 at checkout. Offer ends Sunday.'
-    )
+    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'Extract deals from promotional emails. Return JSON with a "deals" array.',
+        },
+        {
+          role: 'user',
+          content: 'FROM: Gap <promo@gap.com>\nSUBJECT: 40% off everything this weekend\nBODY: Shop now and save 40% off your entire purchase. Use code SAVE40 at checkout. Offer ends Sunday.',
+        },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0,
+    })
+
+    const raw = response.choices[0]?.message?.content
     return NextResponse.json({
-      success: true,
-      deals,
-      openai_key_set: !!process.env.OPENAI_API_KEY,
-      openai_key_prefix: process.env.OPENAI_API_KEY?.slice(0, 7) ?? 'not set',
+      raw_response: raw,
+      parsed: raw ? JSON.parse(raw) : null,
+      model: response.model,
+      usage: response.usage,
     })
   } catch (err) {
-    return NextResponse.json({
-      success: false,
-      error: String(err),
-      openai_key_set: !!process.env.OPENAI_API_KEY,
-      openai_key_prefix: process.env.OPENAI_API_KEY?.slice(0, 7) ?? 'not set',
-    })
+    return NextResponse.json({ error: String(err) }, { status: 500 })
   }
 }
