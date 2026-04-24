@@ -52,9 +52,32 @@ function getRetailerLink(retailer: string, deal: Deal, storeUrls: Record<string,
     || `https://www.google.com/search?q=${encodeURIComponent(retailer)}`
 }
 
+// ── Highlight key deal phrases in accent color ────────────────────────────────
+function highlightDeal(text: string, accent: string): string {
+  const s = `font-weight:600;color:${accent};`
+  const wrap = (m: string) => `<span style="${s}">${m}</span>`
+
+  // Handle any <em> tags already in the text (future-proof)
+  let out = text.replace(/<em>(.*?)<\/em>/gi, (_, inner) => wrap(inner))
+
+  // Don't double-process if em tags were already found
+  if (out !== text) return out
+
+  // Regex patterns — ordered longest-match first
+  return out
+    .replace(/\bup to \d+%\s*off\b/gi, wrap)
+    .replace(/\b\d+%\s*off\b/gi, wrap)
+    .replace(/\bfree (?:standard |express |2-day |overnight )?(?:shipping|delivery)\b/gi, wrap)
+    .replace(/\bbuy (?:one|1),? get (?:one|1)(?: free| half[- ]off)?\b/gi, wrap)
+    .replace(/\bBOGO\b/g, wrap)
+    .replace(/\$\d+(?:\.\d+)?(?:\s*off| reward)\b/gi, wrap)
+    .replace(/\bfree item\b/gi, wrap)
+}
+
 // ── Single deal row ───────────────────────────────────────────────────────────
-function dealRow(deal: Deal): string {
+function dealRow(deal: Deal, accent: string): string {
   const expiry = formatExpiryDate(deal.expiration_date)
+  const description = highlightDeal(deal.description, accent)
 
   return `
 <tr>
@@ -62,7 +85,7 @@ function dealRow(deal: Deal): string {
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
       <tr>
         <td style="vertical-align:top;">
-          <p style="font-family:'Barlow',Arial,sans-serif;font-size:13px;color:${C.ink70};line-height:1.45;margin:0 0 5px;">${deal.description}</p>
+          <p style="font-family:'Barlow',Arial,sans-serif;font-size:13px;color:${C.ink70};line-height:1.45;margin:0 0 5px;">${description}</p>
           ${expiry ? `<span style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:${C.ink40};">Ends ${expiry}</span>` : ''}
         </td>
         ${deal.promo_code ? `<td style="vertical-align:top;text-align:right;padding-left:12px;white-space:nowrap;"><span style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;border:1.5px solid ${C.ink};padding:2px 8px;color:${C.ink};display:inline-block;">${deal.promo_code}</span></td>` : ''}
@@ -79,7 +102,8 @@ const EXT_ICON = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stro
 function storeBlock(
   retailer: string,
   deals: Deal[],
-  storeUrls: Record<string, string>
+  storeUrls: Record<string, string>,
+  accent: string
 ): string {
   const link = getRetailerLink(retailer, deals[0], storeUrls)
   const sourceLink = deals[0]?.source_email_link
@@ -90,7 +114,7 @@ function storeBlock(
     <a href="${link}" style="font-family:'Barlow',Arial,sans-serif;font-size:14px;font-weight:600;letter-spacing:-0.01em;color:${C.ink};text-decoration:none;display:block;margin-bottom:${sourceLink ? '2px' : '8px'};">${retailer}</a>
     ${sourceLink ? `<a href="${sourceLink}" style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:${C.ink40};text-decoration:none;display:block;margin-bottom:8px;">${EXT_ICON}&nbsp;Original email</a>` : ''}
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-      ${deals.map(d => dealRow(d)).join('')}
+      ${deals.map(d => dealRow(d, accent)).join('')}
     </table>
   </td>
 </tr>`
@@ -139,7 +163,7 @@ function categorySection(
 <tr>
   <td style="padding:0 40px;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-      ${groupEntries.map(([retailer, rDeals]) => storeBlock(retailer, rDeals, storeUrls)).join('')}
+      ${groupEntries.map(([retailer, rDeals]) => storeBlock(retailer, rDeals, storeUrls, accent)).join('')}
     </table>
   </td>
 </tr>`
