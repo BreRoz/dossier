@@ -295,6 +295,17 @@ export default function StoresPage() {
           }}>
             Every retail email we catch so you don&rsquo;t have to sort through them yourself.
           </p>
+          <p style={{ marginTop: 12 }}>
+            <a
+              href="#suggest"
+              style={{
+                fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.18em',
+                textTransform: 'uppercase', color: 'var(--accent)', textDecoration: 'none',
+              }}
+            >
+              Don&rsquo;t see a store you want? Request it here →
+            </a>
+          </p>
         </div>
 
         {/* Stats Cards */}
@@ -444,7 +455,7 @@ export default function StoresPage() {
               }}>
                 Where people my age shop
               </span>
-              {['', ...availableAgeGroups].map((age) => {
+              {(['', 'Kids', 'Teens', "20's", "30's", "40's", '50+'] as const).map((age) => {
                 const active = selectedAge === age
                 return (
                   <button
@@ -521,7 +532,7 @@ export default function StoresPage() {
         </div>{/* end .rtable */}
 
         {/* Suggest a store */}
-        <div style={{ marginTop: 64, paddingTop: 48, borderTop: 'var(--rule)' }}>
+        <div id="suggest" style={{ marginTop: 64, paddingTop: 48, borderTop: 'var(--rule)' }}>
           <p className="t-section" style={{ marginBottom: 12 }}>Suggest a Store</p>
           <h2 style={{
             fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 300,
