@@ -41,14 +41,34 @@ export async function GET(request: NextRequest) {
   const weekOf = getCurrentWeekOf(today)
   const weekOfStr = format(weekOf, 'yyyy-MM-dd')
 
-  const { data: edition } = await supabase
+  let { data: edition } = await supabase
     .from('editions')
     .select('*')
     .eq('week_of', weekOfStr)
     .single()
 
+  // Auto-create edition if it doesn't exist yet
   if (!edition) {
-    return NextResponse.json({ sent: 0, message: 'No edition found for this week' })
+    const { data: lastEdition } = await supabase
+      .from('editions')
+      .select('issue_number')
+      .order('issue_number', { ascending: false })
+      .limit(1)
+      .single()
+
+    const nextIssue = ((lastEdition?.issue_number ?? 0) + 1)
+
+    const { data: newEdition } = await supabase
+      .from('editions')
+      .insert({ week_of: weekOfStr, issue_number: nextIssue })
+      .select()
+      .single()
+
+    edition = newEdition
+  }
+
+  if (!edition) {
+    return NextResponse.json({ sent: 0, message: 'Failed to create edition' })
   }
 
   const { data: allDeals } = await supabase
