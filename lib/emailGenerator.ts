@@ -167,23 +167,44 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
   const issueNum = edition.issue_number ? `Issue No. ${edition.issue_number}` : 'Weekly Edition'
   const issueDate = format(weekOf, 'MMMM d, yyyy')
 
-  // Group deals by category (deduplicated per category)
+  // Assign each retailer to exactly one category (the one with the most of their deals,
+  // falling back to the first enabled category). This prevents Bloomingdale's etc.
+  // from appearing under every category they're tagged with.
   const byCategory: Partial<Record<Category, Deal[]>> = {}
+
+  // Group all deals by retailer first
+  const byRetailer = new Map<string, Deal[]>()
   for (const deal of deals) {
-    for (const cat of deal.categories) {
-      if (enabledCategories.includes(cat as Category)) {
-        if (!byCategory[cat as Category]) byCategory[cat as Category] = []
-        byCategory[cat as Category]!.push(deal)
+    if (!byRetailer.has(deal.retailer)) byRetailer.set(deal.retailer, [])
+    byRetailer.get(deal.retailer)!.push(deal)
+  }
+
+  for (const [, retailerDeals] of byRetailer) {
+    // Count how many deals each enabled category has for this retailer
+    const catCounts: Partial<Record<Category, number>> = {}
+    for (const deal of retailerDeals) {
+      for (const cat of deal.categories) {
+        if (enabledCategories.includes(cat as Category)) {
+          catCounts[cat as Category] = (catCounts[cat as Category] ?? 0) + 1
+        }
       }
     }
-  }
-  for (const cat of Object.keys(byCategory) as Category[]) {
+    if (Object.keys(catCounts).length === 0) continue
+
+    // Pick the category with the highest count (ties broken by ALL_CATEGORIES order)
+    const primaryCat = ALL_CATEGORIES.find(
+      (c) => catCounts[c] === Math.max(...Object.values(catCounts) as number[])
+    )!
+
+    if (!byCategory[primaryCat]) byCategory[primaryCat] = []
+    // Add all of this retailer's deals (deduplicated by id) to the primary category
     const seen = new Set<string>()
-    byCategory[cat] = byCategory[cat]!.filter((d) => {
-      if (seen.has(d.id)) return false
-      seen.add(d.id)
-      return true
-    })
+    for (const deal of retailerDeals) {
+      if (!seen.has(deal.id)) {
+        seen.add(deal.id)
+        byCategory[primaryCat]!.push(deal)
+      }
+    }
   }
 
   const orderedCategories = ALL_CATEGORIES.filter(
