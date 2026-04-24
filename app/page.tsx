@@ -81,6 +81,15 @@ export default function LandingPage() {
       if (!res.ok) {
         setError(data.error || 'Something went wrong. Please try again.')
       } else {
+        // Send magic link so they can set preferences right away
+        await fetch('/api/auth/magic-link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            redirectTo: `${window.location.origin}/auth/callback`,
+          }),
+        })
         setSubmitted(true)
       }
     } catch {
@@ -124,7 +133,7 @@ export default function LandingPage() {
             }}>
               <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase', color: accent, marginBottom: 8 }}>Check your inbox</p>
               <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-70)', lineHeight: 1.6 }}>
-                We sent a magic link to <strong style={{ color: 'var(--ink)' }}>{email}</strong>. Click it to confirm your subscription.
+                We sent a sign-in link to <strong style={{ color: 'var(--ink)' }}>{email}</strong>. Click it to set up your preferences and get your first brief.
               </p>
             </div>
           ) : (
