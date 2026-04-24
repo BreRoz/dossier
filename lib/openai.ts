@@ -9,19 +9,15 @@ function getClient() {
 const DealSchema = z.object({
   retailer: z.string(),
   description: z.string(),
-  percent_off: z.number().nullable(),
+  percent_off: z.number().nullable().optional(),
   deal_type: z.enum([
     'percent-off', 'bogo-free', 'bogo-half', 'free-item',
     'free-shipping', 'flash-sale', 'stackable', 'loyalty', 'up-to'
-  ]),
-  promo_code: z.string().nullable(),
-  expiration_date: z.string().nullable(), // ISO date string YYYY-MM-DD
-  link: z.string().url().nullable(),
-  categories: z.array(z.enum([
-    'accessories', 'beauty', 'baby', 'entertainment',
-    'fashion', 'grocery', 'home', 'kids', 'shoes',
-    'restaurants', 'tools', 'tech', 'travel'
-  ])),
+  ]).catch('flash-sale'),
+  promo_code: z.string().nullable().optional(),
+  expiration_date: z.string().nullable().optional(),
+  link: z.string().nullable().optional(),
+  categories: z.array(z.string()).catch([]),
 })
 
 const ExtractionSchema = z.object({
@@ -89,8 +85,13 @@ BODY: ${cleanBody}`
     if (!content) return []
 
     const parsed = JSON.parse(content)
+    console.log('OpenAI raw response:', JSON.stringify(parsed).slice(0, 500))
+
     const validated = ExtractionSchema.safeParse(parsed)
-    if (!validated.success) return []
+    if (!validated.success) {
+      console.error('Zod validation failed:', JSON.stringify(validated.error.issues))
+      return []
+    }
 
     return validated.data.deals
   } catch (err) {
