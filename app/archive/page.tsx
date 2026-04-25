@@ -38,7 +38,7 @@ export default async function ArchivePage() {
             Past Issues
           </h1>
           <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.65, maxWidth: 480 }}>
-            Browse all past editions of Deal Dossier. Free subscribers can access the last two weeks. Older issues are available to paid subscribers.
+            Browse every past edition of Deal Dossier.
           </p>
         </div>
 
@@ -49,10 +49,8 @@ export default async function ArchivePage() {
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 1, background: 'var(--ink-15)' }}>
-            {allEditions.map((edition, i) => {
+            {allEditions.map((edition) => {
               const weekDate = parseISO(edition.week_of)
-              const isRecent = i < 2 // Free access for last 2 weeks
-              const isBlurred = !isRecent
 
               return (
                 <Link
@@ -63,24 +61,7 @@ export default async function ArchivePage() {
                   <div style={{
                     background: 'var(--paper)', padding: '40px 36px',
                     transition: 'background 0.15s', cursor: 'pointer',
-                    filter: isBlurred ? 'blur(0)' : 'none',
                   }}>
-                    {isBlurred && (
-                      <div style={{
-                        position: 'absolute', inset: 0, background: 'rgba(247,246,243,0.85)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1,
-                      }}>
-                        <div style={{ textAlign: 'center' }}>
-                          <p className="t-meta" style={{ marginBottom: 8 }}>Paid Subscribers Only</p>
-                          <Link href="/upgrade" style={{
-                            fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-                            letterSpacing: '0.18em', textTransform: 'uppercase',
-                            background: 'var(--ink)', color: 'var(--paper)',
-                            padding: '8px 20px', textDecoration: 'none', display: 'inline-block',
-                          }}>Upgrade</Link>
-                        </div>
-                      </div>
-                    )}
 
                     <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
                       {edition.issue_number ? `Issue No. ${edition.issue_number}` : 'Weekly Brief'}

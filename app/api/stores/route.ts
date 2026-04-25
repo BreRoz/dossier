@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
-// Cache the sheet for 1 hour — it doesn't change that often
-export const revalidate = 3600
+// Revalidate every 5 minutes so sheet changes show up quickly
+export const revalidate = 300
 
 const SHEET_ID = process.env.STORES_SHEET_ID ||
   '1a_JG57qg8HLuAIqatEzKda47BPjnMGBzng0NijHF90I'
@@ -136,12 +136,14 @@ export async function GET() {
     const iName    = idx('company name')
     const iCat     = idx('category')
     const iWeb     = idx('website')
-    const iTier    = idx('spend tier')
-    const iShips   = idx('ships to lower 48?')
+    // Column may be named 'spend tier', 'spend', or 'live' depending on sheet edits
+    const iTier    = idx('spend tier') >= 0 ? idx('spend tier') : idx('spend') >= 0 ? idx('spend') : idx('live')
+    // Column was renamed — try both variants
+    const iShips   = idx('ships lower 48?') >= 0 ? idx('ships lower 48?') : idx('ships to lower 48?')
     const iSub     = idx('subcategory')
     const iHQ      = idx('hq')
-    const iCity    = idx('city')
-    const iState   = idx('state')
+    const iCity    = idx('city')    // may be -1 if column removed
+    const iState   = idx('state')   // may be -1 if column removed
     const iDate    = idx('date added')
     const iStatus  = idx('status')
     const iNotes   = idx('notes')
@@ -164,7 +166,7 @@ export async function GET() {
         appCategory:  mapCategory(cat, subcat),
         subcategory:  subcat,
         website:      r[iWeb]    ?? '',
-        spendTier:    r[iTier]   ?? '$',
+        spendTier:    r[iTier]?.trim() || '$',
         shipsLower48: (r[iShips] ?? '').toLowerCase() === 'yes',
         hq:           r[iHQ]    ?? '',
         city:         r[iCity]  ?? '',
