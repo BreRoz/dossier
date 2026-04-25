@@ -574,18 +574,6 @@ export default function PreferencesPage() {
           </div>
         </div>
 
-        {/* ── Zip Code ─────────────────────────────────────────────── */}
-        <div style={{ marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
-          <SectionHeader label="Zip Code" />
-          <input
-            type="text"
-            placeholder="10001"
-            value={prefs.zip_code || ''}
-            onChange={(e) => setPrefs((p) => ({ ...p, zip_code: e.target.value }))}
-            className="field-input"
-            style={{ maxWidth: 200 }}
-          />
-        </div>
 
         {/* Save button bottom */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 24, alignItems: 'center' }}>

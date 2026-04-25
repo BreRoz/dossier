@@ -16,7 +16,7 @@ export default function PrivacyPage() {
         {[
           {
             title: 'Information We Collect',
-            body: `We collect your email address when you subscribe to Deal Dossier. Optionally, you may provide your zip code to help us tailor deals to your region. We also collect your category and deal-type preferences when you configure your account.`,
+            body: `We collect your email address when you subscribe to Deal Dossier. We also collect your category, deal-type, and retailer preferences when you configure your account.`,
           },
           {
             title: 'How We Use Your Information',

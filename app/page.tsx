@@ -57,7 +57,6 @@ const MARQUEE_RETAILERS = [
 
 export default function LandingPage() {
   const [email, setEmail] = useState('')
-  const [zip, setZip] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -74,7 +73,7 @@ export default function LandingPage() {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, zip_code: zip }),
+        body: JSON.stringify({ email }),
       })
       const data = await res.json()
 
@@ -162,14 +161,6 @@ export default function LandingPage() {
                   {submitting ? 'Sending...' : 'Subscribe'}
                 </button>
               </div>
-              <input
-                type="text"
-                placeholder="Zip code (optional)"
-                value={zip}
-                onChange={(e) => setZip(e.target.value)}
-                className="field-input"
-                style={{ marginBottom: 12 }}
-              />
               {error && (
                 <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'oklch(50% 0.2 20)', marginBottom: 8 }}>{error}</p>
               )}

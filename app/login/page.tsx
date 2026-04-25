@@ -8,7 +8,6 @@ export const dynamic = 'force-dynamic'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
-  const [zip, setZip] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
@@ -25,7 +24,7 @@ export default function LoginPage() {
       await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, zip_code: zip }),
+        body: JSON.stringify({ email }),
       })
 
       // Generate magic link via Supabase admin + send via Resend
@@ -106,18 +105,6 @@ export default function LoginPage() {
                     placeholder="your@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="field-input"
-                  />
-                </div>
-                <div style={{ marginBottom: 24 }}>
-                  <label style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)', display: 'block', marginBottom: 8 }}>
-                    Zip Code (optional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="10001"
-                    value={zip}
-                    onChange={(e) => setZip(e.target.value)}
                     className="field-input"
                   />
                 </div>
