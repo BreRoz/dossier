@@ -74,6 +74,11 @@ export default function PreferencesPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [tier, setTier] = useState<'free' | 'paid'>('free')
+  const [showChangeEmail, setShowChangeEmail] = useState(false)
+  const [newEmail, setNewEmail] = useState('')
+  const [emailMsg, setEmailMsg] = useState('')
+  const [deletingAccount, setDeletingAccount] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState('')
   const [retailers, setRetailers] = useState<StoreRow[]>([])
   const [retailerSearch, setRetailerSearch] = useState('')
 
@@ -134,6 +139,32 @@ export default function PreferencesPage() {
       if (res.ok) setSaved(true)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleChangeEmail = async () => {
+    if (!newEmail || !newEmail.includes('@')) { setEmailMsg('Please enter a valid email address.'); return }
+    const { error } = await supabase.auth.updateUser({ email: newEmail })
+    if (error) {
+      setEmailMsg(error.message)
+    } else {
+      setEmailMsg('Check your new email address for a confirmation link. Your email will update once confirmed.')
+      setNewEmail('')
+      setShowChangeEmail(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm.toLowerCase() !== 'delete') { return }
+    setDeletingAccount(true)
+    try {
+      const res = await fetch('/api/account/delete', { method: 'DELETE' })
+      if (res.ok) {
+        await supabase.auth.signOut()
+        router.push('/?deleted=1')
+      }
+    } finally {
+      setDeletingAccount(false)
     }
   }
 
@@ -570,6 +601,93 @@ export default function PreferencesPage() {
           <button onClick={handleSave} disabled={saving} className="btn-primary">
             {saving ? 'Saving...' : 'Save Preferences'}
           </button>
+        </div>
+
+        {/* ── Account ───────────────────────────────────────────────── */}
+        <div style={{ marginTop: 80, paddingTop: 40, borderTop: 'var(--rule)' }}>
+          <SectionHeader label="Account" />
+
+          {/* Change Email */}
+          <div style={{ marginBottom: 32 }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-70)', marginBottom: 12 }}>
+              Update the email address your weekly brief is sent to.
+            </p>
+            {!showChangeEmail ? (
+              <button
+                onClick={() => setShowChangeEmail(true)}
+                style={{
+                  fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
+                  letterSpacing: '0.18em', textTransform: 'uppercase',
+                  padding: '10px 24px', border: '1.5px solid var(--ink-15)',
+                  background: 'transparent', color: 'var(--ink-70)', cursor: 'pointer',
+                }}
+              >
+                Change Email
+              </button>
+            ) : (
+              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <input
+                  type="email"
+                  placeholder="new@email.com"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  className="field-input"
+                  style={{ maxWidth: 280 }}
+                />
+                <button onClick={handleChangeEmail} className="btn-primary" style={{ flexShrink: 0 }}>
+                  Send Confirmation
+                </button>
+                <button
+                  onClick={() => { setShowChangeEmail(false); setNewEmail(''); setEmailMsg('') }}
+                  style={{
+                    fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.18em',
+                    textTransform: 'uppercase', padding: '10px 16px', border: 'none',
+                    background: 'transparent', color: 'var(--ink-40)', cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+            {emailMsg && (
+              <p style={{ fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-40)', marginTop: 8 }}>
+                {emailMsg}
+              </p>
+            )}
+          </div>
+
+          {/* Delete Account */}
+          <div style={{ paddingTop: 24, borderTop: '1px solid var(--ink-06)' }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)', marginBottom: 12 }}>
+              Permanently delete your account and all preferences. This cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                type="text"
+                placeholder='Type "delete" to confirm'
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                className="field-input"
+                style={{ maxWidth: 240 }}
+              />
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirm.toLowerCase() !== 'delete' || deletingAccount}
+                style={{
+                  fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
+                  letterSpacing: '0.18em', textTransform: 'uppercase',
+                  padding: '10px 24px', border: '1.5px solid',
+                  borderColor: deleteConfirm.toLowerCase() === 'delete' ? '#c0392b' : 'var(--ink-15)',
+                  background: deleteConfirm.toLowerCase() === 'delete' ? '#c0392b' : 'transparent',
+                  color: deleteConfirm.toLowerCase() === 'delete' ? '#fff' : 'var(--ink-40)',
+                  cursor: deleteConfirm.toLowerCase() === 'delete' ? 'pointer' : 'default',
+                  opacity: deletingAccount ? 0.6 : 1,
+                }}
+              >
+                {deletingAccount ? 'Deleting...' : 'Delete Account'}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

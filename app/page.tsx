@@ -391,7 +391,7 @@ export default function LandingPage() {
         <footer style={{ padding: '48px 0', display: 'flex', alignItems: 'center', gap: 32, borderTop: 'var(--rule)' }}>
           <DossierLogo size={18} wordmarkSize={14} />
           <ul style={{ display: 'flex', gap: 24, listStyle: 'none', marginLeft: 32, padding: 0 }}>
-            {[['Archive', '/archive'], ['Privacy', '/privacy'], ['Support', '/support'], ['About', '#how-it-works']].map(([l, h]) => (
+            {[['Archive', '/archive'], ['Privacy', '/privacy'], ['About', '#how-it-works']].map(([l, h]) => (
               <li key={l}>
                 <a href={h} style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-40)', textDecoration: 'none' }}>{l}</a>
               </li>
