@@ -40,13 +40,41 @@ const SPEND_TIER_OPTIONS: { value: SpendTier; label: string; sub: string }[] = [
   { value: '$$$$', label: '$$$$', sub: 'Luxury' },
 ]
 
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  checked,
+  onChange,
+  locked = false,
+  lockedTitle = 'Upgrade to paid to change this setting',
+}: {
+  checked: boolean
+  onChange: (v: boolean) => void
+  locked?: boolean
+  lockedTitle?: string
+}) {
   return (
-    <label className="toggle">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
-      <div className="toggle-track" />
-      <div className="toggle-thumb" />
-    </label>
+    <button
+      onClick={() => !locked && onChange(!checked)}
+      title={locked ? lockedTitle : checked ? 'On — click to turn off' : 'Off — click to turn on'}
+      style={{
+        width: 36, height: 20, borderRadius: 10, border: 'none', padding: 0,
+        background: locked ? 'var(--ink-15)' : checked ? 'var(--ink)' : 'var(--ink-15)',
+        cursor: locked ? 'not-allowed' : 'pointer',
+        position: 'relative', flexShrink: 0, transition: 'background 0.2s',
+        opacity: locked ? 0.5 : 1,
+      }}
+    >
+      <span style={{
+        position: 'absolute', top: 2,
+        left: checked && !locked ? 18 : 2,
+        width: 16, height: 16, borderRadius: '50%',
+        background: 'var(--paper)',
+        transition: 'left 0.2s',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 8,
+      }}>
+        {locked ? '🔒' : ''}
+      </span>
+    </button>
   )
 }
 
@@ -418,7 +446,12 @@ export default function PreferencesPage() {
                             </span>
                           )}
                         </div>
-                        <Toggle checked={prefs.categories[cat]} onChange={() => toggleCategory(cat)} />
+                        <Toggle
+                          checked={prefs.categories[cat]}
+                          onChange={() => toggleCategory(cat)}
+                          locked={locked}
+                          lockedTitle="Upgrade to paid to unlock this category"
+                        />
                       </div>
                     )
                   })}
@@ -443,7 +476,12 @@ export default function PreferencesPage() {
                   <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600 }}>
                     {DEAL_TYPE_LABELS[dt]}
                   </span>
-                  <Toggle checked={prefs.deal_types[dt]} onChange={() => toggleDealType(dt)} />
+                  <Toggle
+                    checked={prefs.deal_types[dt]}
+                    onChange={() => toggleDealType(dt)}
+                    locked={tier === 'free'}
+                    lockedTitle="Upgrade to paid to filter by deal type"
+                  />
                 </div>
               ))}
             </div>
