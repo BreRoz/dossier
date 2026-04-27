@@ -137,8 +137,11 @@ export default function LandingPage() {
           padding: 20px 40px 0; overflow: hidden;
         }
         .rd-label {
-          text-align: center; flex-shrink: 0;
           font-family: var(--font-condensed); font-size: 11px; letter-spacing: 0.28em;
+        }
+        .rd-label-row {
+          width: 100%; display: flex; align-items: flex-start;
+          justify-content: space-between; flex-shrink: 0;
         }
 
         /* ── HEADLINE ── */
@@ -342,6 +345,7 @@ export default function LandingPage() {
           .rd-nav { padding: 16px 20px; }
           .rd-nav-hide { display: none; }
           .rd-nav-stats { display: none; }
+          .rd-label-stats { display: none; }
           .rd-headline-area { padding: 14px 20px 0; }
           .rd-hl { font-size: min(10vw, calc((100dvh - 200px) / 5.5)); }
           .rd-hl-line { white-space: normal; flex-wrap: wrap; }
@@ -397,29 +401,32 @@ export default function LandingPage() {
             <Link href="/archive"      className="rd-nav-link rd-nav-hide">ARCHIVE</Link>
             <Link href="/stores"       className="rd-nav-link rd-nav-hide">STORES</Link>
             <Link href="/preferences"  className="rd-nav-link rd-nav-hide">SETTINGS</Link>
-            <div className="rd-nav-stats">
-              {edition ? (
-                <>
-                  <div className="rd-nav-stats-week">
-                    <SplitFlapLine text={`WEEK OF ${new Date(edition.week_of + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase()}`} />
-                  </div>
-                  <div className="rd-nav-stats-row">
-                    <span><SplitFlapLine text={`${edition.deals_found} DEALS`} /></span>
-                    <span><SplitFlapLine text={`${edition.retailers_count} RETAILERS`} /></span>
-                    <span><SplitFlapLine text={`${edition.emails_scanned} SCANNED`} /></span>
-                  </div>
-                </>
-              ) : (
-                <div className="rd-nav-stats-week" style={{ opacity: 0.3 }}>WEEKLY BRIEF</div>
-              )}
-            </div>
             <Link href="/login" className="rd-nav-link">SIGN IN</Link>
           </nav>
 
           {/* HEADLINE AREA */}
           <div className="rd-headline-area">
 
-            <div className="rd-label">( DEAL DOSSIER )</div>
+            {/* Label row: ( DEAL DOSSIER ) left · stats right */}
+            <div className="rd-label-row">
+              <div className="rd-label">( DEAL DOSSIER )</div>
+              <div className="rd-nav-stats rd-label-stats">
+                {edition ? (
+                  <>
+                    <div className="rd-nav-stats-week">
+                      <SplitFlapLine text={`WEEK OF ${new Date(edition.week_of + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase()}`} />
+                    </div>
+                    <div className="rd-nav-stats-row">
+                      <span><SplitFlapLine text={`${edition.deals_found} DEALS`} /></span>
+                      <span><SplitFlapLine text={`${edition.retailers_count} RETAILERS`} /></span>
+                      <span><SplitFlapLine text={`${edition.emails_scanned} SCANNED`} /></span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="rd-nav-stats-week" style={{ opacity: 0.3 }}>WEEKLY BRIEF</div>
+                )}
+              </div>
+            </div>
 
             {/* Giant headline */}
             <div className="rd-hl">
