@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { DossierLogo } from '@/components/DossierLogo'
 
 export const dynamic = 'force-dynamic'
 
@@ -54,12 +53,15 @@ export default function LoginPage() {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--paper)' }}>
       {/* Nav */}
       <nav style={{
-        height: 56, display: 'flex', alignItems: 'center', padding: '0 60px',
-        borderBottom: 'var(--rule)',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '20px 40px', borderBottom: '1px solid rgba(10,10,10,0.12)',
+        background: '#f7f6f3',
       }}>
-        <Link href="/" style={{ textDecoration: 'none' }}>
-          <DossierLogo size={22} wordmarkSize={18} />
-        </Link>
+        {[['HOME','/'],['ARCHIVE','/archive'],['STORES','/stores'],['SETTINGS','/preferences']].map(([l,h]) => (
+          <Link key={l} href={h} style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.22em', textDecoration: 'none', color: '#0a0a0a' }}>{l}</Link>
+        ))}
+        <div style={{ flex: 1 }} />
+        <Link href="/login" style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.22em', textDecoration: 'none', color: '#0a0a0a', borderBottom: '1px solid #0a0a0a', paddingBottom: 2 }}>SIGN IN</Link>
       </nav>
 
       {/* Content */}

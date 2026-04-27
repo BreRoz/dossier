@@ -4,7 +4,7 @@ import { Nav } from '@/components/Nav'
 export default function PrivacyPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
-      <Nav showSubscribe />
+      <Nav />
 
       <div className="wrap" style={{ paddingTop: 80, paddingBottom: 120, maxWidth: 720 }}>
         <p className="t-section" style={{ marginBottom: 16 }}>Legal</p>

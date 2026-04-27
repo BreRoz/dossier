@@ -63,7 +63,7 @@ export default async function ArchiveWeekPage({ params }: Props) {
 
   return (
     <div style={{ minHeight: '100vh', background: 'oklch(88% 0.006 280)' }}>
-      <Nav showSubscribe />
+      <Nav />
 
       {/* Email render */}
       <div className="remail-wrap" style={{ padding: '40px 20px 80px', display: 'flex', justifyContent: 'center' }}>

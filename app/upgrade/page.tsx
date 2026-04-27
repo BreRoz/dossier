@@ -13,7 +13,7 @@ export const metadata = {
 export default function UpgradePage() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
-      <Nav showSubscribe />
+      <Nav />
 
       <div className="wrap" style={{ paddingTop: 80, paddingBottom: 120 }}>
 
