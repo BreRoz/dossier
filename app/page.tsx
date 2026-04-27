@@ -171,7 +171,7 @@ export default function LandingPage() {
           letter-spacing: 0.04em; color: rgba(10,10,10,0.75);
           text-transform: uppercase; text-align: center;
           line-height: 1.7; max-width: 480px;
-          flex-shrink: 0; padding: 8px 0 20px;
+          flex-shrink: 0; padding: 8px 0 40px;
         }
 
         /* ── SUBSCRIBE ── */
@@ -215,7 +215,7 @@ export default function LandingPage() {
         }
         .rd-pricing-grid {
           display: grid; grid-template-columns: 1fr 1fr;
-          gap: 1px; background: rgba(10,10,10,0.12);
+          gap: 24px; background: transparent;
         }
         .rd-pricing-tier {
           background: #f7f6f3; padding: 56px 48px;
