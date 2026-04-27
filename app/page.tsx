@@ -431,7 +431,7 @@ export default function LandingPage() {
             {/* Giant headline */}
             <div className="rd-hl">
               <div className="rd-hl-line">
-                <span className="rd-serif">●</span>
+                <img src="/tag-icon.png" alt="" aria-hidden="true" style={{ height: '0.82em', width: 'auto', display: 'inline-block', verticalAlign: 'baseline', position: 'relative', top: '0.04em' }} />
                 <span className="rd-serif">DEAL</span>
                 <span className="rd-serif">DOSSIER</span>
                 <span className="rd-serif">IS</span>
