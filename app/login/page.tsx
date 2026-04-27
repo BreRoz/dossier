@@ -65,7 +65,7 @@ export default function LoginPage() {
             <div>
               <p style={{
                 fontFamily: 'var(--font-condensed)',
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: 600,
                 letterSpacing: '0.28em',
                 textTransform: 'uppercase',
@@ -97,7 +97,7 @@ export default function LoginPage() {
               </p>
               <p style={{
                 fontFamily: 'var(--font-condensed)',
-                fontSize: 12,
+                fontSize: 13,
                 letterSpacing: '0.15em',
                 textTransform: 'uppercase',
                 color: 'rgba(10,10,10,0.4)',
@@ -110,7 +110,7 @@ export default function LoginPage() {
             <>
               <p style={{
                 fontFamily: 'var(--font-condensed)',
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: 600,
                 letterSpacing: '0.28em',
                 textTransform: 'uppercase',
@@ -145,7 +145,7 @@ export default function LoginPage() {
                 <div style={{ marginBottom: 12 }}>
                   <label style={{
                     fontFamily: 'var(--font-condensed)',
-                    fontSize: 12,
+                    fontSize: 13,
                     letterSpacing: '0.2em',
                     textTransform: 'uppercase',
                     color: 'rgba(10,10,10,0.4)',
@@ -167,7 +167,7 @@ export default function LoginPage() {
                 {error && (
                   <p style={{
                     fontFamily: 'var(--font-condensed)',
-                    fontSize: 12,
+                    fontSize: 13,
                     letterSpacing: '0.15em',
                     textTransform: 'uppercase',
                     color: 'oklch(50% 0.2 20)',
@@ -188,7 +188,7 @@ export default function LoginPage() {
 
                 <p style={{
                   fontFamily: 'var(--font-condensed)',
-                  fontSize: 12,
+                  fontSize: 13,
                   letterSpacing: '0.15em',
                   textTransform: 'uppercase',
                   color: 'rgba(10,10,10,0.4)',

@@ -100,7 +100,7 @@ function ToggleSwitch({
         background: '#f7f6f3',
         transition: 'left 0.2s',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 8,
+        fontSize: 11,
       }}>
         {locked ? '🔒' : ''}
       </span>
@@ -388,7 +388,7 @@ export default function StoresPage() {
                 : selectedCats.length === 1
                   ? CATEGORY_LABELS[selectedCats[0] as Category] ?? selectedCats[0]
                   : `${selectedCats.length} Categories`}
-              <span style={{ fontSize: 8, opacity: 0.6 }}>{catDropOpen ? '▲' : '▼'}</span>
+              <span style={{ fontSize: 13, opacity: 0.6 }}>{catDropOpen ? '▲' : '▼'}</span>
             </button>
 
             {catDropOpen && (
@@ -402,7 +402,7 @@ export default function StoresPage() {
                     onClick={() => setSelectedCats([])}
                     style={{
                       width: '100%', textAlign: 'left', padding: '10px 14px',
-                      fontFamily: 'var(--font-condensed)', fontSize: 9,
+                      fontFamily: 'var(--font-condensed)', fontSize: 13,
                       letterSpacing: '0.18em', textTransform: 'uppercase',
                       color: 'rgba(10,10,10,0.4)', background: 'none', border: 'none',
                       borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer',

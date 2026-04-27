@@ -71,7 +71,7 @@ function Toggle({
         background: '#f7f6f3',
         transition: 'left 0.2s',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 8,
+        fontSize: 11,
       }}>
         {locked ? '🔒' : ''}
       </span>
