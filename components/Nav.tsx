@@ -22,6 +22,17 @@ export function Nav() {
     { label: 'SETTINGS', href: '/preferences' },
   ]
 
+  const linkStyle = (href: string): React.CSSProperties => ({
+    fontFamily: 'var(--font-condensed)',
+    fontSize: 10,
+    letterSpacing: '0.22em',
+    textDecoration: 'none',
+    color: '#0a0a0a',
+    borderBottom: pathname === href ? '1px solid #0a0a0a' : 'none',
+    paddingBottom: pathname === href ? 2 : 0,
+    whiteSpace: 'nowrap' as const,
+  })
+
   return (
     <nav style={{
       display: 'flex',
@@ -34,27 +45,15 @@ export function Nav() {
       top: 0,
       zIndex: 100,
     }}>
-      {links.map(({ label, href }) => (
-        <Link key={label} href={href} style={{
-          fontFamily: 'var(--font-condensed)',
-          fontSize: 10,
-          letterSpacing: '0.22em',
-          textDecoration: 'none',
-          color: '#0a0a0a',
-          borderBottom: pathname === href ? '1px solid #0a0a0a' : 'none',
-          paddingBottom: pathname === href ? 2 : 0,
-        }}>{label}</Link>
-      ))}
+      {/* Left: main nav links evenly spaced */}
+      <div style={{ display: 'flex', gap: 40 }}>
+        {links.map(({ label, href }) => (
+          <Link key={label} href={href} style={linkStyle(href)}>{label}</Link>
+        ))}
+      </div>
 
-      <div style={{ flex: 1 }} />
-
-      <Link href="/login" style={{
-        fontFamily: 'var(--font-condensed)',
-        fontSize: 10,
-        letterSpacing: '0.22em',
-        textDecoration: 'none',
-        color: '#0a0a0a',
-      }}>
+      {/* Right: sign in / account */}
+      <Link href="/login" style={linkStyle('/login')}>
         {loggedIn ? 'ACCOUNT' : 'SIGN IN'}
       </Link>
     </nav>
