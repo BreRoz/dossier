@@ -548,7 +548,7 @@ export default function LandingPage() {
           {/* FAQ */}
           <div className="rd-faq">
             {[
-              { q: 'Is the free tier really free?', a: 'Yes, permanently. Deal Dossier earns through affiliate relationships — clicking a deal link supports the product. No paywalls on the core experience.' },
+              { q: 'Is the free tier really free?', a: 'Yes. Deal Dossier earns through affiliate relationships, clicking a deal link supports the product. No paywalls on the core experience.' },
               { q: 'Can I change categories later?', a: 'Anytime. Your preferences page lets you toggle categories, and changes take effect with the next edition.' },
               { q: 'How are deals selected?', a: 'Our system reads promotional emails from a dedicated inbox we subscribe to retailer lists with. AI extracts structured deal data, which we filter and rank by your preferences.' },
               { q: 'When will paid tier launch?', a: 'We\'re working on it. Join the free tier now and you\'ll be first to know when paid launches. Your preferences and history carry over automatically.' },

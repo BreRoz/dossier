@@ -31,10 +31,6 @@ const SECTIONS = [
     body: 'We use minimal session cookies required for authentication. We do not use tracking cookies or third-party analytics beyond what is necessary to operate the service.',
   },
   {
-    title: 'Your Rights',
-    body: 'You may request access to, correction of, or deletion of your personal data at any time. You may unsubscribe from all emails at any time using the unsubscribe link in every email we send.',
-  },
-  {
     title: 'Contact',
     body: 'For questions about this policy, use the unsubscribe link in any Deal Dossier email to reach your account settings, or reply directly to any email you receive from us.',
   },
