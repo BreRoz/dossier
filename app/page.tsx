@@ -338,21 +338,51 @@ export default function LandingPage() {
            MOBILE  ≤ 540px
         ════════════════════════════════════════ */
         @media (max-width: 540px) {
+          /* Layout */
           .rd-nav { padding: 16px 20px; }
           .rd-nav-hide { display: none; }
           .rd-nav-stats { display: none; }
           .rd-headline-area { padding: 14px 20px 0; }
           .rd-hl { font-size: min(10vw, calc((100dvh - 200px) / 5.5)); }
           .rd-hl-line { white-space: normal; flex-wrap: wrap; }
+
+          /* Nav links — bigger + less tracking */
+          .rd-nav-link { font-size: 12px; letter-spacing: 0.12em; }
+
+          /* Description */
+          .rd-desc { font-size: 13px; letter-spacing: 0.02em; line-height: 1.8; }
+
+          /* Subscribe */
           .rd-subscribe-form { max-width: 100%; }
+          .rd-bar-input { font-size: 14px; letter-spacing: 0.1em; padding: 12px 0; }
+          .rd-bar-btn { font-size: 14px; letter-spacing: 0.12em; padding: 12px 0 12px 20px; }
+          .rd-subscribe-fine { font-size: 11px; letter-spacing: 0.1em; }
+
+          /* Black bar */
           .rd-bar { padding: 0 20px; }
+          .rd-bar span { font-size: 10px; letter-spacing: 0.1em; }
           .rd-bar span:nth-child(n+3) { display: none; }
+
+          /* Pricing */
           .rd-pricing-grid { grid-template-columns: 1fr; }
           .rd-pricing-tier { padding: 40px 24px; }
+          .rd-pricing-label { font-size: 12px; letter-spacing: 0.14em; }
+          .rd-pricing-per { font-size: 12px; letter-spacing: 0.12em; }
+          .rd-pricing-alt { font-size: 12px; letter-spacing: 0.12em; }
+          .rd-pricing-list li { font-size: 15px; }
+          .rd-pricing-cta { font-size: 13px; letter-spacing: 0.14em; }
+          .rd-pricing-desc { font-size: 14px; }
+
+          /* FAQ */
           .rd-faq-item { grid-template-columns: 1fr; gap: 12px; }
+          .rd-faq-q { font-size: 16px; }
+          .rd-faq-a { font-size: 15px; }
+
+          /* Footer */
           .rd-section { padding: 64px 20px; }
-          .rd-footer { flex-direction: column; align-items: flex-start; padding: 24px 20px; }
+          .rd-footer { flex-direction: column; align-items: flex-start; padding: 24px 20px; gap: 16px; }
           .rd-footer-links { flex-wrap: wrap; gap: 16px 24px; }
+          .rd-footer-label, .rd-footer-link, .rd-footer-copy { font-size: 12px; letter-spacing: 0.12em; }
         }
       `}</style>
 
