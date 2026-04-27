@@ -289,12 +289,12 @@ export default function LandingPage() {
           display: inline-flex; align-items: center; justify-content: center;
           font-family: 'Courier New', Courier, monospace;
           font-size: 9px; font-weight: 700; line-height: 1;
-          color: #f0e0b0;
-          background: #111;
+          color: #0a0a0a;
+          background: #fff;
           padding: 2px 2px;
           min-width: 9px;
           border-radius: 1px;
-          box-shadow: inset 0 -1px 0 rgba(0,0,0,0.5);
+          box-shadow: inset 0 -1px 0 rgba(0,0,0,0.1);
           position: relative;
         }
         /* hairline fold across the middle of each tile */
@@ -304,7 +304,7 @@ export default function LandingPage() {
           left: 0; right: 0;
           top: 50%;
           height: 1px;
-          background: rgba(0,0,0,0.45);
+          background: rgba(0,0,0,0.12);
           pointer-events: none;
         }
 
