@@ -2,6 +2,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { Nav } from '@/components/Nav'
+import { Footer } from '@/components/Footer'
 import type { Edition } from '@/types'
 
 export const revalidate = 3600
@@ -93,6 +94,7 @@ export default async function ArchivePage() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   )
 }

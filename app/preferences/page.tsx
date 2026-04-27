@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Nav } from '@/components/Nav'
+import { Footer } from '@/components/Footer'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { createClient } from '@/lib/supabase/client'
 import type { Category, DealType, SendDay, UserPreferences, GenderOption, SpendTier } from '@/types'
@@ -716,6 +717,7 @@ export default function PreferencesPage() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }

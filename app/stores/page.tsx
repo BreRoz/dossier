@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { Nav } from '@/components/Nav'
+import { Footer } from '@/components/Footer'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { createClient } from '@/lib/supabase/client'
 import type { Category, SpendTier } from '@/types'
@@ -684,6 +685,7 @@ export default function StoresPage() {
           </Link>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }
