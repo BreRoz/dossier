@@ -165,16 +165,13 @@ export default function LandingPage() {
           color: rgba(247,246,243,0.45); white-space: nowrap;
         }
 
-        /* ── SCATTER TEXT ── */
-        .rd-scatter {
-          display: flex; justify-content: space-between; align-items: flex-start;
-          width: 100%; padding: 24px 0; flex-shrink: 0;
-        }
-        .rd-scatter-col {
-          display: flex; flex-direction: column;
+        /* ── DESCRIPTION ── */
+        .rd-desc {
           font-family: var(--font-sans); font-size: 11px; font-weight: 700;
           letter-spacing: 0.04em; color: rgba(10,10,10,0.75);
-          line-height: 1.25; text-transform: uppercase;
+          text-transform: uppercase; text-align: center;
+          line-height: 1.7; max-width: 480px;
+          flex-shrink: 0; padding: 8px 0 20px;
         }
 
         /* ── SUBSCRIBE ── */
@@ -347,7 +344,6 @@ export default function LandingPage() {
           .rd-headline-area { padding: 14px 20px 0; }
           .rd-hl { font-size: min(10vw, calc((100dvh - 200px) / 5.5)); }
           .rd-hl-line { white-space: normal; flex-wrap: wrap; }
-          .rd-scatter { display: none; }
           .rd-subscribe-form { max-width: 100%; }
           .rd-bar { padding: 0 20px; }
           .rd-bar span:nth-child(n+3) { display: none; }
@@ -420,23 +416,10 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Scattered vertical text */}
-            <div className="rd-scatter">
-              {[
-                ['Deal', 'Dossier'],
-                ['is', 'an'],
-                ['editorially', 'curated'],
-                ['weekly', 'briefing'],
-                ['covering', 'fashion,'],
-                ['beauty,', 'home,'],
-                ['tech,', 'dining,'],
-                ['and', 'more.'],
-              ].map((words, i) => (
-                <div key={i} className="rd-scatter-col">
-                  {words.map((w) => <span key={w}>{w}</span>)}
-                </div>
-              ))}
-            </div>
+            {/* Description paragraph */}
+            <p className="rd-desc">
+              Deal Dossier is an editorially curated weekly briefing covering fashion, beauty, home, tech, dining, and more.
+            </p>
 
             {/* Subscribe form */}
             <div className="rd-subscribe-inline">
