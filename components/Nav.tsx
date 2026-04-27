@@ -45,14 +45,9 @@ export function Nav() {
       top: 0,
       zIndex: 100,
     }}>
-      {/* Left: main nav links evenly spaced */}
-      <div style={{ display: 'flex', gap: 40 }}>
-        {links.map(({ label, href }) => (
-          <Link key={label} href={href} style={linkStyle(href)}>{label}</Link>
-        ))}
-      </div>
-
-      {/* Right: sign in / account */}
+      {links.map(({ label, href }) => (
+        <Link key={label} href={href} style={linkStyle(href)}>{label}</Link>
+      ))}
       <Link href="/login" style={linkStyle('/login')}>
         {loggedIn ? 'ACCOUNT' : 'SIGN IN'}
       </Link>
