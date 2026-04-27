@@ -267,7 +267,7 @@ export default function LandingPage() {
         }
 
         /* ── FAQ ── */
-        .rd-faq { margin-top: 1px; border-top: 1px solid rgba(10,10,10,0.12); }
+        .rd-faq { margin-top: 64px; border-top: 1px solid rgba(10,10,10,0.12); }
         .rd-faq-item {
           display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
           padding: 32px 0; border-bottom: 1px solid rgba(10,10,10,0.08);
