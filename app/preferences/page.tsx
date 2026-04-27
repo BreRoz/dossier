@@ -84,7 +84,7 @@ function SectionHeader({ label, tag }: { label: string; tag?: string }) {
       <p className="t-meta">{label}</p>
       {tag && (
         <span style={{
-          fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.15em',
+          fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.15em',
           textTransform: 'uppercase', color: 'var(--ink-40)', background: 'var(--ink-06)', padding: '2px 8px',
         }}>
           {tag}
@@ -441,7 +441,7 @@ export default function PreferencesPage() {
                             {CATEGORY_LABELS[cat]}
                           </span>
                           {locked && (
-                            <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)' }}>
+                            <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)' }}>
                               Paid
                             </span>
                           )}
@@ -543,7 +543,7 @@ export default function PreferencesPage() {
                     }}
                   >
                     <span>{label}</span>
-                    <span style={{ fontSize: 8, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.7 }}>{sub}</span>
+                    <span style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.7 }}>{sub}</span>
                   </button>
                 )
               })}
@@ -635,7 +635,7 @@ export default function PreferencesPage() {
 
           {/* Change Email */}
           <div style={{ marginBottom: 32 }}>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-70)', marginBottom: 12 }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-70)', marginBottom: 12 }}>
               Update the email address your weekly brief is sent to.
             </p>
             {!showChangeEmail ? (
@@ -676,7 +676,7 @@ export default function PreferencesPage() {
               </div>
             )}
             {emailMsg && (
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-40)', marginTop: 8 }}>
+              <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)', marginTop: 8 }}>
                 {emailMsg}
               </p>
             )}
@@ -684,7 +684,7 @@ export default function PreferencesPage() {
 
           {/* Delete Account */}
           <div style={{ paddingTop: 24, borderTop: '1px solid var(--ink-06)' }}>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)', marginBottom: 12 }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)', marginBottom: 12 }}>
               Permanently delete your account and all preferences. This cannot be undone.
             </p>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>

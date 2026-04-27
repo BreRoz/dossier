@@ -43,14 +43,14 @@ function StatCard({ value, label, sub }: { value: number; label: string; sub?: s
         {fmt(value)}
       </div>
       <div style={{
-        fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
+        fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 600,
         letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--accent)',
       }}>
         {label}
       </div>
       {sub && (
         <div style={{
-          fontFamily: 'var(--font-sans)', fontSize: 13,
+          fontFamily: 'var(--font-sans)', fontSize: 14,
           color: 'var(--ink-40)', lineHeight: 1.4,
         }}>
           {sub}
@@ -345,7 +345,7 @@ export default function StoresPage() {
           {/* Spend tier pills */}
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <span style={{
-              fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.18em',
+              fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.18em',
               textTransform: 'uppercase', color: 'var(--ink-40)',
             }}>
               Spend
@@ -438,7 +438,7 @@ export default function StoresPage() {
 
           <span style={{
             marginLeft: 'auto',
-            fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em',
+            fontFamily: 'var(--font-condensed)', fontSize: 12, letterSpacing: '0.15em',
             textTransform: 'uppercase', color: 'var(--ink-40)',
           }}>
             {visibleStores.length} store{visibleStores.length !== 1 ? 's' : ''}
@@ -450,7 +450,7 @@ export default function StoresPage() {
           <div style={{ marginBottom: 24 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <span style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.18em',
+                fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.18em',
                 textTransform: 'uppercase', color: 'var(--ink-40)',
               }}>
                 Clothing for people my age
@@ -462,7 +462,7 @@ export default function StoresPage() {
                     key={age || 'all'}
                     onClick={() => setSelectedAge(age)}
                     style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 500,
+                      fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 500,
                       letterSpacing: '0.12em', textTransform: 'uppercase',
                       padding: '5px 14px', border: '1.5px solid',
                       borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
@@ -477,7 +477,7 @@ export default function StoresPage() {
               })}
             </div>
             <p style={{
-              fontFamily: 'var(--font-sans)', fontSize: 11, color: 'var(--ink-40)',
+              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
               lineHeight: 1.5, marginTop: 6,
             }}>
               Age suggestions are approximate — shop wherever you like!
@@ -494,7 +494,7 @@ export default function StoresPage() {
           }}>
             {['Store', 'Cat.', 'Spend', 'Deals', 'Status', isPaid ? 'Active' : '🔒'].map((h) => (
               <span key={h} style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 9, fontWeight: 600,
+                fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
                 letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)',
               }}>
                 {h}
@@ -740,7 +740,7 @@ function StoreRowItem({
         )}
         {store.isNew && (
           <span style={{
-            fontFamily: 'var(--font-condensed)', fontSize: 8, fontWeight: 700,
+            fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
             background: 'var(--accent)', color: 'var(--paper)',
             padding: '2px 6px', flexShrink: 0,
@@ -777,7 +777,7 @@ function StoreRowItem({
 
       {/* Status */}
       <span style={{
-        fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.15em',
+        fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.15em',
         textTransform: 'uppercase',
         color: store.status === 'Live' ? 'var(--accent)' : 'var(--ink-40)',
       }}>

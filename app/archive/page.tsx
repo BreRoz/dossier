@@ -63,7 +63,7 @@ export default async function ArchivePage() {
                     transition: 'background 0.15s', cursor: 'pointer',
                   }}>
 
-                    <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
+                    <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 12, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
                       {edition.issue_number ? `Issue No. ${edition.issue_number}` : 'Weekly Brief'}
                     </p>
                     <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 300, letterSpacing: '-0.01em', lineHeight: 1.1, marginBottom: 16 }}>
@@ -72,18 +72,18 @@ export default async function ArchivePage() {
                     <div style={{ display: 'flex', gap: 24, marginBottom: 16 }}>
                       <div>
                         <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 300, color: 'var(--ink)', lineHeight: 1 }}>{edition.deals_found}</div>
-                        <div style={{ fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)', marginTop: 2 }}>Deals</div>
+                        <div style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)', marginTop: 4 }}>Deals</div>
                       </div>
                       <div>
                         <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 300, color: 'var(--ink)', lineHeight: 1 }}>{edition.retailers_count}</div>
-                        <div style={{ fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)', marginTop: 2 }}>Retailers</div>
+                        <div style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)', marginTop: 4 }}>Retailers</div>
                       </div>
                       <div>
                         <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, fontWeight: 300, color: 'var(--ink)', lineHeight: 1 }}>{edition.emails_scanned}</div>
-                        <div style={{ fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)', marginTop: 2 }}>Scanned</div>
+                        <div style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)', marginTop: 4 }}>Scanned</div>
                       </div>
                     </div>
-                    <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-40)' }}>
+                    <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-40)' }}>
                       View Issue →
                     </p>
                   </div>

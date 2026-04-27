@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { Nav } from '@/components/Nav'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,55 +50,108 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--paper)' }}>
-      {/* Nav */}
-      <nav style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '20px 40px', borderBottom: '1px solid rgba(10,10,10,0.12)',
-        background: '#f7f6f3',
-      }}>
-        {[['HOME','/'],['ARCHIVE','/archive'],['STORES','/stores'],['SETTINGS','/preferences']].map(([l,h]) => (
-          <Link key={l} href={h} style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.22em', textDecoration: 'none', color: '#0a0a0a' }}>{l}</Link>
-        ))}
-        <div style={{ flex: 1 }} />
-        <Link href="/login" style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.22em', textDecoration: 'none', color: '#0a0a0a', borderBottom: '1px solid #0a0a0a', paddingBottom: 2 }}>SIGN IN</Link>
-      </nav>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f7f6f3' }}>
+      <Nav />
 
-      {/* Content */}
       <div style={{
-        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40,
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '60px 40px',
       }}>
         <div style={{ width: '100%', maxWidth: 480 }}>
           {sent ? (
             <div>
-              <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 16 }}>
+              <p style={{
+                fontFamily: 'var(--font-condensed)',
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: '0.28em',
+                textTransform: 'uppercase',
+                color: 'var(--accent)',
+                marginBottom: 16,
+              }}>
                 Check your inbox
               </p>
-              <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 40, fontWeight: 300, letterSpacing: '-0.01em', lineHeight: 1.1, marginBottom: 20 }}>
+              <h1 style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 42,
+                fontWeight: 300,
+                letterSpacing: '-0.01em',
+                lineHeight: 1.1,
+                marginBottom: 20,
+                color: '#0a0a0a',
+              }}>
                 Magic link sent.
               </h1>
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.65 }}>
-                We sent a sign-in link to <strong style={{ color: 'var(--ink)' }}>{email}</strong>. Click the link to access your account and set preferences.
+              <p style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: 16,
+                color: 'rgba(10,10,10,0.65)',
+                lineHeight: 1.65,
+              }}>
+                We sent a sign-in link to{' '}
+                <strong style={{ color: '#0a0a0a' }}>{email}</strong>.
+                Click the link to access your account and set preferences.
               </p>
-              <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)', marginTop: 24 }}>
+              <p style={{
+                fontFamily: 'var(--font-condensed)',
+                fontSize: 12,
+                letterSpacing: '0.15em',
+                textTransform: 'uppercase',
+                color: 'rgba(10,10,10,0.4)',
+                marginTop: 24,
+              }}>
                 Link expires in 24 hours · Check your spam folder
               </p>
             </div>
           ) : (
             <>
-              <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 16 }}>
+              <p style={{
+                fontFamily: 'var(--font-condensed)',
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: '0.28em',
+                textTransform: 'uppercase',
+                color: 'var(--accent)',
+                marginBottom: 16,
+              }}>
                 Sign In
               </p>
-              <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 40, fontWeight: 300, letterSpacing: '-0.01em', lineHeight: 1.1, marginBottom: 12 }}>
+              <h1 style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 42,
+                fontWeight: 300,
+                letterSpacing: '-0.01em',
+                lineHeight: 1.1,
+                marginBottom: 16,
+                color: '#0a0a0a',
+              }}>
                 Welcome to Deal Dossier.
               </h1>
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.65, marginBottom: 40 }}>
-                Enter your email address and we'll send you a magic link to sign in. No password required.
+              <p style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: 16,
+                color: 'rgba(10,10,10,0.65)',
+                lineHeight: 1.65,
+                marginBottom: 40,
+              }}>
+                Enter your email address and we&rsquo;ll send you a magic link to sign in.
+                No password required.
               </p>
 
               <form onSubmit={handleSubmit}>
                 <div style={{ marginBottom: 12 }}>
-                  <label style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)', display: 'block', marginBottom: 8 }}>
+                  <label style={{
+                    fontFamily: 'var(--font-condensed)',
+                    fontSize: 12,
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                    color: 'rgba(10,10,10,0.4)',
+                    display: 'block',
+                    marginBottom: 8,
+                  }}>
                     Email Address
                   </label>
                   <input
@@ -112,19 +165,36 @@ export default function LoginPage() {
                 </div>
 
                 {error && (
-                  <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'oklch(50% 0.2 20)', marginBottom: 16 }}>{error}</p>
+                  <p style={{
+                    fontFamily: 'var(--font-condensed)',
+                    fontSize: 12,
+                    letterSpacing: '0.15em',
+                    textTransform: 'uppercase',
+                    color: 'oklch(50% 0.2 20)',
+                    marginBottom: 16,
+                  }}>
+                    {error}
+                  </p>
                 )}
 
                 <button
                   type="submit"
                   disabled={submitting}
                   className="btn-primary"
-                  style={{ width: '100%', textAlign: 'center' }}
+                  style={{ width: '100%', textAlign: 'center', marginTop: 8 }}
                 >
                   {submitting ? 'Sending...' : 'Send Magic Link'}
                 </button>
 
-                <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)', marginTop: 16, textAlign: 'center' }}>
+                <p style={{
+                  fontFamily: 'var(--font-condensed)',
+                  fontSize: 12,
+                  letterSpacing: '0.15em',
+                  textTransform: 'uppercase',
+                  color: 'rgba(10,10,10,0.4)',
+                  marginTop: 16,
+                  textAlign: 'center',
+                }}>
                   No password required · Free. No paywall.
                 </p>
               </form>
