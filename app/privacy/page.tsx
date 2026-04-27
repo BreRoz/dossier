@@ -24,7 +24,7 @@ const SECTIONS = [
   },
   {
     title: 'Security',
-    body: 'We use industry-standard encryption (TLS) for data in transit and at rest. Authentication is handled via magic links with no passwords stored. Our infrastructure runs on Supabase and Vercel with enterprise-grade security practices.',
+    body: 'We use industry-standard encryption (TLS) for data in transit and at rest. Authentication is handled via magic links — no passwords are ever created or stored. Our infrastructure runs on Supabase (database and auth), Vercel (hosting), and Resend (email delivery). All three operate enterprise-grade security practices. Your email address is shared with Resend solely for the purpose of delivering sign-in links and your weekly brief.',
   },
   {
     title: 'Cookies',
