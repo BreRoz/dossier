@@ -2,8 +2,57 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+
+// ── Split-flap board ──────────────────────────────────────────────────────────
+const FLAP_SET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789   .,/'
+
+function SplitFlapLine({ text }: { text: string }) {
+  const [chars, setChars] = useState<string[]>(() => text.split('').map(() => ' '))
+  const ranRef = useRef(false)
+
+  useEffect(() => {
+    if (ranRef.current || !text) return
+    ranRef.current = true
+
+    const target = text.toUpperCase().split('')
+    const timers: ReturnType<typeof setTimeout>[] = []
+
+    target.forEach((targetChar, i) => {
+      const flips = 10 + Math.floor(Math.random() * 10)
+      let count = 0
+
+      const start = setTimeout(() => {
+        const tick = setInterval(() => {
+          count++
+          if (count >= flips) {
+            setChars(prev => { const n = [...prev]; n[i] = targetChar; return n })
+            clearInterval(tick)
+          } else {
+            const rand = FLAP_SET[Math.floor(Math.random() * FLAP_SET.length)]
+            setChars(prev => { const n = [...prev]; n[i] = rand; return n })
+          }
+        }, 55)
+        timers.push(tick)
+      }, i * 45)
+
+      timers.push(start)
+    })
+
+    return () => timers.forEach(clearTimeout)
+  }, [text])
+
+  return (
+    <span style={{ display: 'inline-flex', gap: 1 }}>
+      {chars.map((ch, i) => (
+        ch === ' ' || ch === ' '
+          ? <span key={i} style={{ display: 'inline-block', width: '0.45em' }} />
+          : <span key={i} className="sf-char">{ch}</span>
+      ))}
+    </span>
+  )
+}
 
 export default function LandingPage() {
   const [email, setEmail] = useState('')
@@ -235,6 +284,30 @@ export default function LandingPage() {
           color: rgba(10,10,10,0.55); line-height: 1.65;
         }
 
+        /* ── SPLIT-FLAP ── */
+        .sf-char {
+          display: inline-flex; align-items: center; justify-content: center;
+          font-family: 'Courier New', Courier, monospace;
+          font-size: 9px; font-weight: 700; line-height: 1;
+          color: #f0e0b0;
+          background: #111;
+          padding: 2px 2px;
+          min-width: 9px;
+          border-radius: 1px;
+          box-shadow: inset 0 -1px 0 rgba(0,0,0,0.5);
+          position: relative;
+        }
+        /* hairline fold across the middle of each tile */
+        .sf-char::after {
+          content: '';
+          position: absolute;
+          left: 0; right: 0;
+          top: 50%;
+          height: 1px;
+          background: rgba(0,0,0,0.45);
+          pointer-events: none;
+        }
+
         /* ── FOOTER ── */
         .rd-footer {
           padding: 32px 40px; display: flex; align-items: center; justify-content: space-between;
@@ -302,12 +375,12 @@ export default function LandingPage() {
               {edition ? (
                 <>
                   <div className="rd-nav-stats-week">
-                    WEEK OF {new Date(edition.week_of + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase()}
+                    <SplitFlapLine text={`WEEK OF ${new Date(edition.week_of + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }).toUpperCase()}`} />
                   </div>
                   <div className="rd-nav-stats-row">
-                    <span><strong>{edition.deals_found}</strong> DEALS</span>
-                    <span><strong>{edition.retailers_count}</strong> RETAILERS</span>
-                    <span><strong>{edition.emails_scanned}</strong> SCANNED</span>
+                    <span><SplitFlapLine text={`${edition.deals_found} DEALS`} /></span>
+                    <span><SplitFlapLine text={`${edition.retailers_count} RETAILERS`} /></span>
+                    <span><SplitFlapLine text={`${edition.emails_scanned} SCANNED`} /></span>
                   </div>
                 </>
               ) : (
