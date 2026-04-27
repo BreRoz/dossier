@@ -34,25 +34,25 @@ function fmt(n: number): string {
 function StatCard({ value, label, sub }: { value: number; label: string; sub?: string }) {
   return (
     <div style={{
-      padding: '32px 40px', background: 'var(--ink-06)',
+      padding: '32px 40px', background: 'rgba(10,10,10,0.04)',
       display: 'flex', flexDirection: 'column', gap: 8, flex: 1,
     }}>
       <div style={{
         fontFamily: 'var(--font-serif)', fontSize: 52, fontWeight: 300,
-        letterSpacing: '-0.02em', lineHeight: 1, color: 'var(--ink)',
+        letterSpacing: '-0.02em', lineHeight: 1, color: '#0a0a0a',
       }}>
         {fmt(value)}
       </div>
       <div style={{
         fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 600,
-        letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--accent)',
+        letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
       }}>
         {label}
       </div>
       {sub && (
         <div style={{
           fontFamily: 'var(--font-sans)', fontSize: 14,
-          color: 'var(--ink-40)', lineHeight: 1.4,
+          color: 'rgba(10,10,10,0.4)', lineHeight: 1.4,
         }}>
           {sub}
         </div>
@@ -87,7 +87,7 @@ function ToggleSwitch({
       title={locked ? 'Upgrade to paid to control individual stores' : enabled ? 'Receiving deals — click to mute' : 'Muted — click to unmute'}
       style={{
         width: 36, height: 20, borderRadius: 10, border: 'none', padding: 0,
-        background: locked ? 'var(--ink-15)' : enabled ? 'var(--ink)' : 'var(--ink-15)',
+        background: locked ? 'rgba(10,10,10,0.12)' : enabled ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
         cursor: locked ? 'not-allowed' : 'pointer',
         position: 'relative', flexShrink: 0, transition: 'background 0.2s',
         opacity: locked ? 0.5 : 1,
@@ -97,7 +97,7 @@ function ToggleSwitch({
         position: 'absolute', top: 2,
         left: enabled && !locked ? 18 : 2,
         width: 16, height: 16, borderRadius: '50%',
-        background: 'var(--paper)',
+        background: '#f7f6f3',
         transition: 'left 0.2s',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 8,
@@ -269,21 +269,21 @@ export default function StoresPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p className="t-meta">Loading...</p>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f6f3' }}>
+        <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)' }}>Loading...</p>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
+    <div style={{ minHeight: '100vh', background: '#f7f6f3' }}>
       <Nav />
 
       <div className="wrap" style={{ paddingTop: 64, paddingBottom: 120 }}>
 
         {/* Header */}
-        <div style={{ marginBottom: 48, borderBottom: 'var(--rule)', paddingBottom: 40 }}>
-          <p className="t-section" style={{ marginBottom: 12 }}>Your Account</p>
+        <div style={{ marginBottom: 48, borderBottom: '1px solid rgba(10,10,10,0.12)', paddingBottom: 40 }}>
+          <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', marginBottom: 12 }}>Your Account</p>
           <h1 style={{
             fontFamily: 'var(--font-serif)', fontSize: 48, fontWeight: 300,
             letterSpacing: '-0.02em', marginBottom: 12,
@@ -291,7 +291,7 @@ export default function StoresPage() {
             Subscribed Stores
           </h1>
           <p style={{
-            fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-40)',
+            fontFamily: 'var(--font-sans)', fontSize: 15, color: 'rgba(10,10,10,0.4)',
             maxWidth: 520, lineHeight: 1.55,
           }}>
             Every retail email we catch so you don&rsquo;t have to sort through them yourself.
@@ -301,7 +301,7 @@ export default function StoresPage() {
               href="#suggest"
               style={{
                 fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.18em',
-                textTransform: 'uppercase', color: 'var(--accent)', textDecoration: 'none',
+                textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', textDecoration: 'none',
               }}
             >
               Don&rsquo;t see a store you want? Request it here →
@@ -347,7 +347,7 @@ export default function StoresPage() {
           <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <span style={{
               fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.18em',
-              textTransform: 'uppercase', color: 'var(--ink-40)',
+              textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
             }}>
               Spend
             </span>
@@ -357,9 +357,9 @@ export default function StoresPage() {
                 <button key={tier} onClick={() => toggleSpend(tier)} title={SPEND_TIER_LABELS[tier]} style={{
                   fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
                   letterSpacing: '0.08em', padding: '5px 12px', border: '1.5px solid',
-                  borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
-                  background: active ? 'var(--ink)' : 'transparent',
-                  color: active ? 'var(--paper)' : 'var(--ink-40)',
+                  borderColor: active ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+                  background: active ? '#0a0a0a' : 'transparent',
+                  color: active ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
                   cursor: 'pointer',
                 }}>
                   {tier}
@@ -376,9 +376,9 @@ export default function StoresPage() {
                 fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 500,
                 letterSpacing: '0.15em', textTransform: 'uppercase',
                 padding: '7px 14px', border: '1.5px solid',
-                borderColor: selectedCats.length > 0 ? 'var(--ink)' : 'var(--ink-15)',
-                background: selectedCats.length > 0 ? 'var(--ink)' : 'transparent',
-                color: selectedCats.length > 0 ? 'var(--paper)' : 'var(--ink-40)',
+                borderColor: selectedCats.length > 0 ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+                background: selectedCats.length > 0 ? '#0a0a0a' : 'transparent',
+                color: selectedCats.length > 0 ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
                 whiteSpace: 'nowrap',
               }}
@@ -394,7 +394,7 @@ export default function StoresPage() {
             {catDropOpen && (
               <div style={{
                 position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
-                background: 'var(--paper)', border: '1.5px solid var(--ink-15)',
+                background: '#f7f6f3', border: '1.5px solid rgba(10,10,10,0.12)',
                 minWidth: 220, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
               }}>
                 {selectedCats.length > 0 && (
@@ -404,8 +404,8 @@ export default function StoresPage() {
                       width: '100%', textAlign: 'left', padding: '10px 14px',
                       fontFamily: 'var(--font-condensed)', fontSize: 9,
                       letterSpacing: '0.18em', textTransform: 'uppercase',
-                      color: 'var(--accent)', background: 'none', border: 'none',
-                      borderBottom: '1px solid var(--ink-06)', cursor: 'pointer',
+                      color: 'rgba(10,10,10,0.4)', background: 'none', border: 'none',
+                      borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer',
                     }}
                   >
                     Clear filter
@@ -421,14 +421,14 @@ export default function StoresPage() {
                         width: '100%', textAlign: 'left', padding: '10px 14px',
                         display: 'flex', alignItems: 'center', gap: 10,
                         fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: active ? 600 : 400,
-                        color: 'var(--ink)', background: active ? 'var(--ink-06)' : 'none',
-                        border: 'none', borderBottom: '1px solid var(--ink-06)', cursor: 'pointer',
+                        color: '#0a0a0a', background: active ? 'rgba(10,10,10,0.04)' : 'none',
+                        border: 'none', borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer',
                       }}
                     >
                       <CategoryIcon category={cat as Category} size={16} />
                       <span>{CATEGORY_LABELS[cat as Category] ?? cat}</span>
                       {active && (
-                        <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--accent)' }}>✓</span>
+                        <span style={{ marginLeft: 'auto', fontSize: 10, color: 'rgba(10,10,10,0.4)' }}>✓</span>
                       )}
                     </button>
                   )
@@ -440,7 +440,7 @@ export default function StoresPage() {
           <span style={{
             marginLeft: 'auto',
             fontFamily: 'var(--font-condensed)', fontSize: 12, letterSpacing: '0.15em',
-            textTransform: 'uppercase', color: 'var(--ink-40)',
+            textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
           }}>
             {visibleStores.length} store{visibleStores.length !== 1 ? 's' : ''}
           </span>
@@ -452,7 +452,7 @@ export default function StoresPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <span style={{
                 fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.18em',
-                textTransform: 'uppercase', color: 'var(--ink-40)',
+                textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
               }}>
                 Clothing for people my age
               </span>
@@ -466,9 +466,9 @@ export default function StoresPage() {
                       fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 500,
                       letterSpacing: '0.12em', textTransform: 'uppercase',
                       padding: '5px 14px', border: '1.5px solid',
-                      borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
-                      background: active ? 'var(--ink)' : 'transparent',
-                      color: active ? 'var(--paper)' : 'var(--ink-40)',
+                      borderColor: active ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+                      background: active ? '#0a0a0a' : 'transparent',
+                      color: active ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
                       cursor: 'pointer',
                     }}
                   >
@@ -478,7 +478,7 @@ export default function StoresPage() {
               })}
             </div>
             <p style={{
-              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
+              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)',
               lineHeight: 1.5, marginTop: 6,
             }}>
               Age suggestions are approximate — shop wherever you like!
@@ -490,13 +490,13 @@ export default function StoresPage() {
         <div className="rtable">
           <div style={{
             display: 'grid', gridTemplateColumns: '1fr 40px 56px 72px 80px 48px',
-            gap: 16, padding: '10px 16px', borderBottom: 'var(--rule)',
+            gap: 16, padding: '10px 16px', borderBottom: '1px solid rgba(10,10,10,0.12)',
             minWidth: 500,
           }}>
             {['Store', 'Cat.', 'Spend', 'Deals', 'Status', isPaid ? 'Active' : '🔒'].map((h) => (
               <span key={h} style={{
                 fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-                letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)',
+                letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
               }}>
                 {h}
               </span>
@@ -508,7 +508,7 @@ export default function StoresPage() {
             <div style={{
               padding: '48px 16px', textAlign: 'center',
               fontFamily: 'var(--font-condensed)', fontSize: 11,
-              letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-40)',
+              letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
             }}>
               {search ? 'No stores match your search' : 'No stores match your current filters'}
             </div>
@@ -533,8 +533,8 @@ export default function StoresPage() {
         </div>{/* end .rtable */}
 
         {/* Suggest a store */}
-        <div id="suggest" style={{ marginTop: 64, paddingTop: 48, borderTop: 'var(--rule)' }}>
-          <p className="t-section" style={{ marginBottom: 12 }}>Suggest a Store</p>
+        <div id="suggest" style={{ marginTop: 64, paddingTop: 48, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
+          <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', marginBottom: 12 }}>Suggest a Store</p>
           <h2 style={{
             fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 300,
             letterSpacing: '-0.02em', marginBottom: 12,
@@ -542,7 +542,7 @@ export default function StoresPage() {
             Know a brand we should watch?
           </h2>
           <p style={{
-            fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
+            fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)',
             lineHeight: 1.6, maxWidth: 480, marginBottom: 32,
           }}>
             We'll subscribe to their emails and start pulling deals automatically.
@@ -550,23 +550,23 @@ export default function StoresPage() {
 
           {!isPaid ? (
             <div style={{
-              padding: '24px 28px', background: 'var(--ink-06)',
+              padding: '24px 28px', background: 'rgba(10,10,10,0.04)',
               display: 'flex', alignItems: 'center', gap: 16, maxWidth: 480,
             }}>
               <span style={{ fontSize: 20 }}>🔒</span>
               <div>
                 <p style={{
                   fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
-                  color: 'var(--ink)', marginBottom: 4,
+                  color: '#0a0a0a', marginBottom: 4,
                 }}>
                   Paid feature
                 </p>
                 <p style={{
-                  fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)',
+                  fontFamily: 'var(--font-sans)', fontSize: 13, color: 'rgba(10,10,10,0.4)',
                   lineHeight: 1.5,
                 }}>
                   Upgrade to suggest stores for us to track.{' '}
-                  <Link href="/upgrade" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>
+                  <Link href="/upgrade" style={{ color: '#0a0a0a', textDecoration: 'underline' }}>
                     See what's included →
                   </Link>
                 </p>
@@ -574,14 +574,14 @@ export default function StoresPage() {
             </div>
           ) : suggestDone ? (
             <div style={{
-              padding: '24px 28px', background: 'var(--ink-06)', maxWidth: 480,
+              padding: '24px 28px', background: 'rgba(10,10,10,0.04)', maxWidth: 480,
             }}>
               <p style={{
                 fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
-                color: 'var(--accent)', marginBottom: 4,
+                color: 'rgba(10,10,10,0.4)', marginBottom: 4,
               }}>Suggestion received!</p>
               <p style={{
-                fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)',
+                fontFamily: 'var(--font-sans)', fontSize: 13, color: 'rgba(10,10,10,0.4)',
               }}>
                 We'll review it and add them to the watchlist if they run regular sales.
               </p>
@@ -590,7 +590,7 @@ export default function StoresPage() {
                 style={{
                   marginTop: 16, fontFamily: 'var(--font-condensed)', fontSize: 10,
                   letterSpacing: '0.15em', textTransform: 'uppercase',
-                  background: 'none', border: 'none', color: 'var(--ink-40)',
+                  background: 'none', border: 'none', color: 'rgba(10,10,10,0.4)',
                   cursor: 'pointer', textDecoration: 'underline', padding: 0,
                 }}
               >
@@ -625,7 +625,7 @@ export default function StoresPage() {
               style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 480 }}
             >
               <div>
-                <label className="t-meta" style={{ display: 'block', marginBottom: 6 }}>Store Name *</label>
+                <label style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 6 }}>Store Name *</label>
                 <input
                   type="text"
                   required
@@ -636,7 +636,7 @@ export default function StoresPage() {
                 />
               </div>
               <div>
-                <label className="t-meta" style={{ display: 'block', marginBottom: 6 }}>Website (optional)</label>
+                <label style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 6 }}>Website (optional)</label>
                 <input
                   type="text"
                   placeholder="e.g. reformation.com"
@@ -646,7 +646,7 @@ export default function StoresPage() {
                 />
               </div>
               <div>
-                <label className="t-meta" style={{ display: 'block', marginBottom: 6 }}>Why should we add them? (optional)</label>
+                <label style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 6 }}>Why should we add them? (optional)</label>
                 <input
                   type="text"
                   placeholder="e.g. Great sales on basics, ships fast"
@@ -676,10 +676,10 @@ export default function StoresPage() {
         </div>
 
         {/* Footer link */}
-        <div style={{ marginTop: 48, paddingTop: 40, borderTop: 'var(--rule)' }}>
+        <div style={{ marginTop: 48, paddingTop: 40, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
           <Link href="/preferences" style={{
             fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.2em',
-            textTransform: 'uppercase', color: 'var(--ink)', textDecoration: 'underline',
+            textTransform: 'uppercase', color: '#0a0a0a', textDecoration: 'underline',
           }}>
             Adjust your subscription settings
           </Link>
@@ -711,9 +711,9 @@ function StoreRowItem({
     <div style={{
       display: 'grid', gridTemplateColumns: '1fr 40px 56px 72px 80px 48px',
       gap: 16, padding: '14px 16px',
-      background: isEven ? 'transparent' : 'var(--ink-06)',
+      background: isEven ? 'transparent' : 'rgba(10,10,10,0.04)',
       alignItems: 'center',
-      borderBottom: '1px solid var(--ink-06)',
+      borderBottom: '1px solid rgba(10,10,10,0.04)',
       minWidth: 500,
       opacity: isPaid && !storeEnabled ? 0.5 : 1,
       transition: 'opacity 0.2s',
@@ -727,7 +727,7 @@ function StoreRowItem({
             rel="noopener noreferrer"
             style={{
               fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
-              color: 'var(--ink)', textDecoration: 'none',
+              color: '#0a0a0a', textDecoration: 'none',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}
           >
@@ -735,7 +735,7 @@ function StoreRowItem({
           </a>
         ) : (
           <span style={{
-            fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600, color: 'var(--ink)',
+            fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600, color: '#0a0a0a',
           }}>
             {store.name}
           </span>
@@ -744,7 +744,7 @@ function StoreRowItem({
           <span style={{
             fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
-            background: 'var(--accent)', color: 'var(--paper)',
+            background: 'var(--accent)', color: '#f7f6f3',
             padding: '2px 6px', flexShrink: 0,
           }}>
             New
@@ -760,7 +760,7 @@ function StoreRowItem({
       {/* Spend tier */}
       <span style={{
         fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: 600,
-        letterSpacing: '0.06em', color: 'var(--ink)',
+        letterSpacing: '0.06em', color: '#0a0a0a',
       }}>
         {store.spendTier}
       </span>
@@ -770,7 +770,7 @@ function StoreRowItem({
         title={dealCount > 0 ? `${dealCount} deal${dealCount !== 1 ? 's' : ''} shared` : 'No deals yet'}
         style={{
           fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.08em',
-          color: dealCount > 0 ? 'var(--ink)' : 'var(--ink-15)',
+          color: dealCount > 0 ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
           fontWeight: dealCount > 0 ? 600 : 400,
         }}
       >
@@ -781,7 +781,7 @@ function StoreRowItem({
       <span style={{
         fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.15em',
         textTransform: 'uppercase',
-        color: store.status === 'Live' ? 'var(--accent)' : 'var(--ink-40)',
+        color: store.status === 'Live' ? 'var(--accent)' : 'rgba(10,10,10,0.4)',
       }}>
         {store.status || '—'}
       </span>

@@ -58,7 +58,7 @@ function Toggle({
       title={locked ? lockedTitle : checked ? 'On — click to turn off' : 'Off — click to turn on'}
       style={{
         width: 36, height: 20, borderRadius: 10, border: 'none', padding: 0,
-        background: locked ? 'var(--ink-15)' : checked ? 'var(--ink)' : 'var(--ink-15)',
+        background: locked ? 'rgba(10,10,10,0.12)' : checked ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
         cursor: locked ? 'not-allowed' : 'pointer',
         position: 'relative', flexShrink: 0, transition: 'background 0.2s',
         opacity: locked ? 0.5 : 1,
@@ -68,7 +68,7 @@ function Toggle({
         position: 'absolute', top: 2,
         left: checked && !locked ? 18 : 2,
         width: 16, height: 16, borderRadius: '50%',
-        background: 'var(--paper)',
+        background: '#f7f6f3',
         transition: 'left 0.2s',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 8,
@@ -82,11 +82,11 @@ function Toggle({
 function SectionHeader({ label, tag }: { label: string; tag?: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-      <p className="t-meta">{label}</p>
+      <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)' }}>{label}</p>
       {tag && (
         <span style={{
           fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.15em',
-          textTransform: 'uppercase', color: 'var(--ink-40)', background: 'var(--ink-06)', padding: '2px 8px',
+          textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', background: 'rgba(10,10,10,0.04)', padding: '2px 8px',
         }}>
           {tag}
         </span>
@@ -251,8 +251,8 @@ export default function PreferencesPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p className="t-meta">Loading...</p>
+      <div style={{ minHeight: '100vh', background: '#f7f6f3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)' }}>Loading...</p>
       </div>
     )
   }
@@ -260,20 +260,20 @@ export default function PreferencesPage() {
   const subscriptionMode = prefs.subscription_mode ?? 'category'
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
+    <div style={{ minHeight: '100vh', background: '#f7f6f3' }}>
       <Nav />
 
       {/* Save action bar */}
       <div style={{
-        position: 'sticky', top: 56, zIndex: 9, background: 'var(--paper)',
-        borderBottom: 'var(--rule)', height: 48,
+        position: 'sticky', top: 56, zIndex: 9, background: '#f7f6f3',
+        borderBottom: '1px solid rgba(10,10,10,0.12)', height: 48,
         display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
         padding: '0 60px', gap: 16,
       }}>
         {saved && (
           <span style={{
             fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em',
-            textTransform: 'uppercase', color: 'var(--accent)',
+            textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
           }}>
             Saved
           </span>
@@ -285,8 +285,8 @@ export default function PreferencesPage() {
 
       <div className="wrap" style={{ paddingTop: 64, paddingBottom: 120 }}>
         {/* Header */}
-        <div style={{ marginBottom: 64, borderBottom: 'var(--rule)', paddingBottom: 48 }}>
-          <p className="t-section" style={{ marginBottom: 12 }}>Your Account</p>
+        <div style={{ marginBottom: 64, borderBottom: '1px solid rgba(10,10,10,0.12)', paddingBottom: 48 }}>
+          <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', marginBottom: 12 }}>Your Account</p>
           <h1 style={{
             fontFamily: 'var(--font-serif)', fontSize: 48, fontWeight: 300,
             letterSpacing: '-0.02em', marginBottom: 16,
@@ -297,29 +297,24 @@ export default function PreferencesPage() {
             <span style={{
               fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600,
               letterSpacing: '0.2em', textTransform: 'uppercase',
-              background: tier === 'paid' ? 'var(--accent)' : 'var(--ink-06)',
-              color: tier === 'paid' ? 'var(--paper)' : 'var(--ink-40)',
+              background: tier === 'paid' ? '#0a0a0a' : 'rgba(10,10,10,0.05)',
+              color: tier === 'paid' ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
               padding: '4px 10px',
             }}>
               {tier === 'paid' ? 'Paid' : 'Free Tier'}
             </span>
             {tier === 'free' && (
-              <Link href="/upgrade" style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em',
-                textTransform: 'uppercase', color: 'var(--ink)', textDecoration: 'underline',
-              }}>
-                Upgrade to unlock all features
-              </Link>
+              <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)' }}>Paid tier coming soon</span>
             )}
           </div>
         </div>
 
         {/* ── SECTION 1: Subscription Mode (paid only) ─────────────── */}
         {tier === 'paid' && (
-          <div style={{ marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
+          <div style={{ marginBottom: 56, paddingBottom: 56, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
             <SectionHeader label="Subscribe By" />
             <p style={{
-              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
+              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)',
               lineHeight: 1.5, marginBottom: 20, maxWidth: 480,
             }}>
               Choose whether to receive deals by category or by individual retailers you select.
@@ -333,9 +328,9 @@ export default function PreferencesPage() {
                     fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
                     letterSpacing: '0.18em', textTransform: 'uppercase',
                     padding: '10px 28px', border: '1.5px solid',
-                    borderColor: subscriptionMode === mode ? 'var(--ink)' : 'var(--ink-15)',
-                    background: subscriptionMode === mode ? 'var(--ink)' : 'transparent',
-                    color: subscriptionMode === mode ? 'var(--paper)' : 'var(--ink-40)',
+                    borderColor: subscriptionMode === mode ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+                    background: subscriptionMode === mode ? '#0a0a0a' : 'transparent',
+                    color: subscriptionMode === mode ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
                     cursor: 'pointer',
                   }}
                 >
@@ -347,25 +342,25 @@ export default function PreferencesPage() {
         )}
 
         {/* ── ROW 1: Categories | Deal Types ───────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           {/* Left: Categories OR Retailer Selector */}
           <div>
             {subscriptionMode === 'retailer' && tier === 'paid' ? (
               <>
                 <SectionHeader label="Retailers" />
                 <p style={{
-                  fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
+                  fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)',
                   lineHeight: 1.5, marginBottom: 8,
                 }}>
                   Select the specific retailers you want deals from.{' '}
-                  <span style={{ color: 'var(--ink)' }}>
+                  <span style={{ color: '#0a0a0a' }}>
                     {(prefs.selected_retailers ?? []).length} selected
                   </span>
                 </p>
                 <p style={{ marginBottom: 20 }}>
                   <Link href="/stores" style={{
                     fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.18em',
-                    textTransform: 'uppercase', color: 'var(--ink-40)', textDecoration: 'underline',
+                    textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', textDecoration: 'underline',
                   }}>
                     View all stores →
                   </Link>
@@ -382,7 +377,7 @@ export default function PreferencesPage() {
                   {filteredRetailers.length === 0 ? (
                     <p style={{
                       fontFamily: 'var(--font-condensed)', fontSize: 11,
-                      letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)',
+                      letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
                       padding: '16px 0',
                     }}>No retailers found</p>
                   ) : (
@@ -394,25 +389,25 @@ export default function PreferencesPage() {
                           onClick={() => toggleRetailer(r.name)}
                           style={{
                             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            padding: '12px 16px', background: 'var(--ink-06)', cursor: 'pointer',
+                            padding: '12px 16px', background: 'rgba(10,10,10,0.04)', cursor: 'pointer',
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <div style={{
                               width: 18, height: 18, border: '1.5px solid', flexShrink: 0,
-                              borderColor: isSelected ? 'var(--ink)' : 'var(--ink-15)',
-                              background: isSelected ? 'var(--ink)' : 'transparent',
+                              borderColor: isSelected ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+                              background: isSelected ? '#0a0a0a' : 'transparent',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                             }}>
                               {isSelected && (
                                 <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                                  <path d="M1 4L4 7L9 1" stroke="var(--paper)" strokeWidth="1.5" strokeLinecap="square"/>
+                                  <path d="M1 4L4 7L9 1" stroke="#f7f6f3" strokeWidth="1.5" strokeLinecap="square"/>
                                 </svg>
                               )}
                             </div>
                             <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600 }}>{r.name}</span>
                           </div>
-                          <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.12em', color: 'var(--ink-40)' }}>
+                          <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.12em', color: 'rgba(10,10,10,0.4)' }}>
                             {r.spendTier}
                           </span>
                         </div>
@@ -432,7 +427,7 @@ export default function PreferencesPage() {
                         key={cat}
                         style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '12px 16px', background: locked ? 'transparent' : 'var(--ink-06)',
+                          padding: '12px 16px', background: locked ? 'transparent' : 'rgba(10,10,10,0.04)',
                           opacity: locked ? 0.4 : 1,
                         }}
                       >
@@ -442,7 +437,7 @@ export default function PreferencesPage() {
                             {CATEGORY_LABELS[cat]}
                           </span>
                           {locked && (
-                            <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-40)' }}>
+                            <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)' }}>
                               Paid
                             </span>
                           )}
@@ -470,7 +465,7 @@ export default function PreferencesPage() {
                   key={dt}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '12px 16px', background: 'var(--ink-06)',
+                    padding: '12px 16px', background: 'rgba(10,10,10,0.04)',
                     opacity: tier === 'free' ? 0.4 : 1,
                   }}
                 >
@@ -490,7 +485,7 @@ export default function PreferencesPage() {
         </div>
 
         {/* ── ROW 2: Send Day | Spend Tier ─────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           {/* Left: Send Day */}
           <div>
             <SectionHeader label="Send Day" tag={tier === 'free' ? 'Paid Only' : undefined} />
@@ -504,9 +499,9 @@ export default function PreferencesPage() {
                     fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
                     letterSpacing: '0.18em', textTransform: 'uppercase',
                     padding: '8px 16px', border: '1.5px solid',
-                    borderColor: prefs.send_day === value ? 'var(--ink)' : 'var(--ink-15)',
-                    background: prefs.send_day === value ? 'var(--ink)' : 'transparent',
-                    color: prefs.send_day === value ? 'var(--paper)' : tier === 'free' && value !== 'thursday' ? 'var(--ink-15)' : 'var(--ink-40)',
+                    borderColor: prefs.send_day === value ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+                    background: prefs.send_day === value ? '#0a0a0a' : 'transparent',
+                    color: prefs.send_day === value ? '#f7f6f3' : tier === 'free' && value !== 'thursday' ? 'rgba(10,10,10,0.12)' : 'rgba(10,10,10,0.4)',
                     cursor: tier === 'free' ? 'default' : 'pointer',
                   }}
                 >
@@ -520,7 +515,7 @@ export default function PreferencesPage() {
           <div>
             <SectionHeader label="Spend Tier" />
             <p style={{
-              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
+              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)',
               lineHeight: 1.5, marginBottom: 20,
             }}>
               Filter deals by how much brands typically charge.
@@ -536,9 +531,9 @@ export default function PreferencesPage() {
                     style={{
                       fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: 600,
                       letterSpacing: '0.1em', padding: '10px 20px', border: '1.5px solid',
-                      borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
-                      background: active ? 'var(--ink)' : 'transparent',
-                      color: active ? 'var(--paper)' : 'var(--ink-40)',
+                      borderColor: active ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+                      background: active ? '#0a0a0a' : 'transparent',
+                      color: active ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
                       cursor: 'pointer',
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
                     }}
@@ -553,7 +548,7 @@ export default function PreferencesPage() {
         </div>
 
         {/* ── ROW 3: Minimum Discount | Gender ─────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: 'var(--rule)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
           {/* Left: Minimum Discount */}
           <div>
             <SectionHeader label="Minimum Discount" tag={tier === 'free' ? 'Paid Only' : undefined} />
@@ -567,9 +562,9 @@ export default function PreferencesPage() {
                     fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
                     letterSpacing: '0.18em', textTransform: 'uppercase',
                     padding: '8px 20px', border: '1.5px solid',
-                    borderColor: prefs.min_discount === v ? 'var(--ink)' : 'var(--ink-15)',
-                    background: prefs.min_discount === v ? 'var(--ink)' : 'transparent',
-                    color: prefs.min_discount === v ? 'var(--paper)' : tier === 'free' && v !== 40 ? 'var(--ink-15)' : 'var(--ink-40)',
+                    borderColor: prefs.min_discount === v ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+                    background: prefs.min_discount === v ? '#0a0a0a' : 'transparent',
+                    color: prefs.min_discount === v ? '#f7f6f3' : tier === 'free' && v !== 40 ? 'rgba(10,10,10,0.12)' : 'rgba(10,10,10,0.4)',
                     cursor: tier === 'free' ? 'default' : 'pointer',
                   }}
                 >
@@ -583,7 +578,7 @@ export default function PreferencesPage() {
           <div>
             <SectionHeader label="Gender" />
             <p style={{
-              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)',
+              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)',
               lineHeight: 1.5, marginBottom: 20,
             }}>
               Only show deals relevant to the genders you shop for.
@@ -599,9 +594,9 @@ export default function PreferencesPage() {
                       fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
                       letterSpacing: '0.18em', textTransform: 'uppercase',
                       padding: '10px 28px', border: '1.5px solid',
-                      borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
-                      background: active ? 'var(--ink)' : 'transparent',
-                      color: active ? 'var(--paper)' : 'var(--ink-40)',
+                      borderColor: active ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+                      background: active ? '#0a0a0a' : 'transparent',
+                      color: active ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
                       cursor: 'pointer',
                     }}
                   >
@@ -620,7 +615,7 @@ export default function PreferencesPage() {
             href="/stores"
             style={{
               fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.2em',
-              textTransform: 'uppercase', color: 'var(--ink-40)', textDecoration: 'none',
+              textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', textDecoration: 'none',
             }}
           >
             View Subscribed Stores →
@@ -631,12 +626,12 @@ export default function PreferencesPage() {
         </div>
 
         {/* ── Account ───────────────────────────────────────────────── */}
-        <div style={{ marginTop: 80, paddingTop: 40, borderTop: 'var(--rule)' }}>
+        <div style={{ marginTop: 80, paddingTop: 40, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
           <SectionHeader label="Account" />
 
           {/* Change Email */}
           <div style={{ marginBottom: 32 }}>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-70)', marginBottom: 12 }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.65)', marginBottom: 12 }}>
               Update the email address your weekly brief is sent to.
             </p>
             {!showChangeEmail ? (
@@ -645,8 +640,8 @@ export default function PreferencesPage() {
                 style={{
                   fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
                   letterSpacing: '0.18em', textTransform: 'uppercase',
-                  padding: '10px 24px', border: '1.5px solid var(--ink-15)',
-                  background: 'transparent', color: 'var(--ink-70)', cursor: 'pointer',
+                  padding: '10px 24px', border: '1.5px solid rgba(10,10,10,0.12)',
+                  background: 'transparent', color: 'rgba(10,10,10,0.65)', cursor: 'pointer',
                 }}
               >
                 Change Email
@@ -669,7 +664,7 @@ export default function PreferencesPage() {
                   style={{
                     fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.18em',
                     textTransform: 'uppercase', padding: '10px 16px', border: 'none',
-                    background: 'transparent', color: 'var(--ink-40)', cursor: 'pointer',
+                    background: 'transparent', color: 'rgba(10,10,10,0.4)', cursor: 'pointer',
                   }}
                 >
                   Cancel
@@ -677,15 +672,15 @@ export default function PreferencesPage() {
               </div>
             )}
             {emailMsg && (
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)', marginTop: 8 }}>
+              <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)', marginTop: 8 }}>
                 {emailMsg}
               </p>
             )}
           </div>
 
           {/* Delete Account */}
-          <div style={{ paddingTop: 24, borderTop: '1px solid var(--ink-06)' }}>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'var(--ink-40)', marginBottom: 12 }}>
+          <div style={{ paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.05)' }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)', marginBottom: 12 }}>
               Permanently delete your account and all preferences. This cannot be undone.
             </p>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -704,9 +699,9 @@ export default function PreferencesPage() {
                   fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
                   letterSpacing: '0.18em', textTransform: 'uppercase',
                   padding: '10px 24px', border: '1.5px solid',
-                  borderColor: deleteConfirm.toLowerCase() === 'delete' ? '#c0392b' : 'var(--ink-15)',
+                  borderColor: deleteConfirm.toLowerCase() === 'delete' ? '#c0392b' : 'rgba(10,10,10,0.12)',
                   background: deleteConfirm.toLowerCase() === 'delete' ? '#c0392b' : 'transparent',
-                  color: deleteConfirm.toLowerCase() === 'delete' ? '#fff' : 'var(--ink-40)',
+                  color: deleteConfirm.toLowerCase() === 'delete' ? '#fff' : 'rgba(10,10,10,0.4)',
                   cursor: deleteConfirm.toLowerCase() === 'delete' ? 'pointer' : 'default',
                   opacity: deletingAccount ? 0.6 : 1,
                 }}
