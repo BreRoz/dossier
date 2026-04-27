@@ -215,6 +215,25 @@ export default function LandingPage() {
         }
         .rd-pricing-cta--outline { color: #0a0a0a; border-color: rgba(10,10,10,0.25); }
         .rd-pricing-cta--fill    { color: #f7f6f3; border-color: rgba(247,246,243,0.25); }
+        .rd-pricing-desc {
+          font-family: var(--font-sans); font-size: 13px; line-height: 1.6;
+          color: rgba(10,10,10,0.55); margin-top: -16px;
+        }
+
+        /* ── FAQ ── */
+        .rd-faq { margin-top: 1px; border-top: 1px solid rgba(10,10,10,0.12); }
+        .rd-faq-item {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+          padding: 32px 0; border-bottom: 1px solid rgba(10,10,10,0.08);
+        }
+        .rd-faq-q {
+          font-family: var(--font-sans); font-size: 14px; font-weight: 600;
+          letter-spacing: -0.01em; color: #0a0a0a;
+        }
+        .rd-faq-a {
+          font-family: var(--font-sans); font-size: 13px;
+          color: rgba(10,10,10,0.55); line-height: 1.65;
+        }
 
         /* ── FOOTER ── */
         .rd-footer {
@@ -261,6 +280,7 @@ export default function LandingPage() {
           .rd-bar span:nth-child(n+3) { display: none; }
           .rd-pricing-grid { grid-template-columns: 1fr; }
           .rd-pricing-tier { padding: 40px 24px; }
+          .rd-faq-item { grid-template-columns: 1fr; gap: 12px; }
           .rd-section { padding: 64px 20px; }
           .rd-footer { flex-direction: column; align-items: flex-start; padding: 24px 20px; }
           .rd-footer-links { flex-wrap: wrap; gap: 16px 24px; }
@@ -389,8 +409,15 @@ export default function LandingPage() {
                 <span className="rd-sans">$0</span>
                 <span className="rd-pricing-per">/ FOREVER</span>
               </div>
+              <p className="rd-pricing-desc">The Deal Dossier brief for deal-curious readers. No credit card, no catch.</p>
               <ul className="rd-pricing-list">
-                {['Fashion, Grocery & Restaurants', 'Weekly Thursday delivery', '40%+ minimum discount', 'Browse the archive'].map(f => (
+                {[
+                  '3 core categories (Fashion, Grocery, Restaurants)',
+                  '40%+ minimum discount',
+                  'Thursday delivery',
+                  'Curated deal types',
+                  'Subscribed stores directory',
+                ].map(f => (
                   <li key={f}><span className="rd-pricing-dot">—</span>{f}</li>
                 ))}
               </ul>
@@ -405,8 +432,18 @@ export default function LandingPage() {
                 <span className="rd-pricing-per" style={{ color: 'rgba(247,246,243,0.45)' }}>/ MONTH</span>
               </div>
               <div className="rd-pricing-alt">OR $45 / YEAR — SAVE 25%</div>
+              <p className="rd-pricing-desc" style={{ color: 'rgba(247,246,243,0.55)' }}>The full Deal Dossier experience, personalized entirely to you.</p>
               <ul className="rd-pricing-list rd-pricing-list--light">
-                {['Everything in Free', 'All 13 categories', 'Toggle stores on / off', 'Deal type filtering', 'Early Thursday delivery'].map(f => (
+                {[
+                  'All 13 deal categories — fully adjustable',
+                  'Choose your minimum discount: 20%, 30%, 40%, or 50%+',
+                  'Any send day of the week',
+                  'Toggle individual stores on or off',
+                  'Age-based store filter ("where people my age shop")',
+                  'Full deal type controls — BOGO, flash sales, loyalty & more',
+                  'Stackable & up-to deal alerts',
+                  'Suggest stores for us to track',
+                ].map(f => (
                   <li key={f}><span className="rd-pricing-dot">—</span>{f}</li>
                 ))}
               </ul>
@@ -414,6 +451,22 @@ export default function LandingPage() {
             </div>
 
           </div>
+
+          {/* FAQ */}
+          <div className="rd-faq">
+            {[
+              { q: 'Is the free tier really free?', a: 'Yes, permanently. Deal Dossier earns through affiliate relationships — clicking a deal link supports the product. No paywalls on the core experience.' },
+              { q: 'Can I change categories later?', a: 'Anytime. Your preferences page lets you toggle categories, and changes take effect with the next edition.' },
+              { q: 'How are deals selected?', a: 'Our system reads promotional emails from a dedicated inbox we subscribe to retailer lists with. AI extracts structured deal data, which we filter and rank by your preferences.' },
+              { q: 'When will paid tier launch?', a: 'We\'re working on it. Join the free tier now and you\'ll be first to know when paid launches. Your preferences and history carry over automatically.' },
+            ].map(({ q, a }) => (
+              <div key={q} className="rd-faq-item">
+                <div className="rd-faq-q">{q}</div>
+                <div className="rd-faq-a">{a}</div>
+              </div>
+            ))}
+          </div>
+
         </div>
 
         {/* ── FOOTER ── */}
