@@ -518,7 +518,14 @@ export default function LandingPage() {
             </div>
 
             {/* PAID */}
-            <div className="rd-pricing-tier rd-pricing-tier--dark">
+            <div className="rd-pricing-tier rd-pricing-tier--dark" style={{ position: 'relative' }}>
+              <span style={{
+                position: 'absolute', top: 24, right: 24,
+                fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 700,
+                letterSpacing: '0.22em', textTransform: 'uppercase',
+                color: '#0a0a0a', background: '#f7f6f3',
+                padding: '4px 10px',
+              }}>Coming Soon</span>
               <div className="rd-pricing-name rd-serif" style={{ color: '#f7f6f3' }}>PAID</div>
               <div className="rd-pricing-price">
                 <span className="rd-sans" style={{ color: '#f7f6f3' }}>$4.99</span>
