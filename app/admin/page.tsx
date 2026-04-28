@@ -193,12 +193,25 @@ export default async function AdminPage() {
     .slice(0, 10)
   const maxToggleCount = Math.max(...topToggledStores.map((r) => r[1]), 1)
 
-  // Newsletter performance: split into deal producers vs zero-deal senders
-  const dealProducers = (retailerScanLog || []).filter((r) => r.deals_extracted > 0)
+  // Newsletter performance: aggregate by retailer across all weeks, then split
+  const retailerAggMap = new Map<string, { retailer: string; sender_email: string; emails_processed: number; deals_extracted: number }>()
+  for (const row of (retailerScanLog || [])) {
+    const key = row.retailer
+    const existing = retailerAggMap.get(key)
+    if (existing) {
+      existing.emails_processed += row.emails_processed
+      existing.deals_extracted += row.deals_extracted
+    } else {
+      retailerAggMap.set(key, { ...row })
+    }
+  }
+  const aggregatedScanLog = Array.from(retailerAggMap.values())
+
+  const dealProducers = aggregatedScanLog.filter((r) => r.deals_extracted > 0)
     .sort((a, b) => b.deals_extracted - a.deals_extracted)
-  const zeroDealSenders = (retailerScanLog || []).filter((r) => r.deals_extracted === 0)
+  const zeroDealSenders = aggregatedScanLog.filter((r) => r.deals_extracted === 0)
     .sort((a, b) => b.emails_processed - a.emails_processed)
-  const maxEmailsProcessed = Math.max(...(retailerScanLog || []).map((r) => r.emails_processed), 1)
+  const maxEmailsProcessed = Math.max(...aggregatedScanLog.map((r) => r.emails_processed), 1)
 
   // ─── render ────────────────────────────────────────────────────────────────
 

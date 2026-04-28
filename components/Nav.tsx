@@ -25,20 +25,32 @@ export function Nav() {
   })
 
   return (
-    <nav style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '20px 40px',
-      borderBottom: '1px solid rgba(10,10,10,0.12)',
-      background: '#f7f6f3',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-    }}>
-      {links.map(({ label, href }) => (
-        <Link key={label} href={href} style={linkStyle(href)}>{label}</Link>
-      ))}
-    </nav>
+    <>
+      <style>{`
+        .site-nav {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 20px 40px;
+          border-bottom: 1px solid rgba(10,10,10,0.12);
+          background: #f7f6f3;
+          position: sticky;
+          top: 0;
+          z-index: 100;
+        }
+        @media (max-width: 900px) {
+          .site-nav { padding: 18px 28px; }
+        }
+        @media (max-width: 540px) {
+          .site-nav { padding: 16px 16px; }
+          .site-nav a { font-size: 9px !important; letter-spacing: 0.12em !important; }
+        }
+      `}</style>
+      <nav className="site-nav">
+        {links.map(({ label, href }) => (
+          <Link key={label} href={href} style={linkStyle(href)}>{label}</Link>
+        ))}
+      </nav>
+    </>
   )
 }

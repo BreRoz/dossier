@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Cormorant_Garamond, Barlow, Barlow_Condensed } from 'next/font/google'
 import './globals.css'
 
@@ -23,6 +23,11 @@ const barlowCondensed = Barlow_Condensed({
   variable: '--font-condensed',
   display: 'swap',
 })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+}
 
 export const metadata: Metadata = {
   title: 'Deal Dossier — The Curated Deals Brief',

@@ -114,7 +114,6 @@ export default function LandingPage() {
           text-decoration: none; color: #0a0a0a;
         }
         .rd-nav-link.active { border-bottom: 1px solid #0a0a0a; padding-bottom: 2px; }
-        .rd-nav-hide { display: block; }
         .rd-nav-stats { text-align: right; }
         .rd-nav-stats-week {
           font-family: var(--font-condensed); font-size: 10px; letter-spacing: 0.18em;
@@ -325,7 +324,6 @@ export default function LandingPage() {
         ════════════════════════════════════════ */
         @media (max-width: 900px) {
           .rd-nav { padding: 18px 28px; }
-          .rd-nav-hide { display: none; }
           .rd-headline-area { padding: 16px 28px 0; }
           .rd-hl { font-size: min(7.8vw, calc((100dvh - 200px) / 4.6)); }
           .rd-subscribe-inline { gap: 16px; }
@@ -342,8 +340,7 @@ export default function LandingPage() {
         ════════════════════════════════════════ */
         @media (max-width: 540px) {
           /* Layout */
-          .rd-nav { padding: 16px 20px; }
-          .rd-nav-hide { display: none; }
+          .rd-nav { padding: 16px 16px; }
           .rd-nav-stats { display: none; }
           .rd-label-stats { display: none; }
           .rd-headline-area { padding: 14px 20px 0; }
@@ -398,9 +395,9 @@ export default function LandingPage() {
           {/* NAV */}
           <nav className="rd-nav">
             <Link href="/"             className="rd-nav-link active">HOME</Link>
-            <Link href="/archive"      className="rd-nav-link rd-nav-hide">ARCHIVE</Link>
-            <Link href="/stores"       className="rd-nav-link rd-nav-hide">STORES</Link>
-            <Link href="/preferences"  className="rd-nav-link rd-nav-hide">SETTINGS</Link>
+            <Link href="/archive"      className="rd-nav-link">ARCHIVE</Link>
+            <Link href="/stores"       className="rd-nav-link">STORES</Link>
+            <Link href="/preferences"  className="rd-nav-link">SETTINGS</Link>
           </nav>
 
           {/* HEADLINE AREA */}
