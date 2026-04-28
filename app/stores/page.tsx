@@ -33,16 +33,8 @@ function fmt(n: number): string {
 
 function StatCard({ value, label, sub }: { value: number; label: string; sub?: string }) {
   return (
-    <div style={{
-      padding: '32px 40px', background: 'rgba(10,10,10,0.04)',
-      display: 'flex', flexDirection: 'column', gap: 8, flex: 1,
-    }}>
-      <div style={{
-        fontFamily: 'var(--font-serif)', fontSize: 52, fontWeight: 300,
-        letterSpacing: '-0.02em', lineHeight: 1, color: '#0a0a0a',
-      }}>
-        {fmt(value)}
-      </div>
+    <div className="stores-stat-card">
+      <div className="stores-stat-num">{fmt(value)}</div>
       <div style={{
         fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 600,
         letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
@@ -50,10 +42,7 @@ function StatCard({ value, label, sub }: { value: number; label: string; sub?: s
         {label}
       </div>
       {sub && (
-        <div style={{
-          fontFamily: 'var(--font-sans)', fontSize: 14,
-          color: 'rgba(10,10,10,0.4)', lineHeight: 1.4,
-        }}>
+        <div style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)', lineHeight: 1.4 }}>
           {sub}
         </div>
       )}
@@ -282,6 +271,21 @@ export default function StoresPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f7f6f3' }}>
+      <style>{`
+        .stores-h1 { font-family: var(--font-serif); font-size: 48px; font-weight: 300; letter-spacing: -0.02em; margin-bottom: 12px; }
+        .stores-stat-card { padding: 32px 40px; background: rgba(10,10,10,0.04); display: flex; flex-direction: column; gap: 8px; flex: 1; }
+        .stores-stat-num  { font-family: var(--font-serif); font-size: 52px; font-weight: 300; letter-spacing: -0.02em; line-height: 1; color: #0a0a0a; }
+        .stores-filter-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+        .stores-count { margin-left: auto; text-align: right; }
+        .stores-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        @media (max-width: 768px) {
+          .stores-h1 { font-size: 32px; }
+          .stores-stat-card { padding: 20px 24px; }
+          .stores-stat-num  { font-size: 36px; }
+          .stores-filter-row { gap: 10px; }
+          .stores-count { margin-left: 0; text-align: left; width: 100%; }
+        }
+      `}</style>
       <Nav />
 
       <div className="wrap" style={{ paddingTop: 64, paddingBottom: 120 }}>
@@ -289,10 +293,7 @@ export default function StoresPage() {
         {/* Header */}
         <div style={{ marginBottom: 48, borderBottom: '1px solid rgba(10,10,10,0.12)', paddingBottom: 40 }}>
           <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', marginBottom: 12 }}>Your Account</p>
-          <h1 style={{
-            fontFamily: 'var(--font-serif)', fontSize: 48, fontWeight: 300,
-            letterSpacing: '-0.02em', marginBottom: 12,
-          }}>
+          <h1 className="stores-h1">
             Subscribed Stores
           </h1>
           <p style={{
@@ -334,10 +335,7 @@ export default function StoresPage() {
         </div>
 
         {/* Filters row */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 16,
-          flexWrap: 'wrap', marginBottom: 16,
-        }}>
+        <div className="stores-filter-row">
           {/* Search */}
           <input
             type="text"
@@ -492,7 +490,7 @@ export default function StoresPage() {
           )}
 
           {/* Store counts */}
-          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+          <div className="stores-count">
             <div style={{
               fontFamily: 'var(--font-condensed)', fontSize: 12, letterSpacing: '0.15em',
               textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', lineHeight: 1.6,
@@ -509,7 +507,7 @@ export default function StoresPage() {
         </div>
 
         {/* Column headers */}
-        <div className="rtable">
+        <div className="stores-table-wrap rtable">
           <div style={{
             display: 'grid', gridTemplateColumns: '1fr 40px 56px 72px 80px 48px',
             gap: 16, padding: '10px 16px', borderBottom: '1px solid rgba(10,10,10,0.12)',
