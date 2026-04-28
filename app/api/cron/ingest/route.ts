@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
 
     const { data: existingEdition } = await supabase
       .from('editions')
-      .select('id, issue_number')
+      .select('id, issue_number, emails_scanned')
       .eq('week_of', weekOfStr)
       .single()
 
