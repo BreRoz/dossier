@@ -111,6 +111,7 @@ function ToggleSwitch({
 export default function StoresPage() {
   const supabase = createClient()
   const catDropRef = useRef<HTMLDivElement>(null)
+  const ageDropRef = useRef<HTMLDivElement>(null)
 
   const [stats, setStats]               = useState<Stats | null>(null)
   const [stores, setStores]             = useState<StoreRow[]>([])
@@ -118,6 +119,7 @@ export default function StoresPage() {
   const [loading, setLoading]           = useState(true)
   const [search, setSearch]             = useState('')
   const [catDropOpen, setCatDropOpen]   = useState(false)
+  const [ageDropOpen, setAgeDropOpen]   = useState(false)
   const [selectedCats, setSelectedCats] = useState<string[]>([])
   const [selectedAge, setSelectedAge]   = useState<string>('')
   const [dealCounts, setDealCounts]     = useState<Record<string, number>>({})
@@ -131,11 +133,14 @@ export default function StoresPage() {
   const [suggestDone, setSuggestDone]     = useState(false)
   const [suggestError, setSuggestError]   = useState('')
 
-  // Close category dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (catDropRef.current && !catDropRef.current.contains(e.target as Node)) {
         setCatDropOpen(false)
+      }
+      if (ageDropRef.current && !ageDropRef.current.contains(e.target as Node)) {
+        setAgeDropOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClick)
@@ -437,48 +442,71 @@ export default function StoresPage() {
             )}
           </div>
 
-          <span style={{
-            marginLeft: 'auto',
-            fontFamily: 'var(--font-condensed)', fontSize: 12, letterSpacing: '0.15em',
-            textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
-          }}>
-            {visibleStores.length} store{visibleStores.length !== 1 ? 's' : ''}
-          </span>
-        </div>
+          {/* Age dropdown — only shown if Sheet has age group data */}
+          {availableAgeGroups.length > 0 && (
+            <div ref={ageDropRef} style={{ position: 'relative' }}>
+              <button
+                onClick={() => setAgeDropOpen((o) => !o)}
+                style={{
+                  fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 500,
+                  letterSpacing: '0.15em', textTransform: 'uppercase',
+                  padding: '7px 14px', border: '1.5px solid',
+                  borderColor: selectedAge ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+                  background: selectedAge ? '#0a0a0a' : 'transparent',
+                  color: selectedAge ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {selectedAge ? `Age: ${selectedAge}` : 'All Ages'}
+                <span style={{ fontSize: 13, opacity: 0.6 }}>{ageDropOpen ? '▲' : '▼'}</span>
+              </button>
+              {ageDropOpen && (
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
+                  background: '#f7f6f3', border: '1.5px solid rgba(10,10,10,0.12)',
+                  minWidth: 160, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+                }}>
+                  {(['', 'Kids', 'Teens', "20's", "30's", "40's", '50+'] as const).map((age) => {
+                    const active = selectedAge === age
+                    return (
+                      <button
+                        key={age || 'all'}
+                        onClick={() => { setSelectedAge(age); setAgeDropOpen(false) }}
+                        style={{
+                          width: '100%', textAlign: 'left', padding: '10px 14px',
+                          fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: active ? 600 : 400,
+                          letterSpacing: '0.12em', textTransform: 'uppercase',
+                          color: active ? '#0a0a0a' : 'rgba(10,10,10,0.4)',
+                          background: active ? 'rgba(10,10,10,0.04)' : 'none',
+                          border: 'none', borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer',
+                        }}
+                      >
+                        {age || 'All Ages'}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* Age filter row — only shown if Sheet has age group data */}
-        {availableAgeGroups.length > 0 && (
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.18em',
-                textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
-              }}>
-                Clothing for people my age
-              </span>
-              {(['', 'Kids', 'Teens', "20's", "30's", "40's", '50+'] as const).map((age) => {
-                const active = selectedAge === age
-                return (
-                  <button
-                    key={age || 'all'}
-                    onClick={() => setSelectedAge(age)}
-                    style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 500,
-                      letterSpacing: '0.12em', textTransform: 'uppercase',
-                      padding: '5px 14px', border: '1.5px solid',
-                      borderColor: active ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                      background: active ? '#0a0a0a' : 'transparent',
-                      color: active ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {age || 'All Ages'}
-                  </button>
-                )
-              })}
+          {/* Store counts */}
+          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+            <div style={{
+              fontFamily: 'var(--font-condensed)', fontSize: 12, letterSpacing: '0.15em',
+              textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', lineHeight: 1.6,
+            }}>
+              {stores.length} store emails requested
+            </div>
+            <div style={{
+              fontFamily: 'var(--font-condensed)', fontSize: 12, letterSpacing: '0.15em',
+              textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', lineHeight: 1.6,
+            }}>
+              {stores.filter(s => s.status === 'Live').length} store emails confirmed
             </div>
           </div>
-        )}
+        </div>
 
         {/* Column headers */}
         <div className="rtable">
