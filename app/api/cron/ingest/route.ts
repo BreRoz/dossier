@@ -40,13 +40,23 @@ export async function GET(request: NextRequest) {
     }
 
     // Get already-processed email IDs to avoid reprocessing
-    const { data: existing } = await supabase
-      .from('deals')
-      .select('source_email_id')
-      .eq('week_of', weekOfStr)
-      .not('source_email_id', 'is', null)
+    // Check both: emails that produced deals AND emails that produced zero deals
+    const [{ data: existingDeals }, { data: existingProcessed }] = await Promise.all([
+      supabase
+        .from('deals')
+        .select('source_email_id')
+        .eq('week_of', weekOfStr)
+        .not('source_email_id', 'is', null),
+      supabase
+        .from('processed_emails')
+        .select('email_id')
+        .eq('week_of', weekOfStr),
+    ])
 
-    const processedIds = new Set((existing || []).map((d) => d.source_email_id))
+    const processedIds = new Set([
+      ...(existingDeals || []).map((d) => d.source_email_id),
+      ...(existingProcessed || []).map((d) => d.email_id),
+    ])
     const newEmails = emails.filter((e) => !processedIds.has(e.id)).slice(0, 50)
 
     let newDeals = 0
@@ -135,6 +145,11 @@ export async function GET(request: NextRequest) {
               deals_extracted: extracted.length,
             })
         }
+
+        // Mark email as processed so it's never re-ingested (even if it had 0 deals)
+        await supabase
+          .from('processed_emails')
+          .upsert({ email_id: email.id, week_of: weekOfStr })
 
         processedEmailIds.push(email.id)
       } catch (err) {
