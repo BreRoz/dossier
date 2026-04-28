@@ -21,14 +21,12 @@ export async function POST(req: NextRequest) {
     weekOfStr = format(getCurrentWeekOf('thursday'), 'yyyy-MM-dd')
   }
 
+  console.log('[reset-week] Resetting week_of:', weekOfStr)
+
   const db = createServiceClient()
 
-  const [
-    { error: e1 },
-    { error: e2 },
-    { error: e3 },
-    { error: e4 },
-  ] = await Promise.all([
+  // Run each reset independently so one failure doesn't block the others
+  const results = await Promise.allSettled([
     db.from('processed_emails').delete().eq('week_of', weekOfStr),
     db.from('deals').delete().eq('week_of', weekOfStr),
     db.from('retailer_scan_log').delete().eq('week_of', weekOfStr),
@@ -39,10 +37,29 @@ export async function POST(req: NextRequest) {
     }).eq('week_of', weekOfStr),
   ])
 
-  const errors = [e1, e2, e3, e4].filter(Boolean)
-  if (errors.length > 0) {
-    console.error('Reset errors:', errors)
-    return NextResponse.json({ error: 'Partial reset failure', details: errors }, { status: 500 })
+  const labels = ['processed_emails', 'deals', 'retailer_scan_log', 'editions']
+  const errors: Record<string, string> = {}
+
+  results.forEach((result, i) => {
+    if (result.status === 'rejected') {
+      errors[labels[i]] = String(result.reason)
+      console.error(`[reset-week] ${labels[i]} failed:`, result.reason)
+    } else if (result.value?.error) {
+      // Ignore "table does not exist" — processed_emails may not be created yet
+      const msg = result.value.error.message ?? ''
+      if (!msg.includes('does not exist') && !msg.includes('relation')) {
+        errors[labels[i]] = msg
+        console.error(`[reset-week] ${labels[i]} error:`, result.value.error)
+      } else {
+        console.log(`[reset-week] ${labels[i]} skipped (table not yet created)`)
+      }
+    } else {
+      console.log(`[reset-week] ${labels[i]} cleared`)
+    }
+  })
+
+  if (Object.keys(errors).length > 0) {
+    return NextResponse.json({ error: 'Some resets failed', details: errors }, { status: 500 })
   }
 
   return NextResponse.json({ success: true, week_of: weekOfStr })
