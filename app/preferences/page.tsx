@@ -261,15 +261,37 @@ export default function PreferencesPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#f7f6f3' }}>
+      <style>{`
+        .pref-save-bar {
+          position: sticky; top: 56px; z-index: 9; background: #f7f6f3;
+          border-bottom: 1px solid rgba(10,10,10,0.12); height: 48px;
+          display: flex; align-items: center; justify-content: flex-end;
+          padding: 0 60px; gap: 16px;
+        }
+        .pref-2col {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+          margin-bottom: 56px; padding-bottom: 56px;
+          border-bottom: 1px solid rgba(10,10,10,0.12);
+        }
+        .pref-bottom-actions {
+          display: flex; justify-content: flex-end; gap: 24px; align-items: center;
+        }
+        @media (max-width: 768px) {
+          .pref-save-bar { padding: 0 24px; }
+          .pref-2col { grid-template-columns: 1fr; gap: 40px; }
+          .pref-bottom-actions { flex-direction: column; align-items: stretch; }
+          .pref-bottom-actions a,
+          .pref-bottom-actions button { text-align: center; }
+          .spend-tier-row { flex-wrap: wrap; }
+          .gender-row { flex-wrap: wrap; }
+          .send-day-row { flex-wrap: wrap; }
+          .min-disc-row { flex-wrap: wrap; }
+        }
+      `}</style>
       <Nav />
 
       {/* Save action bar */}
-      <div style={{
-        position: 'sticky', top: 56, zIndex: 9, background: '#f7f6f3',
-        borderBottom: '1px solid rgba(10,10,10,0.12)', height: 48,
-        display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-        padding: '0 60px', gap: 16,
-      }}>
+      <div className="pref-save-bar">
         {saved && (
           <span style={{
             fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em',
@@ -342,7 +364,7 @@ export default function PreferencesPage() {
         )}
 
         {/* ── ROW 1: Categories | Deal Types ───────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
+        <div className="pref-2col">
           {/* Left: Categories OR Retailer Selector */}
           <div>
             {subscriptionMode === 'retailer' && tier === 'paid' ? (
@@ -485,7 +507,7 @@ export default function PreferencesPage() {
         </div>
 
         {/* ── ROW 2: Send Day | Spend Tier ─────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
+        <div className="pref-2col">
           {/* Left: Send Day */}
           <div>
             <SectionHeader label="Send Day" tag={tier === 'free' ? 'Paid Only' : undefined} />
@@ -548,7 +570,7 @@ export default function PreferencesPage() {
         </div>
 
         {/* ── ROW 3: Minimum Discount | Gender ─────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, marginBottom: 56, paddingBottom: 56, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
+        <div className="pref-2col">
           {/* Left: Minimum Discount */}
           <div>
             <SectionHeader label="Minimum Discount" tag={tier === 'free' ? 'Paid Only' : undefined} />
@@ -610,7 +632,7 @@ export default function PreferencesPage() {
 
 
         {/* Save button bottom */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 24, alignItems: 'center' }}>
+        <div className="pref-bottom-actions">
           <Link
             href="/stores"
             style={{
