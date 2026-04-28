@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { fetchPromotionalEmails } from '@/lib/gmail'
 import { extractDealsFromEmail } from '@/lib/openai'
 import { getCurrentWeekOf } from '@/lib/deals'
-import { subHours, addDays, format } from 'date-fns'
+import { addDays, format, startOfWeek } from 'date-fns'
 import type { Category } from '@/types'
 
 export const maxDuration = 300 // 5 minute max
@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
   const weekOf = getCurrentWeekOf('thursday')
   const weekOfStr = format(weekOf, 'yyyy-MM-dd')
 
-  // Get emails from the last 7 days (weekly cadence)
-  const since = subHours(new Date(), 24 * 7)
+  // Scan all emails since Monday 12:00am of the current week
+  const since = startOfWeek(new Date(), { weekStartsOn: 1 }) // 1 = Monday
 
   try {
     const emails = await fetchPromotionalEmails(since)
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       ...(existingDeals || []).map((d) => d.source_email_id),
       ...(existingProcessed || []).map((d) => d.email_id),
     ])
-    const newEmails = emails.filter((e) => !processedIds.has(e.id)).slice(0, 50)
+    const newEmails = emails.filter((e) => !processedIds.has(e.id))
 
     let newDeals = 0
     let emailsWithDeals = 0
