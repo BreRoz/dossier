@@ -51,8 +51,22 @@ const DEAL_RANK_SCORE = (deal: Deal): number => {
   return 30
 }
 
+// Remove duplicate sales: if the same retailer has the same deal_type + percent_off,
+// keep only the highest-ranked one (best description, promo code, etc.)
+export function dedupeDeals(deals: Deal[]): Deal[] {
+  const seen = new Map<string, Deal>()
+  for (const deal of deals) {
+    const key = `${deal.retailer}||${deal.deal_type}||${deal.percent_off ?? 'null'}`
+    const existing = seen.get(key)
+    if (!existing || DEAL_RANK_SCORE(deal) > DEAL_RANK_SCORE(existing)) {
+      seen.set(key, deal)
+    }
+  }
+  return Array.from(seen.values())
+}
+
 export function rankDeals(deals: Deal[]): Deal[] {
-  return [...deals].sort((a, b) => DEAL_RANK_SCORE(b) - DEAL_RANK_SCORE(a))
+  return dedupeDeals([...deals]).sort((a, b) => DEAL_RANK_SCORE(b) - DEAL_RANK_SCORE(a))
 }
 
 export function filterDealsForSubscriber(

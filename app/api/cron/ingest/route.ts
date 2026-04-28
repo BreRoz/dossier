@@ -59,6 +59,19 @@ export async function GET(request: NextRequest) {
     ])
     const newEmails = emails.filter((e) => !processedIds.has(e.id))
 
+    // Build a set of already-seen (retailer, deal_type, percent_off) combos this week
+    // so we never insert the same sale twice even if 3 emails announce it
+    const { data: existingDealsThisWeek } = await supabase
+      .from('deals')
+      .select('retailer, deal_type, percent_off')
+      .eq('week_of', weekOfStr)
+
+    const seenDealKeys = new Set(
+      (existingDealsThisWeek || []).map((d) =>
+        `${d.retailer}||${d.deal_type}||${d.percent_off ?? 'null'}`
+      )
+    )
+
     let newDeals = 0
     let emailsWithDeals = 0
     let emailsWithNoDeals = 0
@@ -76,6 +89,14 @@ export async function GET(request: NextRequest) {
         for (const deal of extracted) {
           // Skip deals with no real value
           if (!deal.description || !deal.retailer) continue
+
+          // Skip if same retailer already has this exact sale type + discount this week
+          const dealKey = `${deal.retailer}||${deal.deal_type}||${deal.percent_off ?? 'null'}`
+          if (seenDealKeys.has(dealKey)) {
+            console.log(`[ingest] skipping duplicate deal: ${deal.retailer} ${deal.deal_type} ${deal.percent_off}%`)
+            continue
+          }
+          seenDealKeys.add(dealKey)
 
           // Affiliate link lookup (future: match retailer to affiliate)
           const affiliateLink = null
@@ -98,7 +119,6 @@ export async function GET(request: NextRequest) {
 
           const { error: insertError } = await supabase.from('deals').insert(dealRow)
           if (insertError) {
-            // If duplicate, try update instead
             if (insertError.code === '23505') {
               await supabase
                 .from('deals')
