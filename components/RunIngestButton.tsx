@@ -36,7 +36,7 @@ export function RunIngestButton() {
           cursor: status === 'running' ? 'default' : 'pointer',
         }}
       >
-        {status === 'running' ? 'Running… (up to 60s)' : status === 'done' ? '✓ Done' : status === 'error' ? 'Error — try again' : 'Run Ingest Now'}
+        {status === 'running' ? 'Running…' : status === 'done' ? '✓ Done' : status === 'error' ? 'Error — try again' : 'Run Ingest Now'}
       </button>
       {result && status === 'done' && (
         <span style={{
