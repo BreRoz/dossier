@@ -1,19 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 
 export function Nav() {
-  const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
   const pathname = usePathname()
-
-  useEffect(() => {
-    createClient().auth.getUser().then(({ data: { user } }) => {
-      setLoggedIn(!!user)
-    })
-  }, [])
 
   const links = [
     { label: 'HOME',     href: '/' },
@@ -48,9 +39,6 @@ export function Nav() {
       {links.map(({ label, href }) => (
         <Link key={label} href={href} style={linkStyle(href)}>{label}</Link>
       ))}
-      <Link href="/login" style={linkStyle('/login')}>
-        {loggedIn ? 'ACCOUNT' : 'SIGN IN'}
-      </Link>
     </nav>
   )
 }

@@ -401,7 +401,6 @@ export default function LandingPage() {
             <Link href="/archive"      className="rd-nav-link rd-nav-hide">ARCHIVE</Link>
             <Link href="/stores"       className="rd-nav-link rd-nav-hide">STORES</Link>
             <Link href="/preferences"  className="rd-nav-link rd-nav-hide">SETTINGS</Link>
-            <Link href="/login" className="rd-nav-link">SIGN IN</Link>
           </nav>
 
           {/* HEADLINE AREA */}

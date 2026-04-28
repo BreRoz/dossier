@@ -477,12 +477,6 @@ export default function StoresPage() {
                 )
               })}
             </div>
-            <p style={{
-              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)',
-              lineHeight: 1.5, marginTop: 6,
-            }}>
-              Age suggestions are approximate — shop wherever you like!
-            </p>
           </div>
         )}
 
