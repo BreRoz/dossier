@@ -347,8 +347,8 @@ export default function LandingPage() {
           .rd-nav-stats { display: none; }
           .rd-label-stats { display: none; }
           .rd-headline-area { padding: 14px 20px 0; }
-          .rd-hl { font-size: min(10vw, calc((100dvh - 200px) / 5.5)); }
-          .rd-hl-line { white-space: normal; flex-wrap: wrap; }
+          .rd-hl { font-size: min(10vw, calc((100dvh - 200px) / 5.5)); align-items: center; }
+          .rd-hl-line { white-space: normal; flex-wrap: wrap; justify-content: center; }
 
           /* Nav links — bigger + less tracking */
           .rd-nav-link { font-size: 12px; letter-spacing: 0.12em; }
