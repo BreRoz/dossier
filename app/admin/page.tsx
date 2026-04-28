@@ -6,6 +6,7 @@ import { Nav } from '@/components/Nav'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { SuggestionActions } from '@/components/SuggestionActions'
 import { ResetWeekButton } from '@/components/ResetWeekButton'
+import { RunIngestButton } from '@/components/RunIngestButton'
 import { ALL_CATEGORIES, CATEGORY_LABELS } from '@/types'
 import type { Category } from '@/types'
 
@@ -226,15 +227,18 @@ export default async function AdminPage() {
         {/* Header */}
         <div style={{ marginBottom: 56, borderBottom: 'var(--rule)', paddingBottom: 48 }}>
           <p className="t-section" style={{ marginBottom: 12 }}>Dashboard</p>
-          <h1 style={{
-            fontFamily: 'var(--font-serif)',
-            fontSize: 'clamp(40px, 5vw, 72px)',
-            fontWeight: 300,
-            letterSpacing: '-0.03em',
-            lineHeight: 0.95,
-          }}>
-            Admin Overview
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
+            <h1 style={{
+              fontFamily: 'var(--font-serif)',
+              fontSize: 'clamp(40px, 5vw, 72px)',
+              fontWeight: 300,
+              letterSpacing: '-0.03em',
+              lineHeight: 0.95,
+            }}>
+              Admin Overview
+            </h1>
+            <RunIngestButton />
+          </div>
         </div>
 
         {/* Top stat row */}
