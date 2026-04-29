@@ -148,7 +148,7 @@ export default function PreferencesPage() {
 
       if (retailersRes.ok) {
         const data = await retailersRes.json()
-        setRetailers((data.stores || []).filter((s: StoreRow) => s.status === 'Live'))
+        setRetailers((data.stores || []).filter((s: StoreRow) => s.status === 'Confirmed'))
       }
 
       setLoading(false)

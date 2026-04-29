@@ -501,7 +501,7 @@ export default function StoresPage() {
               fontFamily: 'var(--font-condensed)', fontSize: 12, letterSpacing: '0.15em',
               textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', lineHeight: 1.6,
             }}>
-              {stores.filter(s => s.status === 'Live').length} store emails confirmed
+              {stores.filter(s => s.status === 'Confirmed').length} store emails confirmed
             </div>
           </div>
         </div>
@@ -801,7 +801,7 @@ function StoreRowItem({
       <span style={{
         fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.15em',
         textTransform: 'uppercase',
-        color: store.status === 'Live' ? 'var(--accent)' : 'rgba(10,10,10,0.4)',
+        color: store.status === 'Confirmed' ? 'var(--accent)' : 'rgba(10,10,10,0.4)',
       }}>
         {store.status || '—'}
       </span>
