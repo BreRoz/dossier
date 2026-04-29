@@ -493,7 +493,7 @@ export default function LandingPage() {
 
             {/* FREE */}
             <div className="rd-pricing-tier">
-              <div className="rd-pricing-name rd-serif">FREE</div>
+              <div className="rd-pricing-name rd-serif">Inbox Cleaner</div>
               <div className="rd-pricing-price">
                 <span className="rd-sans">$0</span>
                 <span className="rd-pricing-per">/ FOREVER</span>
@@ -522,7 +522,7 @@ export default function LandingPage() {
                 color: '#0a0a0a', background: '#f7f6f3',
                 padding: '4px 10px',
               }}>Coming Soon</span>
-              <div className="rd-pricing-name rd-serif" style={{ color: '#f7f6f3' }}>PAID</div>
+              <div className="rd-pricing-name rd-serif" style={{ color: '#f7f6f3' }}>Personal Shopper</div>
               <div className="rd-pricing-price">
                 <span className="rd-sans" style={{ color: '#f7f6f3' }}>$4.99</span>
                 <span className="rd-pricing-per" style={{ color: 'rgba(247,246,243,0.45)' }}>/ MONTH</span>
