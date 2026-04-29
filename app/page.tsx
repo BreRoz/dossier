@@ -504,9 +504,15 @@ export default function LandingPage() {
                   'Essential Coverage: Weekly digests covering the "Big Three" (Fashion, Grocery, Restaurants).',
                   'High-Value Only: A strict 40% minimum discount filter ensures you only see the deals actually worth your time.',
                   'The "Thursday Boost": A curated list delivered right before the weekend shopping rush.',
-                ].map(f => (
-                  <li key={f}><span className="rd-pricing-dot">—</span>{f}</li>
-                ))}
+                ].map(f => {
+                  const colon = f.indexOf(':')
+                  return (
+                    <li key={f}>
+                      <span className="rd-pricing-dot">—</span>
+                      {colon >= 0 ? <><strong>{f.slice(0, colon)}</strong>{f.slice(colon)}</> : f}
+                    </li>
+                  )
+                })}
               </ul>
               <Link href="/login" className="rd-pricing-cta rd-pricing-cta--outline">SUBSCRIBE FREE →</Link>
             </div>
@@ -534,9 +540,15 @@ export default function LandingPage() {
                   'Granular Control: Toggle specific stores on or off to ignore brands you don\'t like and prioritize your favorites.',
                   'Stackable Alerts: Be the first to know when a sale, a loyalty bonus, and a BOGO offer all hit at once for maximum savings.',
                   'On-Demand Scheduling: Move your delivery day to Tuesday for mid-week grocery planning or Saturday for weekend browsing.',
-                ].map(f => (
-                  <li key={f}><span className="rd-pricing-dot">—</span>{f}</li>
-                ))}
+                ].map(f => {
+                  const colon = f.indexOf(':')
+                  return (
+                    <li key={f}>
+                      <span className="rd-pricing-dot">—</span>
+                      {colon >= 0 ? <><strong style={{ color: '#f7f6f3' }}>{f.slice(0, colon)}</strong>{f.slice(colon)}</> : f}
+                    </li>
+                  )
+                })}
               </ul>
               <Link href="/login" className="rd-pricing-cta rd-pricing-cta--fill">GET STARTED →</Link>
             </div>
