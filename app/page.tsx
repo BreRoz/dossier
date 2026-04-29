@@ -498,14 +498,12 @@ export default function LandingPage() {
                 <span className="rd-sans">$0</span>
                 <span className="rd-pricing-per">/ FOREVER</span>
               </div>
-              <p className="rd-pricing-desc">The Deal Dossier brief for deal-curious readers. No credit card, no catch.</p>
               <ul className="rd-pricing-list">
                 {[
-                  '3 core categories (Fashion, Grocery, Restaurants)',
-                  '40%+ minimum discount',
-                  'Thursday delivery',
-                  'Curated deal types',
-                  'Subscribed stores directory',
+                  'Inbox Declutter: Unsubscribe from hundreds of brands immediately; we do the "listening" for you.',
+                  'Essential Coverage: Weekly digests covering the "Big Three" (Fashion, Grocery, Restaurants).',
+                  'High-Value Only: A strict 40% minimum discount filter ensures you only see the deals actually worth your time.',
+                  'The "Thursday Boost": A curated list delivered right before the weekend shopping rush.',
                 ].map(f => (
                   <li key={f}><span className="rd-pricing-dot">—</span>{f}</li>
                 ))}
@@ -528,17 +526,14 @@ export default function LandingPage() {
                 <span className="rd-pricing-per" style={{ color: 'rgba(247,246,243,0.45)' }}>/ MONTH</span>
               </div>
               <div className="rd-pricing-alt">OR $45 / YEAR — SAVE 25%</div>
-              <p className="rd-pricing-desc" style={{ color: 'rgba(247,246,243,0.55)' }}>The full Deal Dossier experience, personalized entirely to you.</p>
               <ul className="rd-pricing-list rd-pricing-list--light">
                 {[
-                  'All 13 deal categories — fully adjustable',
-                  'Choose your minimum discount: 20%, 30%, 40%, or 50%+',
-                  'Any send day of the week',
-                  'Toggle individual stores on or off',
-                  'Age-based store filter ("where people my age shop")',
-                  'Full deal type controls — BOGO, flash sales, loyalty & more',
-                  'Stackable & up-to deal alerts',
-                  'Suggest stores for us to track',
+                  'Total Category Access: Unlock all 13 categories, from Tech and Home Goods to Travel and Beauty.',
+                  'Bespoke Filters: You set the bar. Choose a lower 20% threshold for "rarely on sale" brands or a 50% "clearance only" filter.',
+                  'Curated for Your Life: Use the Age-Based Filter to see where your peers are shopping and discover brands that actually fit your demographic.',
+                  'Granular Control: Toggle specific stores on or off to ignore brands you don\'t like and prioritize your favorites.',
+                  'Stackable Alerts: Be the first to know when a sale, a loyalty bonus, and a BOGO offer all hit at once for maximum savings.',
+                  'On-Demand Scheduling: Move your delivery day to Tuesday for mid-week grocery planning or Saturday for weekend browsing.',
                 ].map(f => (
                   <li key={f}><span className="rd-pricing-dot">—</span>{f}</li>
                 ))}
