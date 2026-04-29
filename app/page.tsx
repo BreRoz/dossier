@@ -513,7 +513,7 @@ export default function LandingPage() {
                   return (
                     <li key={f}>
                       <span className="rd-pricing-dot">—</span>
-                      {colon >= 0 ? <><strong>{f.slice(0, colon)}</strong>{f.slice(colon)}</> : f}
+                      {colon >= 0 ? <><strong>{f.slice(0, colon + 1)}</strong>{f.slice(colon + 1)}</> : f}
                     </li>
                   )
                 })}
@@ -549,7 +549,7 @@ export default function LandingPage() {
                   return (
                     <li key={f}>
                       <span className="rd-pricing-dot">—</span>
-                      {colon >= 0 ? <><strong style={{ color: '#f7f6f3' }}>{f.slice(0, colon)}</strong>{f.slice(colon)}</> : f}
+                      {colon >= 0 ? <><strong style={{ color: '#f7f6f3' }}>{f.slice(0, colon + 1)}</strong>{f.slice(colon + 1)}</> : f}
                     </li>
                   )
                 })}
