@@ -136,16 +136,18 @@ export async function GET() {
     const iName    = idx('company name')
     const iCat     = idx('category')
     const iWeb     = idx('website')
-    // Column may be named 'spend tier', 'spend', or 'live' depending on sheet edits
-    const iTier    = idx('spend tier') >= 0 ? idx('spend tier') : idx('spend') >= 0 ? idx('spend') : idx('live')
-    // Column was renamed — try both variants
+    // 'spend tier' or 'spend'
+    const iTier    = idx('spend tier') >= 0 ? idx('spend tier') : idx('spend') >= 0 ? idx('spend') : -1
+    // Ships column — try both name variants
     const iShips   = idx('ships lower 48?') >= 0 ? idx('ships lower 48?') : idx('ships to lower 48?')
     const iSub     = idx('subcategory')
     const iHQ      = idx('hq')
     const iCity    = idx('city')    // may be -1 if column removed
     const iState   = idx('state')   // may be -1 if column removed
+    const iZip     = idx('zip')     // may be -1 if column removed
     const iDate    = idx('date added')
-    const iStatus  = idx('status')
+    // Status column: may be named 'status', or be a blank-header column at position 1
+    const iStatus  = idx('status') >= 0 ? idx('status') : (headers[1] === '' ? 1 : -1)
     const iNotes   = idx('notes')
     const iAge     = idx('age group')
 
