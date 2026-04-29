@@ -282,6 +282,10 @@ export default function LandingPage() {
           font-family: var(--font-sans); font-size: 13px;
           color: rgba(10,10,10,0.55); line-height: 1.65;
         }
+        .rd-faq-a p { margin: 0 0 10px; }
+        .rd-faq-a p:last-child { margin-bottom: 0; }
+        .rd-faq-a {
+        }
 
         /* ── SPLIT-FLAP ── */
         .sf-char {
@@ -557,12 +561,41 @@ export default function LandingPage() {
 
           {/* FAQ */}
           <div className="rd-faq">
-            {[
-              { q: 'Is the free tier really free?', a: 'Yes. Deal Dossier earns through affiliate relationships, clicking a deal link supports the product. No paywalls on the core experience.' },
-              { q: 'Can I change categories later?', a: 'Anytime. Your preferences page lets you toggle categories, and changes take effect with the next edition.' },
-              { q: 'How are deals selected?', a: 'Our system reads promotional emails from a dedicated inbox we subscribe to retailer lists with. AI extracts structured deal data, which we filter and rank by your preferences.' },
-              { q: 'When will paid tier launch?', a: 'We\'re working on it. Join the free tier now and you\'ll be first to know when paid launches. Your preferences and history carry over automatically.' },
-            ].map(({ q, a }) => (
+            {([
+              {
+                q: 'Is the free tier really free?',
+                a: (
+                  <>
+                    <p>Yes, absolutely.</p>
+                    <p>We don&rsquo;t ask for a credit card to get started. The free tier is designed to give you a &lsquo;decluttered&rsquo; inbox experience right away. You get our core &lsquo;Big Three&rsquo; categories (Fashion, Grocery, and Restaurants) and our curated Thursday digest at no cost. We only charge for the Premium Tier if you want to unlock advanced features like custom send days, deep-dive category filters, and store-specific controls.</p>
+                  </>
+                ),
+              },
+              {
+                q: 'Can I change categories later?',
+                a: (
+                  <>
+                    <p>Yes, you have full control.</p>
+                    <p>On the Free Tier, you are automatically set to our three core categories. If you decide you want more variety, you can upgrade to Premium at any time.</p>
+                    <p>On the Premium Tier, you can toggle all 13 categories on or off whenever your needs change. For example, if you&rsquo;re suddenly remodeling your home, you can turn on the &lsquo;Home &amp; DIY&rsquo; category and turn it back off once the project is finished.</p>
+                  </>
+                ),
+              },
+              {
+                q: 'How are deals selected?',
+                a: (
+                  <>
+                    <p>We use AI to do the &lsquo;window shopping&rsquo; for you. Our system is subscribed to over 500+ brand newsletters. Once a week, our AI scans thousands of these emails, filters out the fluff (like &ldquo;Check out our new blog post!&rdquo;), and identifies only the actual discounts.</p>
+                    <p>On the Free Tier, we only show you deals that are 40% off or higher.<br />On Premium, you set your own threshold (20%, 30%, 50%+).</p>
+                    <p>This means you only see the math that matters, curated into a single, easy-to-read dossier.</p>
+                  </>
+                ),
+              },
+              {
+                q: 'When will paid tier launch?',
+                a: <p>We&rsquo;re working on it. Join the free tier now and you&rsquo;ll be first to know when paid launches. Your preferences and history carry over automatically.</p>,
+              },
+            ] as { q: string; a: React.ReactNode }[]).map(({ q, a }) => (
               <div key={q} className="rd-faq-item">
                 <div className="rd-faq-q">{q}</div>
                 <div className="rd-faq-a">{a}</div>
