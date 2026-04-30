@@ -128,6 +128,27 @@ export async function GET(request: NextRequest) {
 
   const deals = allDeals as Deal[]
 
+  // Sync edition stats with actual DB counts (ingest may have timed out before updating these)
+  const { count: emailsScannedCount } = await supabase
+    .from('processed_emails')
+    .select('*', { count: 'exact', head: true })
+    .eq('week_of', weekOfStr)
+
+  await supabase.from('editions').update({
+    deals_found: deals.length,
+    retailers_count: new Set(deals.map((d) => d.retailer)).size,
+    emails_scanned: emailsScannedCount ?? edition.emails_scanned ?? 0,
+  }).eq('id', edition.id)
+
+  // Re-fetch edition with updated stats so the email shows correct numbers
+  const { data: freshEdition } = await supabase
+    .from('editions')
+    .select('*')
+    .eq('id', edition.id)
+    .single()
+
+  if (freshEdition) edition = freshEdition
+
   // Fetch store URLs once for all subscribers
   const storeUrls = await fetchStoreUrls(appUrl)
 
