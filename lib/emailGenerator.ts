@@ -391,7 +391,10 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
             </td>
             <td class="statcell" style="padding:20px 0;text-align:center;width:50%;">
               <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:300;letter-spacing:-0.02em;line-height:1;color:${accent};">${dealsShown}</div>
-              <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);line-height:1.3;margin-top:4px;">Your<br>Deals</div>
+              <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);line-height:1.3;margin-top:4px;">Deals<br>For You</div>
+              <div style="margin-top:6px;text-align:right;padding-right:16px;">
+                <a href="${appUrl}/preferences" style="font-family:'Barlow',Arial,sans-serif;font-size:10px;color:rgba(13,13,15,0.35);text-decoration:underline;text-underline-offset:2px;">adjust settings</a>
+              </div>
             </td>
           </tr>
         </table>
