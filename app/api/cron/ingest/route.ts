@@ -89,6 +89,18 @@ export async function GET(request: NextRequest) {
           // Skip deals with no real value
           if (!deal.description || !deal.retailer) continue
 
+          // Skip vague flash-sale descriptions with no concrete savings info
+          // e.g. "New styles added to the sale section" — no %, no $, no promo code
+          if (
+            deal.deal_type === 'flash-sale' &&
+            !deal.percent_off &&
+            !deal.promo_code &&
+            !/\d+%|\$\d+|buy\s+\d+|bogo/i.test(deal.description)
+          ) {
+            console.log(`[ingest] skipping vague flash-sale: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
+            continue
+          }
+
           // Skip if same retailer already has this exact sale this week
           const dealKey = makeDealKey(deal)
           if (seenDealKeys.has(dealKey)) {
