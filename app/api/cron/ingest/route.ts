@@ -4,7 +4,7 @@ import { fetchPromotionalEmails } from '@/lib/gmail'
 import { extractDealsFromEmail } from '@/lib/openai'
 import { getCurrentWeekOf, makeDealKey } from '@/lib/deals'
 import { sendAdminAlert } from '@/lib/resend'
-import { addDays, format, startOfWeek } from 'date-fns'
+import { addDays, format } from 'date-fns'
 import type { Category } from '@/types'
 
 export const maxDuration = 300 // 5 minute max
@@ -31,8 +31,9 @@ export async function GET(request: NextRequest) {
   const weekOf = getCurrentWeekOf('thursday')
   const weekOfStr = format(weekOf, 'yyyy-MM-dd')
 
-  // Scan all emails since Monday 12:00am of the current week
-  const since = startOfWeek(new Date(), { weekStartsOn: 1 }) // 1 = Monday
+  // Scan all emails since Thursday (the edition week anchor) so we catch
+  // weekly-ad emails that arrive mid-week before Monday
+  const since = weekOf
 
   try {
     const emails = await fetchPromotionalEmails(since)
@@ -98,6 +99,22 @@ export async function GET(request: NextRequest) {
             !/\d+%|\$\d+|buy\s+\d+|bogo/i.test(deal.description)
           ) {
             console.log(`[ingest] skipping vague flash-sale: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
+            continue
+          }
+
+          // Skip price-listing "deals" — items shown at a fixed price with no discount
+          // e.g. "Enjoy $39+ on select styles", "Jeans starting at $12", price-only lists
+          if (
+            !deal.percent_off &&
+            !deal.promo_code &&
+            deal.deal_type !== 'free-shipping' &&
+            deal.deal_type !== 'bogo-free' &&
+            deal.deal_type !== 'bogo-half' &&
+            deal.deal_type !== 'free-item' &&
+            /(?:starting at|from|for|at)\s+\$\d+|enjoy\s+\$\d+\+?\s+on|^[\w\s]+for\s+\$\d+\.\d{2}/i.test(deal.description) &&
+            !/\d+%\s*off|\$\d+\s*off|save\s+\$\d+/i.test(deal.description)
+          ) {
+            console.log(`[ingest] skipping price-listing (no discount): ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
             continue
           }
 

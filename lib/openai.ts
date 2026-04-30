@@ -57,6 +57,9 @@ DO NOT EXTRACT:
 - Return policies, exchange policies, or free returns/exchanges (these are store policies, not deals)
 - Loyalty point notices or reward balance updates (not actionable deals)
 - Referral programs or "give $X, get $X" referral offers
+- Price listings with no savings — emails that just show what items cost ("Jeans for $39.90", "Tops starting at $12") with no percentage off, no dollar-off amount, and no promo code. A price alone is not a deal.
+- "Enjoy $X+ on select styles" or "Shop styles from $X" messages — these are just price floors, not discounts
+- "Starting at $X" promotions where no comparison price, discount amount, or promo code is given
 
 Return ONLY this exact JSON structure:
 {
