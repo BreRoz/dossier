@@ -16,6 +16,17 @@ function parseSenderName(from: string): string {
   return from.split('@')[0].trim()
 }
 
+// Quickly skip obvious transactional emails before hitting OpenAI.
+// These will never contain deals worth publishing.
+const TRANSACTIONAL_SUBJECT_RE = /\b(order\s+(confirmation|#\s*\d|number|receipt|summary|update)|your\s+(order|receipt|invoice|shipment|package)|has\s+shipped|order\s+shipped|out\s+for\s+delivery|delivery\s+(update|notification|confirmed|exception)|track\s+(your\s+)?(order|package|shipment)|shipping\s+(update|notification|confirmation)|password\s+reset|verify\s+(your\s+)?email|security\s+(alert|code|notice)|account\s+(update|notice|alert|created|activated))\b/i
+
+function isTransactionalEmail(subject: string): boolean {
+  return TRANSACTIONAL_SUBJECT_RE.test(subject)
+}
+
+// Process emails in parallel batches so the cron doesn't time out on large inboxes.
+const INGEST_BATCH_SIZE = 8
+
 function verifyCronSecret(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization')
   if (!process.env.CRON_SECRET) return true // Dev mode
@@ -77,132 +88,139 @@ export async function GET(request: NextRequest) {
     let emailsWithNoDeals = 0
     const processedEmailIds: string[] = []
 
-    for (const email of newEmails) {
-      try {
-        // Small delay between OpenAI calls to avoid rate limiting
-        await new Promise((r) => setTimeout(r, 100))
-        const extracted = await extractDealsFromEmail(email.from, email.subject, email.body)
-        console.log(`[ingest] ${email.from} | subject: ${email.subject} | extracted: ${extracted.length}`)
-        if (extracted.length > 0) emailsWithDeals++
-        else emailsWithNoDeals++
-
-        for (const deal of extracted) {
-          // Skip deals with no real value
-          if (!deal.description || !deal.retailer) continue
-
-          // Skip vague flash-sale descriptions with no concrete savings info
-          // e.g. "New styles added to the sale section" — no %, no $, no promo code
-          if (
-            deal.deal_type === 'flash-sale' &&
-            !deal.percent_off &&
-            !deal.promo_code &&
-            !/\d+%|\$\d+|buy\s+\d+|bogo/i.test(deal.description)
-          ) {
-            console.log(`[ingest] skipping vague flash-sale: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
-            continue
-          }
-
-          // Skip price-listing "deals" — items shown at a fixed price with no discount
-          // e.g. "Enjoy $39+ on select styles", "Jeans starting at $12", price-only lists
-          if (
-            !deal.percent_off &&
-            !deal.promo_code &&
-            deal.deal_type !== 'free-shipping' &&
-            deal.deal_type !== 'bogo-free' &&
-            deal.deal_type !== 'bogo-half' &&
-            deal.deal_type !== 'free-item' &&
-            /(?:starting at|from|for|at)\s+\$\d+|enjoy\s+\$\d+\+?\s+on|^[\w\s]+for\s+\$\d+\.\d{2}/i.test(deal.description) &&
-            !/\d+%\s*off|\$\d+\s*off|save\s+\$\d+/i.test(deal.description)
-          ) {
-            console.log(`[ingest] skipping price-listing (no discount): ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
-            continue
-          }
-
-          // Skip if same retailer already has this exact sale this week
-          const dealKey = makeDealKey(deal)
-          if (seenDealKeys.has(dealKey)) {
-            console.log(`[ingest] skipping duplicate deal: ${deal.retailer} ${deal.deal_type} ${deal.percent_off}%`)
-            continue
-          }
-          seenDealKeys.add(dealKey)
-
-          // Affiliate link lookup (future: match retailer to affiliate)
-          const affiliateLink = null
-
-          const dealRow = {
-            retailer: deal.retailer,
-            description: deal.description,
-            percent_off: deal.percent_off,
-            deal_type: deal.deal_type,
-            promo_code: deal.promo_code,
-            expiration_date: deal.expiration_date,
-            original_link: deal.link || `https://google.com/search?q=${encodeURIComponent(deal.retailer)}`,
-            affiliate_link: affiliateLink,
-            categories: deal.categories as Category[],
-            week_of: weekOfStr,
-            source_email_id: email.id,
-            source_email_link: email.viewInBrowserUrl ?? null,
-            is_manual: email.isManual,
-          }
-
-          const { error: insertError } = await supabase.from('deals').insert(dealRow)
-          if (insertError) {
-            if (insertError.code === '23505') {
-              await supabase
-                .from('deals')
-                .update(dealRow)
-                .eq('source_email_id', dealRow.source_email_id)
-                .eq('retailer', dealRow.retailer)
-            } else {
-              console.error('Deal insert error:', JSON.stringify(insertError))
-              continue
-            }
-          }
-
-          newDeals++
-        }
-
-        // Log this sender to the retailer scan log
-        const retailerName = extracted.length > 0 && extracted[0].retailer
-          ? extracted[0].retailer
-          : parseSenderName(email.from)
-
-        const { data: existingLog } = await supabase
-          .from('retailer_scan_log')
-          .select('id, emails_processed, deals_extracted')
-          .eq('week_of', weekOfStr)
-          .eq('retailer', retailerName)
-          .single()
-
-        if (existingLog) {
-          await supabase
-            .from('retailer_scan_log')
-            .update({
-              emails_processed: existingLog.emails_processed + 1,
-              deals_extracted: existingLog.deals_extracted + extracted.length,
-            })
-            .eq('id', existingLog.id)
-        } else {
-          await supabase
-            .from('retailer_scan_log')
-            .insert({
-              week_of: weekOfStr,
-              retailer: retailerName,
-              sender_email: email.from,
-              emails_processed: 1,
-              deals_extracted: extracted.length,
-            })
-        }
-
-        // Mark email as processed so it's never re-ingested (even if it had 0 deals)
-        await supabase
-          .from('processed_emails')
-          .upsert({ email_id: email.id, week_of: weekOfStr })
-
+    // Process one email: call OpenAI, filter deals, write to DB.
+    // Returns number of deals inserted.
+    async function processEmail(email: (typeof newEmails)[number]): Promise<void> {
+      // Fast-path: skip obviously transactional emails without an OpenAI call
+      if (isTransactionalEmail(email.subject)) {
+        console.log(`[ingest] skip transactional: "${email.subject}"`)
+        await supabase.from('processed_emails').upsert({ email_id: email.id, week_of: weekOfStr })
         processedEmailIds.push(email.id)
-      } catch (err) {
-        console.error(`Failed to process email ${email.id}:`, err)
+        return
       }
+
+      const extracted = await extractDealsFromEmail(email.from, email.subject, email.body)
+      console.log(`[ingest] ${email.from} | subject: ${email.subject} | extracted: ${extracted.length}`)
+      if (extracted.length > 0) emailsWithDeals++
+      else emailsWithNoDeals++
+
+      for (const deal of extracted) {
+        // Skip deals with no real value
+        if (!deal.description || !deal.retailer) continue
+
+        // Skip vague flash-sale descriptions with no concrete savings info
+        if (
+          deal.deal_type === 'flash-sale' &&
+          !deal.percent_off &&
+          !deal.promo_code &&
+          !/\d+%|\$\d+|buy\s+\d+|bogo/i.test(deal.description)
+        ) {
+          console.log(`[ingest] skipping vague flash-sale: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
+          continue
+        }
+
+        // Skip price-listing "deals" with no actual discount
+        if (
+          !deal.percent_off &&
+          !deal.promo_code &&
+          deal.deal_type !== 'free-shipping' &&
+          deal.deal_type !== 'bogo-free' &&
+          deal.deal_type !== 'bogo-half' &&
+          deal.deal_type !== 'free-item' &&
+          /(?:starting at|from|for|at)\s+\$\d+|enjoy\s+\$\d+\+?\s+on|^[\w\s]+for\s+\$\d+\.\d{2}/i.test(deal.description) &&
+          !/\d+%\s*off|\$\d+\s*off|save\s+\$\d+/i.test(deal.description)
+        ) {
+          console.log(`[ingest] skipping price-listing: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
+          continue
+        }
+
+        // Skip duplicates within this week (check+add is synchronous — safe with parallel emails)
+        const dealKey = makeDealKey(deal)
+        if (seenDealKeys.has(dealKey)) {
+          console.log(`[ingest] skipping duplicate: ${deal.retailer} ${deal.deal_type} ${deal.percent_off}%`)
+          continue
+        }
+        seenDealKeys.add(dealKey)
+
+        const dealRow = {
+          retailer: deal.retailer,
+          description: deal.description,
+          percent_off: deal.percent_off,
+          deal_type: deal.deal_type,
+          promo_code: deal.promo_code,
+          expiration_date: deal.expiration_date,
+          original_link: deal.link || `https://google.com/search?q=${encodeURIComponent(deal.retailer)}`,
+          affiliate_link: null,
+          categories: deal.categories as Category[],
+          week_of: weekOfStr,
+          source_email_id: email.id,
+          source_email_link: email.viewInBrowserUrl ?? null,
+          is_manual: email.isManual,
+        }
+
+        const { error: insertError } = await supabase.from('deals').insert(dealRow)
+        if (insertError) {
+          if (insertError.code === '23505') {
+            await supabase
+              .from('deals')
+              .update(dealRow)
+              .eq('source_email_id', dealRow.source_email_id)
+              .eq('retailer', dealRow.retailer)
+          } else {
+            console.error('Deal insert error:', JSON.stringify(insertError))
+            continue
+          }
+        }
+        newDeals++
+      }
+
+      // Log to retailer_scan_log
+      const retailerName = extracted.length > 0 && extracted[0].retailer
+        ? extracted[0].retailer
+        : parseSenderName(email.from)
+
+      const { data: existingLog } = await supabase
+        .from('retailer_scan_log')
+        .select('id, emails_processed, deals_extracted')
+        .eq('week_of', weekOfStr)
+        .eq('retailer', retailerName)
+        .single()
+
+      if (existingLog) {
+        await supabase
+          .from('retailer_scan_log')
+          .update({
+            emails_processed: existingLog.emails_processed + 1,
+            deals_extracted: existingLog.deals_extracted + extracted.length,
+          })
+          .eq('id', existingLog.id)
+      } else {
+        await supabase
+          .from('retailer_scan_log')
+          .insert({
+            week_of: weekOfStr,
+            retailer: retailerName,
+            sender_email: email.from,
+            emails_processed: 1,
+            deals_extracted: extracted.length,
+          })
+      }
+
+      await supabase.from('processed_emails').upsert({ email_id: email.id, week_of: weekOfStr })
+      processedEmailIds.push(email.id)
+    }
+
+    // Process emails in parallel batches — 8 concurrent OpenAI calls at a time.
+    // 200 emails / 8 = ~25 batches × ~4s each ≈ 100s total (well within 5-min limit).
+    for (let i = 0; i < newEmails.length; i += INGEST_BATCH_SIZE) {
+      const batch = newEmails.slice(i, i + INGEST_BATCH_SIZE)
+      await Promise.all(batch.map(async (email) => {
+        try {
+          await processEmail(email)
+        } catch (err) {
+          console.error(`Failed to process email ${email.id}:`, err)
+        }
+      }))
     }
 
     // Upsert edition stats — always use actual table counts as source of truth
