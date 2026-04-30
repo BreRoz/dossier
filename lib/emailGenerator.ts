@@ -311,23 +311,23 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
   }
 </style>
 </head>
-<body style="margin:0;padding:0;background-color:${C.bg};-webkit-font-smoothing:antialiased;">
+<body style="margin:0;padding:0;background-color:${C.paper};-webkit-font-smoothing:antialiased;">
 
-<table width="100%" cellpadding="0" cellspacing="0" role="presentation" class="wrap" style="background-color:${C.bg};padding:32px 16px 80px;">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" class="wrap" style="background-color:${C.paper};padding:32px 16px 80px;">
 <tr><td align="center">
 
-  <table width="680" cellpadding="0" cellspacing="0" role="presentation" style="max-width:680px;width:100%;background-color:${C.paper};">
+  <table width="680" cellpadding="0" cellspacing="0" role="presentation" style="max-width:680px;width:100%;background-color:${C.paper};border:1px solid ${C.ink15};">
 
-    <!-- ── HEADER ── -->
+    <!-- ── HEADER (logo + issue info — matches site nav) ── -->
     <tr>
-      <td class="hpad" style="padding:24px 40px 20px;border-bottom:1px solid ${C.ink15};">
+      <td class="hpad" style="padding:20px 40px;border-bottom:1px solid rgba(13,13,15,0.12);">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="vertical-align:middle;">
               <table cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="vertical-align:middle;padding-right:9px;">
-                    <svg width="24" height="24" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="22" height="22" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <rect x="1" y="1" width="42" height="42" stroke="${C.ink}" stroke-width="1.5"/>
                       <rect x="1" y="1" width="20" height="20" fill="${C.ink}"/>
                       <rect x="23" y="23" width="20" height="20" fill="${C.ink}"/>
@@ -336,14 +336,14 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
                     </svg>
                   </td>
                   <td style="vertical-align:middle;">
-                    <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;font-weight:300;letter-spacing:0.08em;color:${C.ink};">Deal Dossier</span>
+                    <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:300;letter-spacing:0.08em;color:${C.ink};">Deal Dossier</span>
                   </td>
                 </tr>
               </table>
             </td>
             <td style="vertical-align:middle;text-align:right;">
-              <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:${C.ink40};line-height:1.8;">
-                ${issueNum}<br>${issueDate}
+              <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);line-height:1.8;">
+                ${issueNum}&nbsp;&nbsp;·&nbsp;&nbsp;${issueDate}
               </div>
             </td>
           </tr>
@@ -351,42 +351,45 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
       </td>
     </tr>
 
-    <!-- ── HERO (compact, split layout) ── -->
+    <!-- ── BLACK BAR (matches site rd-bar) ── -->
     <tr>
-      <td class="hpad" style="background-color:${C.ink};padding:28px 40px 24px;">
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" class="herorow">
-          <tr>
-            <td style="vertical-align:bottom;">
-              <p style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;font-weight:600;letter-spacing:0.28em;text-transform:uppercase;color:${accent};margin:0 0 8px;">This Week's Brief</p>
-              <h1 class="htitle" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:36px;font-weight:300;letter-spacing:-0.02em;line-height:1.0;color:${C.paper};margin:0 0 8px;">The <em style="font-style:italic;">finest</em> deals,<br>curated.</h1>
-              <p style="font-family:'Barlow',Arial,sans-serif;font-size:12px;color:${C.sub};line-height:1.5;margin:0;">Scanned, filtered, and delivered. Only what's worth your attention.</p>
-            </td>
-            <td class="herodate" style="vertical-align:bottom;text-align:right;padding-left:24px;white-space:nowrap;">
-              <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#636069;line-height:1.8;">
-                Week of<br>${weekStart} – ${weekEnd}<br>${format(weekOf, 'yyyy')}
-              </div>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-
-    <!-- ── STATS BAR (3 cells) ── -->
-    <tr>
-      <td style="border-bottom:1px solid ${C.ink15};">
+      <td style="background-color:${C.ink};padding:0 40px;height:52px;">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
-            <td class="statcell" style="padding:16px 0;border-right:1px solid ${C.ink15};text-align:center;width:33%;">
-              <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;letter-spacing:-0.02em;line-height:1;color:${C.ink};">${emailsScanned}</div>
-              <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:${C.ink40};line-height:1.3;margin-top:3px;">Emails<br>Scanned</div>
+            <td style="vertical-align:middle;">
+              <span style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:700;letter-spacing:0.28em;text-transform:uppercase;color:rgba(247,246,242,0.45);">This Week's Brief</span>
             </td>
-            <td class="statcell" style="padding:16px 0;border-right:1px solid ${C.ink15};text-align:center;width:33%;">
-              <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;letter-spacing:-0.02em;line-height:1;color:${C.ink};">${dealsFound}</div>
-              <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:${C.ink40};line-height:1.3;margin-top:3px;">Deals<br>Found</div>
+            <td style="vertical-align:middle;text-align:center;">
+              <span style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(247,246,242,0.3);">Week of ${weekStart} – ${weekEnd}</span>
             </td>
-            <td class="statcell" style="padding:16px 0;text-align:center;width:33%;">
-              <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:28px;font-weight:300;letter-spacing:-0.02em;line-height:1;color:${accent};">${dealsShown}</div>
-              <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:${C.ink40};line-height:1.3;margin-top:3px;">Your<br>Deals</div>
+            <td style="vertical-align:middle;text-align:right;">
+              <span style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(247,246,242,0.3);">${format(weekOf, 'yyyy')}</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── HERO (light, editorial — matches site headline area) ── -->
+    <tr>
+      <td class="hpad" style="padding:36px 40px 28px;border-bottom:1px solid rgba(13,13,15,0.08);">
+        <h1 class="htitle" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:44px;font-weight:300;letter-spacing:-0.02em;line-height:0.95;color:${C.ink};margin:0 0 16px;">The <em style="font-style:italic;">finest</em> deals,<br>curated.</h1>
+        <p style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);margin:0;">Scanned, filtered &amp; delivered — only what's worth your attention.</p>
+      </td>
+    </tr>
+
+    <!-- ── STATS BAR (2 cells — Emails Scanned + Your Deals) ── -->
+    <tr>
+      <td style="border-bottom:1px solid rgba(13,13,15,0.08);">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <tr>
+            <td class="statcell" style="padding:20px 0;border-right:1px solid rgba(13,13,15,0.08);text-align:center;width:50%;">
+              <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:300;letter-spacing:-0.02em;line-height:1;color:${C.ink};">${emailsScanned}</div>
+              <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);line-height:1.3;margin-top:4px;">Emails<br>Scanned</div>
+            </td>
+            <td class="statcell" style="padding:20px 0;text-align:center;width:50%;">
+              <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:300;letter-spacing:-0.02em;line-height:1;color:${accent};">${dealsShown}</div>
+              <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);line-height:1.3;margin-top:4px;">Your<br>Deals</div>
             </td>
           </tr>
         </table>
@@ -422,43 +425,42 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
       </td>
     </tr>
 
-    <!-- ── FOOTER ── -->
+    <!-- ── FOOTER (light — matches site footer style) ── -->
     <tr>
-      <td class="hpad" style="background-color:${C.ink};padding:24px 40px;border-top:2px solid ${C.ink};">
+      <td class="hpad" style="background-color:${C.paper};padding:24px 40px;border-top:1px solid rgba(13,13,15,0.12);">
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <!-- Logo + links row -->
           <tr>
             <td style="vertical-align:middle;">
               <table cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
-                  <td style="vertical-align:middle;padding-right:9px;">
-                    <svg width="18" height="18" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect x="1" y="1" width="42" height="42" stroke="#F7F6F3" stroke-width="1.5"/>
-                      <rect x="1" y="1" width="20" height="20" fill="#F7F6F3"/>
-                      <rect x="23" y="23" width="20" height="20" fill="#F7F6F3"/>
-                      <line x1="22" y1="1" x2="22" y2="43" stroke="#F7F6F3" stroke-width="1.5"/>
-                      <line x1="1" y1="22" x2="43" y2="22" stroke="#F7F6F3" stroke-width="1.5"/>
+                  <td style="vertical-align:middle;padding-right:8px;">
+                    <svg width="16" height="16" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="1" y="1" width="42" height="42" stroke="${C.ink}" stroke-width="1.5"/>
+                      <rect x="1" y="1" width="20" height="20" fill="${C.ink}"/>
+                      <rect x="23" y="23" width="20" height="20" fill="${C.ink}"/>
+                      <line x1="22" y1="1" x2="22" y2="43" stroke="${C.ink}" stroke-width="1.5"/>
+                      <line x1="1" y1="22" x2="43" y2="22" stroke="${C.ink}" stroke-width="1.5"/>
                     </svg>
                   </td>
                   <td style="vertical-align:middle;">
-                    <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:300;letter-spacing:0.08em;color:${C.paper};">Deal Dossier</span>
+                    <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:16px;font-weight:300;letter-spacing:0.08em;color:${C.ink};">Deal Dossier</span>
                   </td>
                 </tr>
               </table>
             </td>
             <td style="vertical-align:middle;text-align:right;">
-              <a href="${archiveUrl}" style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:${C.footer50};text-decoration:none;margin-left:20px;">Archive</a>
-              <a href="${preferencesUrl}" style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:${C.footer50};text-decoration:none;margin-left:20px;">Preferences</a>
-              <a href="${unsubscribeUrl}" style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:${C.footer50};text-decoration:none;margin-left:20px;">Unsubscribe</a>
+              <a href="${archiveUrl}" style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);text-decoration:none;margin-left:24px;">Archive</a>
+              <a href="${preferencesUrl}" style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);text-decoration:none;margin-left:24px;">Preferences</a>
+              <a href="${unsubscribeUrl}" style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);text-decoration:none;margin-left:24px;">Unsubscribe</a>
             </td>
           </tr>
           <!-- Divider + fine print -->
           <tr>
             <td colspan="2" style="padding-top:16px;">
-              <div style="height:1px;background-color:${C.footer22};margin-bottom:16px;"></div>
-              <p style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:10px;letter-spacing:0.10em;color:${C.footer40};line-height:1.7;margin:0;">
-                You are receiving this because you subscribed to Dossier Weekly. Deals are curated editorially and may include affiliate relationships. Pricing and availability subject to change without notice. Prices confirmed at time of publication.<br><br>
-                Deal Dossier Weekly
+              <div style="height:1px;background-color:rgba(13,13,15,0.08);margin-bottom:14px;"></div>
+              <p style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;letter-spacing:0.12em;color:rgba(13,13,15,0.35);line-height:1.8;margin:0;">
+                You are receiving this because you subscribed to Deal Dossier. Deals are curated editorially and may include affiliate relationships. Pricing and availability subject to change without notice.
               </p>
             </td>
           </tr>

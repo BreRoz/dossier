@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
   const weekLabel = format(weekOf, 'MMMM d')
   const result = await sendEmail({
     to: subscriber.email,
-    subject: `[PREVIEW] Deal Dossier: ${weekLabel}`,
+    subject: `[PREVIEW] ${weekLabel}`,
     html,
   })
 

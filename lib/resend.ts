@@ -16,7 +16,11 @@ export async function sendEmail({
   try {
     const resend = getResend()
     const { data, error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || 'Deal Dossier <hello@dealdossier.io>',
+      // Always use "Deal Dossier" as display name — wrap raw address if env var has no name
+      from: (() => {
+        const raw = process.env.RESEND_FROM_EMAIL || 'hello@dealdossier.io'
+        return raw.includes('<') ? raw : `Deal Dossier <${raw}>`
+      })(),
       to,
       subject,
       html,

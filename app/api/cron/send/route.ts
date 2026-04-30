@@ -234,7 +234,7 @@ export async function GET(request: NextRequest) {
 
           const result = await sendEmail({
             to: subscriber.email,
-            subject: `Deal Dossier: ${weekLabel}${issueNum ? ` · Issue ${issueNum}` : ''}`,
+            subject: `${weekLabel}${issueNum ? ` · Issue ${issueNum}` : ''}`,
             html,
           })
 
