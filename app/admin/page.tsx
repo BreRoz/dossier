@@ -7,6 +7,7 @@ import { CategoryIcon } from '@/components/CategoryIcon'
 import { SuggestionActions } from '@/components/SuggestionActions'
 import { ResetWeekButton } from '@/components/ResetWeekButton'
 import { RunIngestButton } from '@/components/RunIngestButton'
+import { RunSendButton } from '@/components/RunSendButton'
 import { ALL_CATEGORIES, CATEGORY_LABELS } from '@/types'
 import type { Category } from '@/types'
 
@@ -237,7 +238,10 @@ export default async function AdminPage() {
             }}>
               Admin Overview
             </h1>
-            <RunIngestButton />
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <RunIngestButton />
+              <RunSendButton />
+            </div>
           </div>
         </div>
 

@@ -3,6 +3,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { fetchPromotionalEmails } from '@/lib/gmail'
 import { extractDealsFromEmail } from '@/lib/openai'
 import { getCurrentWeekOf } from '@/lib/deals'
+import { sendAdminAlert } from '@/lib/resend'
 import { addDays, format, startOfWeek } from 'date-fns'
 import type { Category } from '@/types'
 
@@ -230,6 +231,10 @@ export async function GET(request: NextRequest) {
     })
   } catch (err) {
     console.error('Ingest error:', err)
+    await sendAdminAlert({
+      subject: '🚨 Deal Dossier — ingest failed',
+      body: `Ingest failed at ${new Date().toISOString()}\n\nError: ${err instanceof Error ? err.message : String(err)}\n\nFix it at: https://dealdossier.io/admin`,
+    })
     return NextResponse.json({ error: 'Ingestion failed' }, { status: 500 })
   }
 }

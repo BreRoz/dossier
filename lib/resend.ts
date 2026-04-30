@@ -28,6 +28,28 @@ export async function sendEmail({
   }
 }
 
+const ADMIN_EMAIL = 'bre999@gmail.com'
+
+export async function sendAdminAlert({
+  subject,
+  body,
+}: {
+  subject: string
+  body: string
+}): Promise<void> {
+  try {
+    const resend = getResend()
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'Deal Dossier <hello@dealdossier.io>',
+      to: ADMIN_EMAIL,
+      subject,
+      html: `<pre style="font-family:monospace;font-size:13px;color:#333;white-space:pre-wrap;">${body}</pre>`,
+    })
+  } catch (err) {
+    console.error('Failed to send admin alert:', err)
+  }
+}
+
 export async function sendMagicLink({
   to,
   magicLink,

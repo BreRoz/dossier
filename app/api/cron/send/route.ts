@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
-import { sendEmail } from '@/lib/resend'
+import { sendEmail, sendAdminAlert } from '@/lib/resend'
 import { generateEmailHTML } from '@/lib/emailGenerator'
 import { filterDealsForSubscriber, getCurrentWeekOf, rankDeals } from '@/lib/deals'
 import { format } from 'date-fns'
@@ -112,6 +112,11 @@ export async function GET(request: NextRequest) {
       .from('deals')
       .select('week_of, retailer')
       .limit(5)
+
+    await sendAdminAlert({
+      subject: `⚠️ Deal Dossier — send skipped, no deals for ${weekOfStr}`,
+      body: `The ${today} send was skipped because no deals were found for week_of: ${weekOfStr}\n\nThis usually means ingest didn't run or failed silently.\n\nSample deals in DB:\n${JSON.stringify(sampleDeals ?? [], null, 2)}\n\nFix it at: https://dealdossier.io/admin`,
+    })
 
     return NextResponse.json({
       sent: 0,
