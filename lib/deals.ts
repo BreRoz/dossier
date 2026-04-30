@@ -55,7 +55,7 @@ const DEAL_RANK_SCORE = (deal: Deal): number => {
 // When a deal has no percent_off AND no promo_code, it's product-specific
 // (e.g. H-E-B "Buy X get Y free" items). Use a description snippet so each
 // product stays distinct. Otherwise deduplicate by retailer + type + discount.
-export function makeDealKey(deal: { retailer: string; deal_type: string; percent_off: number | null | undefined; promo_code?: string | null; description?: string | null }): string {
+export function makeDealKey(deal: { retailer: string; deal_type: string; percent_off?: number | null; promo_code?: string | null; description?: string | null }): string {
   if (deal.percent_off == null && !deal.promo_code) {
     // Product-specific deal — use normalized description snippet as tiebreaker
     const snippet = (deal.description ?? '')
