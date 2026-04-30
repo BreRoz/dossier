@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
           deal.deal_type === 'flash-sale' &&
           !deal.percent_off &&
           !deal.promo_code &&
-          !/\d+%|\$\d+|buy\s+\d+|bogo/i.test(deal.description)
+          !/\d+%|\$\d+\s*(off|savings?)|buy\s+\d+|bogo/i.test(deal.description)
         ) {
           console.log(`[ingest] skipping vague flash-sale: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
           continue
