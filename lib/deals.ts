@@ -51,12 +51,28 @@ const DEAL_RANK_SCORE = (deal: Deal): number => {
   return 30
 }
 
+// Build a dedup key for a deal.
+// When a deal has no percent_off AND no promo_code, it's product-specific
+// (e.g. H-E-B "Buy X get Y free" items). Use a description snippet so each
+// product stays distinct. Otherwise deduplicate by retailer + type + discount.
+export function makeDealKey(deal: { retailer: string; deal_type: string; percent_off: number | null; promo_code?: string | null; description?: string | null }): string {
+  if (deal.percent_off === null && !deal.promo_code) {
+    // Product-specific deal — use normalized description snippet as tiebreaker
+    const snippet = (deal.description ?? '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .slice(0, 50)
+    return `${deal.retailer}||${deal.deal_type}||desc:${snippet}`
+  }
+  return `${deal.retailer}||${deal.deal_type}||${deal.percent_off ?? 'null'}`
+}
+
 // Remove duplicate sales: if the same retailer has the same deal_type + percent_off,
 // keep only the highest-ranked one (best description, promo code, etc.)
 export function dedupeDeals(deals: Deal[]): Deal[] {
   const seen = new Map<string, Deal>()
   for (const deal of deals) {
-    const key = `${deal.retailer}||${deal.deal_type}||${deal.percent_off ?? 'null'}`
+    const key = makeDealKey(deal)
     const existing = seen.get(key)
     if (!existing || DEAL_RANK_SCORE(deal) > DEAL_RANK_SCORE(existing)) {
       seen.set(key, deal)

@@ -54,10 +54,14 @@ function normalizeForLookup(name: string): string {
 }
 
 // Get best link for a retailer using tiered matching:
-// 1. Exact lowercase  2. Normalized (no punctuation/accents)
-// 3. Partial — storeUrls key starts with retailer's normalized name (e.g. "alo" matches "aloyoga")
-// 4. Partial — retailer's normalized name starts with a storeUrls key
-// 5. deal.original_link if not a Google search  6. Google search fallback
+// 1. Exact lowercase
+// 2. Normalized (no punctuation/accents)
+// 3. Prefix — normalized retailer starts with a store key (e.g. "gapfactorycybersale" → "gapfactory")
+// 4. Prefix — store key starts with normalized retailer
+// 5. Contains — normalized retailer contains a store key (e.g. "lougreybyloft" → "loft")
+// 6. Word match — try each space-separated word in the retailer name
+// 7. deal.original_link if not a Google search
+// 8. Google search fallback
 function getRetailerLink(retailer: string, deal: Deal, storeUrls: Record<string, string>): string {
   const exact = storeUrls[retailer.toLowerCase()]
   if (exact) return exact
@@ -66,10 +70,25 @@ function getRetailerLink(retailer: string, deal: Deal, storeUrls: Record<string,
   const normMatch = storeUrls[norm]
   if (normMatch) return normMatch
 
-  // Partial match against all keys
   const keys = Object.keys(storeUrls)
-  const partial = keys.find(k => k.startsWith(norm) || norm.startsWith(k))
-  if (partial) return storeUrls[partial]
+
+  // Prefix matches
+  const prefix = keys.find(k => norm.startsWith(k) || k.startsWith(norm))
+  if (prefix) return storeUrls[prefix]
+
+  // Contains match — find a store key (min 4 chars) contained in the retailer name
+  const contained = keys.find(k => k.length >= 4 && norm.includes(k))
+  if (contained) return storeUrls[contained]
+
+  // Word-by-word match — split retailer on spaces, try each word
+  const words = retailer.split(/\s+/)
+  for (const word of words) {
+    const wNorm = normalizeForLookup(word)
+    if (wNorm.length >= 4) {
+      const wordMatch = storeUrls[wNorm] || keys.find(k => wNorm.startsWith(k) || k.startsWith(wNorm))
+      if (wordMatch) return storeUrls[wordMatch] ?? storeUrls[wNorm]
+    }
+  }
 
   if (deal.original_link && !deal.original_link.includes('google.com/search')) return deal.original_link
 

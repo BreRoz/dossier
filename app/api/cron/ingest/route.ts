@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { fetchPromotionalEmails } from '@/lib/gmail'
 import { extractDealsFromEmail } from '@/lib/openai'
-import { getCurrentWeekOf } from '@/lib/deals'
+import { getCurrentWeekOf, makeDealKey } from '@/lib/deals'
 import { sendAdminAlert } from '@/lib/resend'
 import { addDays, format, startOfWeek } from 'date-fns'
 import type { Category } from '@/types'
@@ -60,17 +60,15 @@ export async function GET(request: NextRequest) {
     ])
     const newEmails = emails.filter((e) => !processedIds.has(e.id))
 
-    // Build a set of already-seen (retailer, deal_type, percent_off) combos this week
-    // so we never insert the same sale twice even if 3 emails announce it
+    // Build a set of already-seen deal keys this week so we never insert
+    // the same sale twice even if 3 emails announce it
     const { data: existingDealsThisWeek } = await supabase
       .from('deals')
-      .select('retailer, deal_type, percent_off')
+      .select('retailer, deal_type, percent_off, promo_code, description')
       .eq('week_of', weekOfStr)
 
     const seenDealKeys = new Set(
-      (existingDealsThisWeek || []).map((d) =>
-        `${d.retailer}||${d.deal_type}||${d.percent_off ?? 'null'}`
-      )
+      (existingDealsThisWeek || []).map((d) => makeDealKey(d))
     )
 
     let newDeals = 0
@@ -91,8 +89,8 @@ export async function GET(request: NextRequest) {
           // Skip deals with no real value
           if (!deal.description || !deal.retailer) continue
 
-          // Skip if same retailer already has this exact sale type + discount this week
-          const dealKey = `${deal.retailer}||${deal.deal_type}||${deal.percent_off ?? 'null'}`
+          // Skip if same retailer already has this exact sale this week
+          const dealKey = makeDealKey(deal)
           if (seenDealKeys.has(dealKey)) {
             console.log(`[ingest] skipping duplicate deal: ${deal.retailer} ${deal.deal_type} ${deal.percent_off}%`)
             continue
