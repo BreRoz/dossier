@@ -8,6 +8,7 @@ import { SuggestionActions } from '@/components/SuggestionActions'
 import { ResetWeekButton } from '@/components/ResetWeekButton'
 import { RunIngestButton } from '@/components/RunIngestButton'
 import { RunSendButton } from '@/components/RunSendButton'
+import { SendPreviewButton } from '@/components/SendPreviewButton'
 import { ALL_CATEGORIES, CATEGORY_LABELS } from '@/types'
 import type { Category } from '@/types'
 
@@ -241,6 +242,7 @@ export default async function AdminPage() {
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               <RunIngestButton />
               <RunSendButton />
+              <SendPreviewButton />
             </div>
           </div>
         </div>
