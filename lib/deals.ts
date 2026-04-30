@@ -66,7 +66,18 @@ export function dedupeDeals(deals: Deal[]): Deal[] {
 }
 
 export function rankDeals(deals: Deal[]): Deal[] {
-  return dedupeDeals([...deals]).sort((a, b) => DEAL_RANK_SCORE(b) - DEAL_RANK_SCORE(a))
+  return dedupeDeals([...deals]).sort((a, b) => {
+    // Primary: rank score (free-shipping always scores 40, well below percent-off deals)
+    const scoreDiff = DEAL_RANK_SCORE(b) - DEAL_RANK_SCORE(a)
+    if (scoreDiff !== 0) return scoreDiff
+
+    // Secondary: higher percent_off wins within the same score tier
+    const pctDiff = (b.percent_off ?? 0) - (a.percent_off ?? 0)
+    if (pctDiff !== 0) return pctDiff
+
+    // Tertiary: alphabetical by retailer
+    return a.retailer.localeCompare(b.retailer)
+  })
 }
 
 export function filterDealsForSubscriber(
@@ -79,16 +90,21 @@ export function filterDealsForSubscriber(
     genderFilter?: string[]         // e.g. ['men','women','unisex']
     subscriptionMode?: 'category' | 'retailer'
     selectedRetailers?: string[]    // only used when subscriptionMode === 'retailer'
+    excludeFreeShipping?: boolean   // paid tier: strip free-shipping deals entirely
   }
 ): Deal[] {
   const {
     genderFilter = ['men', 'women', 'unisex'],
     subscriptionMode = 'category',
     selectedRetailers = [],
+    excludeFreeShipping = false,
   } = options || {}
 
   return deals.filter((deal) => {
     if (!isDealValidForWeek(deal, weekOf)) return false
+
+    // Paid tier: strip free-shipping deals entirely
+    if (excludeFreeShipping && deal.deal_type === 'free-shipping') return false
 
     // — Gender filter —
     // A deal passes if it shares at least one gender tag with the subscriber's filter.

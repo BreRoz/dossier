@@ -203,13 +203,16 @@ export async function GET(request: NextRequest) {
           const genderFilter: string[] = (subscriber.gender_filter as string[]) ?? ['men', 'women', 'unisex']
 
           // Filter deals for this subscriber
+          // Paid tier: exclude free-shipping deals (weak signal, clutters premium experience)
+          const excludeFreeShipping = subscriber.tier === 'paid'
+
           const subscriberDeals = filterDealsForSubscriber(
             deals,
             effectiveMinDiscount,
             effectiveCategories,
             enabledDealTypes,
             weekOf,
-            { genderFilter, subscriptionMode, selectedRetailers }
+            { genderFilter, subscriptionMode, selectedRetailers, excludeFreeShipping }
           )
 
           const rankedDeals = rankDeals(subscriberDeals)
