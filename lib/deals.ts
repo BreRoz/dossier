@@ -51,6 +51,15 @@ const DEAL_RANK_SCORE = (deal: Deal): number => {
   return 30
 }
 
+// Boost score based on store price tier — pricier stores rank higher
+// at the same discount level (a sale at Saks > a sale at Old Navy)
+const TIER_BOOST: Record<string, number> = {
+  '$':    0,
+  '$$':   3,
+  '$$$':  10,
+  '$$$$': 25,
+}
+
 // Build a dedup key for a deal.
 // When a deal has no percent_off AND no promo_code, it's product-specific
 // (e.g. H-E-B "Buy X get Y free" items). Use a description snippet so each
@@ -81,10 +90,19 @@ export function dedupeDeals(deals: Deal[]): Deal[] {
   return Array.from(seen.values())
 }
 
-export function rankDeals(deals: Deal[]): Deal[] {
+// storeTiers: retailer name (lowercase, normalized) → spendTier string ('$'..'$$$$')
+export function rankDeals(deals: Deal[], storeTiers?: Record<string, number>): Deal[] {
+  const totalScore = (deal: Deal): number => {
+    const base = DEAL_RANK_SCORE(deal)
+    if (!storeTiers) return base
+    const key = deal.retailer.toLowerCase().replace(/[^a-z0-9]/g, '')
+    const tierBoost = storeTiers[key] ?? storeTiers[deal.retailer.toLowerCase()] ?? 0
+    return base + tierBoost
+  }
+
   return dedupeDeals([...deals]).sort((a, b) => {
-    // Primary: rank score (free-shipping always scores 40, well below percent-off deals)
-    const scoreDiff = DEAL_RANK_SCORE(b) - DEAL_RANK_SCORE(a)
+    // Primary: rank score + tier boost
+    const scoreDiff = totalScore(b) - totalScore(a)
     if (scoreDiff !== 0) return scoreDiff
 
     // Secondary: higher percent_off wins within the same score tier

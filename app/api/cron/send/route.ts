@@ -20,24 +20,35 @@ function normalizeStoreName(name: string): string {
     .replace(/[^a-z0-9]/g, '')                        // strip punctuation/spaces
 }
 
-// Fetch store name → website URL map from the stores sheet.
+// Fetch store name → website URL map AND store name → tier boost map from the sheet.
 // Indexes each store under multiple keys for fuzzy matching.
-async function fetchStoreUrls(appUrl: string): Promise<Record<string, string>> {
+async function fetchStoreData(appUrl: string): Promise<{
+  storeUrls: Record<string, string>
+  storeTiers: Record<string, number>
+}> {
+  const TIER_BOOST: Record<string, number> = { '$': 0, '$$': 3, '$$$': 10, '$$$$': 25 }
   try {
     const res = await fetch(`${appUrl}/api/stores`, { next: { revalidate: 3600 } })
-    if (!res.ok) return {}
+    if (!res.ok) return { storeUrls: {}, storeTiers: {} }
     const { stores } = await res.json()
-    const map: Record<string, string> = {}
+    const storeUrls: Record<string, string> = {}
+    const storeTiers: Record<string, number> = {}
     for (const store of stores ?? []) {
-      if (!store.name || !store.website) continue
-      const url = store.website.startsWith('http') ? store.website : `https://${store.website}`
-      // Index by exact lowercase name AND normalized name
-      map[store.name.toLowerCase()] = url
-      map[normalizeStoreName(store.name)] = url
+      if (!store.name) continue
+      const normKey = normalizeStoreName(store.name)
+      const lcKey = store.name.toLowerCase()
+      if (store.website) {
+        const url = store.website.startsWith('http') ? store.website : `https://${store.website}`
+        storeUrls[lcKey] = url
+        storeUrls[normKey] = url
+      }
+      const boost = TIER_BOOST[store.spendTier?.trim()] ?? 0
+      storeTiers[normKey] = boost
+      storeTiers[lcKey] = boost
     }
-    return map
+    return { storeUrls, storeTiers }
   } catch {
-    return {}
+    return { storeUrls: {}, storeTiers: {} }
   }
 }
 
@@ -149,8 +160,8 @@ export async function GET(request: NextRequest) {
 
   if (freshEdition) edition = freshEdition
 
-  // Fetch store URLs once for all subscribers
-  const storeUrls = await fetchStoreUrls(appUrl)
+  // Fetch store URLs + tier boosts once for all subscribers
+  const { storeUrls, storeTiers } = await fetchStoreData(appUrl)
 
   // Get subscribers who already received this edition
   const { data: alreadySent } = await supabase
@@ -215,7 +226,7 @@ export async function GET(request: NextRequest) {
             { genderFilter, subscriptionMode, selectedRetailers, excludeFreeShipping }
           )
 
-          const rankedDeals = rankDeals(subscriberDeals)
+          const rankedDeals = rankDeals(subscriberDeals, storeTiers)
           const dealsShown = rankedDeals.length
           const dealsLocked = deals.length - dealsShown
 

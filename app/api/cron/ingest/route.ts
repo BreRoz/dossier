@@ -31,9 +31,9 @@ export async function GET(request: NextRequest) {
   const weekOf = getCurrentWeekOf('thursday')
   const weekOfStr = format(weekOf, 'yyyy-MM-dd')
 
-  // Scan all emails since Thursday (the edition week anchor) so we catch
-  // weekly-ad emails that arrive mid-week before Monday
-  const since = weekOf
+  // Scan from the Sunday before the edition Thursday so we catch weekly-ad
+  // emails (e.g. H-E-B) that arrive mid-week before the Thursday anchor
+  const since = addDays(weekOf, -4)
 
   try {
     const emails = await fetchPromotionalEmails(since)

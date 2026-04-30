@@ -98,22 +98,31 @@ export async function POST(req: NextRequest) {
     { genderFilter, subscriptionMode, selectedRetailers, excludeFreeShipping }
   )
 
-  const rankedDeals = rankDeals(subscriberDeals)
-
-  // Fetch store URLs
+  // Fetch store URLs + tier boosts before ranking so tier influences order
+  const TIER_BOOST: Record<string, number> = { '$': 0, '$$': 3, '$$$': 10, '$$$$': 25 }
   let storeUrls: Record<string, string> = {}
+  let storeTiers: Record<string, number> = {}
   try {
     const res = await fetch(`${appUrl}/api/stores`, { next: { revalidate: 3600 } })
     if (res.ok) {
       const { stores } = await res.json()
       for (const store of stores ?? []) {
-        if (!store.name || !store.website) continue
-        const url = store.website.startsWith('http') ? store.website : `https://${store.website}`
-        storeUrls[store.name.toLowerCase()] = url
-        storeUrls[store.name.toLowerCase().replace(/[^a-z0-9]/g, '')] = url
+        if (!store.name) continue
+        const normKey = store.name.toLowerCase().replace(/[^a-z0-9]/g, '')
+        const lcKey = store.name.toLowerCase()
+        if (store.website) {
+          const url = store.website.startsWith('http') ? store.website : `https://${store.website}`
+          storeUrls[lcKey] = url
+          storeUrls[normKey] = url
+        }
+        const boost = TIER_BOOST[store.spendTier?.trim()] ?? 0
+        storeTiers[normKey] = boost
+        storeTiers[lcKey] = boost
       }
     }
   } catch {}
+
+  const rankedDeals = rankDeals(subscriberDeals, storeTiers)
 
   const html = generateEmailHTML({
     subscriber: subscriber as Subscriber,
