@@ -348,7 +348,6 @@ export default async function AdminPage() {
                   { value: totalEmailsScanned.toLocaleString(), label: 'Emails Scanned' },
                   { value: totalDealsFound.toLocaleString(), label: 'Deals Extracted' },
                   { value: (totalEmailsSent ?? 0).toLocaleString(), label: 'Editions Delivered' },
-                  { value: (sentThisMonth ?? 0).toLocaleString(), label: 'Sent This Month' },
                 ].map(({ value, label }) => (
                   <div key={label} style={{
                     background: 'var(--paper)',
