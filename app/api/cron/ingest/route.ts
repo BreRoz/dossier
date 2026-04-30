@@ -176,18 +176,22 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Upsert edition stats
-    const { data: allDeals } = await supabase
-      .from('deals')
-      .select('retailer')
-      .eq('week_of', weekOfStr)
+    // Upsert edition stats — always use actual table counts as source of truth
+    const [
+      { data: allDealsForStats },
+      { count: totalProcessed },
+    ] = await Promise.all([
+      supabase.from('deals').select('retailer').eq('week_of', weekOfStr),
+      supabase.from('processed_emails').select('*', { count: 'exact', head: true }).eq('week_of', weekOfStr),
+    ])
 
-    const retailers = new Set((allDeals || []).map((d) => d.retailer))
-    const totalDeals = allDeals?.length || 0
+    const retailers = new Set((allDealsForStats || []).map((d) => d.retailer))
+    const totalDeals = allDealsForStats?.length || 0
+    const emailsScanned = totalProcessed ?? 0
 
     const { data: existingEdition } = await supabase
       .from('editions')
-      .select('id, issue_number, emails_scanned')
+      .select('id, issue_number')
       .eq('week_of', weekOfStr)
       .single()
 
@@ -195,13 +199,12 @@ export async function GET(request: NextRequest) {
       await supabase
         .from('editions')
         .update({
-          emails_scanned: ((existingEdition as any).emails_scanned ?? 0) + newEmails.length,
+          emails_scanned: emailsScanned,
           deals_found: totalDeals,
           retailers_count: retailers.size,
         })
         .eq('id', existingEdition.id)
     } else {
-      // Get next issue number
       const { data: lastEdition } = await supabase
         .from('editions')
         .select('issue_number')
@@ -214,7 +217,7 @@ export async function GET(request: NextRequest) {
       await supabase.from('editions').insert({
         week_of: weekOfStr,
         issue_number: nextIssue,
-        emails_scanned: newEmails.length,
+        emails_scanned: emailsScanned,
         deals_found: totalDeals,
         retailers_count: retailers.size,
       })

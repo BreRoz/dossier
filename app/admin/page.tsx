@@ -124,7 +124,8 @@ export default async function AdminPage() {
     { count: totalEmailsSent },
     { count: sentThisMonth },
     { data: topRetailers },
-    { data: editionStats },
+    { count: totalEmailsScannedCount },
+    { count: totalDealsFoundCount },
     { data: retailerScanLog },
     { data: toggledStores },
     { data: storeSuggestions },
@@ -140,7 +141,8 @@ export default async function AdminPage() {
     db.from('sent_emails').select('*', { count: 'exact', head: true }),
     db.from('sent_emails').select('*', { count: 'exact', head: true }).gte('created_at', thirtyDaysAgo),
     db.from('deals').select('retailer').gte('created_at', thirtyDaysAgo),
-    db.from('editions').select('emails_scanned, deals_found'),
+    db.from('processed_emails').select('*', { count: 'exact', head: true }),
+    db.from('deals').select('*', { count: 'exact', head: true }),
     db.from('retailer_scan_log').select('retailer, sender_email, emails_processed, deals_extracted').order('emails_processed', { ascending: false }),
     db.from('subscriber_store_preferences').select('retailer').eq('enabled', true),
     db.from('store_suggestions').select('id, store_name, website, notes, status, created_at').order('created_at', { ascending: false }).limit(50),
@@ -183,9 +185,9 @@ export default async function AdminPage() {
     .slice(0, 10)
   const maxRetailerCount = Math.max(...topRetailerList.map((r) => r[1]), 1)
 
-  // Edition totals
-  const totalEmailsScanned = (editionStats || []).reduce((s, r) => s + (r.emails_scanned || 0), 0)
-  const totalDealsFound = (editionStats || []).reduce((s, r) => s + (r.deals_found || 0), 0)
+  // Pipeline totals — pulled from actual source tables, not editions metadata
+  const totalEmailsScanned = totalEmailsScannedCount ?? 0
+  const totalDealsFound = totalDealsFoundCount ?? 0
 
   // Top toggled-on stores
   const toggledStoreCounts: Record<string, number> = {}

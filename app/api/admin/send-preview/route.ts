@@ -54,6 +54,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No edition found for this week' }, { status: 404 })
   }
 
+  // Sync edition stats with actual DB counts (same as main send route)
+  const { count: emailsScannedCount } = await supabase
+    .from('processed_emails')
+    .select('*', { count: 'exact', head: true })
+    .eq('week_of', weekOfStr)
+
+  await supabase.from('editions').update({
+    deals_found: allDeals.length,
+    retailers_count: new Set(allDeals.map((d: any) => d.retailer)).size,
+    emails_scanned: emailsScannedCount ?? edition.emails_scanned ?? 0,
+  }).eq('id', edition.id)
+
+  const { data: freshEdition } = await supabase.from('editions').select('*').eq('id', edition.id).single()
+  if (freshEdition) edition = freshEdition
+
   // Fetch subscriber preferences
   const [{ data: cats }, { data: dts }, { data: retailers }] = await Promise.all([
     supabase.from('subscriber_categories').select('*').eq('subscriber_id', subscriber.id),
