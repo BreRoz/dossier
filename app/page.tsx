@@ -592,6 +592,16 @@ export default function LandingPage() {
                 ),
               },
               {
+                q: 'How are brands prioritized in emails?',
+                a: (
+                  <>
+                    <p>A few factors work together to decide what shows up first.</p>
+                    <p>The biggest driver is savings — a 60% off deal ranks above a 20% off deal, every time. Beyond that, we factor in store tier. A sale at a higher-end retailer gets a meaningful boost over the same discount at a store that&rsquo;s always running promotions. The logic is simple: a rare sale at a premium brand is more noteworthy than a perpetual 30% off at a store where 30% off is basically the regular price.</p>
+                    <p>Free shipping deals are always shown last — they&rsquo;re nice, but they&rsquo;re not the reason you&rsquo;re here.</p>
+                  </>
+                ),
+              },
+              {
                 q: 'When will paid tier launch?',
                 a: <p>We&rsquo;re working on it. Join the free tier now and you&rsquo;ll be first to know when paid launches. Your preferences and history carry over automatically.</p>,
               },
