@@ -80,14 +80,16 @@ export async function extractDealsFromEmail(
   subject: string,
   body: string
 ): Promise<ExtractedDeal[]> {
-  // Strip HTML tags for cleaner text
+  // Strip HTML tags and bulk noise for cleaner text
   const cleanBody = body
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/https?:\/\/[^\s"'>]{10,}/g, '')   // remove URLs (long, useless for extraction)
+    .replace(/base64,[a-zA-Z0-9+/=]+/g, '')      // remove base64 image data
     .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
-    .slice(0, 8000) // Limit to avoid token overflow
+    .slice(0, 20000) // Raised from 8k — needed for long weekly-ad emails like H-E-B
 
   const userPrompt = `FROM: ${from}
 SUBJECT: ${subject}
