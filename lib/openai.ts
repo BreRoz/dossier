@@ -55,8 +55,9 @@ DO NOT EXTRACT:
 - Welcome offers, new customer offers, or first-order discounts (these are single-use and won't work for most readers)
 - Birthday offers or anniversary offers (these are personalized and single-use)
 - Return policies, exchange policies, or free returns/exchanges (these are store policies, not deals)
-- Loyalty point notices or reward balance updates (not actionable deals)
+- Loyalty point notices, reward balance updates, or points-earning promotions of any kind — this includes "earn double points," "earn triple points," "bonus points events," or anything where the benefit is rewards points rather than a direct discount on price
 - Referral programs or "give $X, get $X" referral offers
+- Credit card member exclusives or store card promotions (earn points, special financing, etc.)
 - Price listings with no savings — emails that just show what items cost ("Jeans for $39.90", "Tops starting at $12") with no percentage off, no dollar-off amount, and no promo code. A price alone is not a deal.
 - "Enjoy $X+ on select styles" or "Shop styles from $X" messages — these are just price floors, not discounts
 - "Starting at $X" promotions where no comparison price, discount amount, or promo code is given

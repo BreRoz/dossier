@@ -108,6 +108,15 @@ export async function GET(request: NextRequest) {
         // Skip deals with no real value
         if (!deal.description || !deal.retailer) continue
 
+        // Skip loyalty/points promotions — earning points is not a price discount
+        if (
+          deal.deal_type === 'loyalty' ||
+          /earn\s+(double|triple|\d+x|bonus)\s+points|bonus\s+points\s+event|rewards?\s+(credit\s+card|members?\s+earn)/i.test(deal.description)
+        ) {
+          console.log(`[ingest] skipping loyalty/points promo: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
+          continue
+        }
+
         // Skip vague flash-sale descriptions with no concrete savings info
         if (
           deal.deal_type === 'flash-sale' &&
