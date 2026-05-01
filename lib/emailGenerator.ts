@@ -376,7 +376,17 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
     <tr>
       <td class="hpad" style="padding:36px 40px 28px;border-bottom:1px solid rgba(13,13,15,0.08);">
         <h1 class="htitle" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:44px;font-weight:300;letter-spacing:-0.02em;line-height:0.95;color:${C.ink};margin:0 0 16px;">The <em style="font-style:italic;">finest</em> deals,<br>curated.</h1>
-        <p style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);margin:0;">Scanned, filtered &amp; delivered — only what's worth your attention.</p>
+        <p style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);margin:0 0 10px;">Scanned, filtered &amp; delivered — only what's worth your attention.</p>
+        <p style="font-family:'Barlow',Arial,sans-serif;font-size:11px;color:rgba(13,13,15,0.38);margin:0;line-height:1.5;">
+          ${(() => {
+            const minPct = subscriber.tier === 'free' ? 40 : (subscriber.min_discount ?? 20)
+            const cats = enabledCategories.length > 0
+              ? enabledCategories.map((c) => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')
+              : 'All categories'
+            return `Showing ${minPct}%+ deals in ${cats}.`
+          })()}
+          &nbsp;<a href="${appUrl}/preferences" style="color:rgba(13,13,15,0.38);text-decoration:underline;text-underline-offset:2px;white-space:nowrap;">Adjust settings</a>
+        </p>
       </td>
     </tr>
 
@@ -392,9 +402,6 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
             <td class="statcell" style="padding:20px 0;text-align:center;width:50%;">
               <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:300;letter-spacing:-0.02em;line-height:1;color:${accent};">${dealsShown}</div>
               <div style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);line-height:1.3;margin-top:4px;">Deals<br>For You</div>
-              <div style="margin-top:6px;text-align:right;padding-right:16px;">
-                <a href="${appUrl}/preferences" style="font-family:'Barlow',Arial,sans-serif;font-size:10px;color:rgba(13,13,15,0.35);text-decoration:underline;text-underline-offset:2px;">adjust settings</a>
-              </div>
             </td>
           </tr>
         </table>
