@@ -122,6 +122,7 @@ export default async function AdminPage() {
     { data: editions },
     { count: totalEmailsSent },
     { count: sentThisMonth },
+    { count: sentThisWeek },
     { data: topRetailers },
     { count: totalEmailsScannedCount },
     { count: totalDealsFoundCount },
@@ -139,6 +140,7 @@ export default async function AdminPage() {
     db.from('editions').select('*').order('week_of', { ascending: false }).limit(8),
     db.from('sent_emails').select('*', { count: 'exact', head: true }),
     db.from('sent_emails').select('*', { count: 'exact', head: true }).gte('created_at', thirtyDaysAgo),
+    db.from('sent_emails').select('*', { count: 'exact', head: true }).gte('created_at', sevenDaysAgo),
     db.from('deals').select('retailer').gte('created_at', thirtyDaysAgo),
     db.from('processed_emails').select('*', { count: 'exact', head: true }),
     db.from('deals').select('*', { count: 'exact', head: true }),
@@ -346,7 +348,8 @@ export default async function AdminPage() {
                 {[
                   { value: totalEmailsScanned.toLocaleString(), label: 'Emails Scanned' },
                   { value: totalDealsFound.toLocaleString(), label: 'Deals Extracted' },
-                  { value: (totalEmailsSent ?? 0).toLocaleString(), label: 'Editions Delivered' },
+                  { value: (totalEmailsSent ?? 0).toLocaleString(), label: 'Emails Delivered' },
+                  { value: (sentThisWeek ?? 0).toLocaleString(), label: 'Emails Delivered This Week' },
                 ].map(({ value, label }) => (
                   <div key={label} style={{
                     background: 'var(--paper)',

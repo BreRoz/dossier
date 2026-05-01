@@ -119,6 +119,7 @@ function highlightDeal(text: string, accent: string): string {
     .replace(/\bsaving \d+%\b/gi, wrap)                    // e.g. "saving 23%"
     .replace(/\bsaving \$\d+(?:\.\d+)?\b/gi, wrap)         // e.g. "saving $15.00"
     .replace(/\bfree item\b/gi, wrap)
+    .replace(/\bget\s+(?:\d+|(?:[\w'.-]+\s+)*[\w'.-]+)\s+free\b/gi, wrap)  // e.g. "get H-E-B Mustard free", "get 2 free"
 }
 
 // ── Single deal row ───────────────────────────────────────────────────────────
