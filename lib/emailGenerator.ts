@@ -111,6 +111,7 @@ function highlightDeal(text: string, accent: string): string {
     .replace(/\bup to \d+%\s*off\b/gi, wrap)
     .replace(/\b\d+[-–]\d+%\s*off\b/gi, wrap)           // e.g. "40-60% off", "50–70% off"
     .replace(/\b\d+%\s*(?:off|discount)\b/gi, wrap)      // e.g. "40% off", "40% discount"
+    .replace(/\bdiscount of \d+%\b/gi, wrap)             // e.g. "discount of 48%"
     .replace(/\bfree (?:standard |express |2-day |overnight )?(?:shipping|delivery)\b/gi, wrap)
     .replace(/\bbuy\s+\d+,?\s+get\s+\d+\s+free\b/gi, wrap)  // e.g. "Buy 2, get 1 FREE"
     .replace(/\bbuy (?:one|1),? get (?:one|1)(?: free| half[- ]off)?\b/gi, wrap)

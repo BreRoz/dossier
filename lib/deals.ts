@@ -198,7 +198,12 @@ export function isJunkDeal(deal: Pick<Deal, 'deal_type' | 'description'> & { per
   const desc = deal.description ?? ''
 
   // Welcome / first-order / new-customer offers — single-use, won't work for most readers
-  if (/\b(welcome\s+(code|offer|discount|deal)|first[\s-]?(order|purchase|time)\s+(discount|offer|code|deal|off)|new\s+customer\s+(offer|discount|code|deal)|first\s+\d+%\s*off)\b/i.test(desc))
+  if (/\b(welcome\s+(code|offer|discount|deal)|code\s+welcome\b|first[\s-]?(order|purchase|time)\s+(discount|offer|code|deal|off)|new\s+customer\s+(offer|discount|code|deal)|first\s+\d+%\s*off|valid\s+(only\s+)?once\s+per\s+(person|customer|user|account|household))\b/i.test(desc))
+    return true
+
+  // Free returns / exchanges — a return policy, not a price discount
+  if (/\bfree\s+(returns?|exchanges?)\b/i.test(desc) &&
+    !/\d+%\s*off|\$\d+\s*(off|savings?)|save\s+\$\d+/i.test(desc))
     return true
 
   // Loyalty / points promotions — earning points is not a price discount

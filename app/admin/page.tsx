@@ -264,6 +264,45 @@ export default async function AdminPage() {
           <Stat value={`+${newThisWeek ?? 0}`} label="New This Week" />
         </div>
 
+        {/* Pipeline totals */}
+        <div style={{ marginBottom: 64 }}>
+          <SectionHeader>Pipeline Totals</SectionHeader>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, background: 'var(--ink-06)' }}>
+            {[
+              { value: totalEmailsScanned.toLocaleString(), label: 'Emails Scanned' },
+              { value: totalDealsFound.toLocaleString(), label: 'Deals Extracted' },
+              { value: (totalEmailsSent ?? 0).toLocaleString(), label: 'Emails Delivered' },
+              { value: (sentThisWeek ?? 0).toLocaleString(), label: 'Emails Delivered This Week' },
+            ].map(({ value, label }) => (
+              <div key={label} style={{
+                background: 'var(--paper)',
+                padding: '20px 24px',
+              }}>
+                <div style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontSize: 28,
+                  fontWeight: 300,
+                  letterSpacing: '-0.02em',
+                  color: 'var(--ink)',
+                  lineHeight: 1,
+                  marginBottom: 4,
+                }}>
+                  {value}
+                </div>
+                <div style={{
+                  fontFamily: 'var(--font-condensed)',
+                  fontSize: 9,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  color: 'var(--ink-40)',
+                }}>
+                  {label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Two-column layout */}
         <div className="r2grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, marginBottom: 64 }}>
 
@@ -338,45 +377,6 @@ export default async function AdminPage() {
                     </div>
                   )
                 })}
-              </div>
-            </div>
-
-            {/* Pipeline totals */}
-            <div>
-              <SectionHeader>Pipeline Totals</SectionHeader>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: 'var(--ink-06)' }}>
-                {[
-                  { value: totalEmailsScanned.toLocaleString(), label: 'Emails Scanned' },
-                  { value: totalDealsFound.toLocaleString(), label: 'Deals Extracted' },
-                  { value: (totalEmailsSent ?? 0).toLocaleString(), label: 'Emails Delivered' },
-                  { value: (sentThisWeek ?? 0).toLocaleString(), label: 'Emails Delivered This Week' },
-                ].map(({ value, label }) => (
-                  <div key={label} style={{
-                    background: 'var(--paper)',
-                    padding: '20px 24px',
-                  }}>
-                    <div style={{
-                      fontFamily: 'var(--font-serif)',
-                      fontSize: 28,
-                      fontWeight: 300,
-                      letterSpacing: '-0.02em',
-                      color: 'var(--ink)',
-                      lineHeight: 1,
-                      marginBottom: 4,
-                    }}>
-                      {value}
-                    </div>
-                    <div style={{
-                      fontFamily: 'var(--font-condensed)',
-                      fontSize: 9,
-                      letterSpacing: '0.18em',
-                      textTransform: 'uppercase',
-                      color: 'var(--ink-40)',
-                    }}>
-                      {label}
-                    </div>
-                  </div>
-                ))}
               </div>
             </div>
 
