@@ -116,6 +116,8 @@ function highlightDeal(text: string, accent: string): string {
     .replace(/\bbuy (?:one|1),? get (?:one|1)(?: free| half[- ]off)?\b/gi, wrap)
     .replace(/\bBOGO\b/g, wrap)
     .replace(/\$\d+(?:\.\d+)?(?:\s*off| reward)\b/gi, wrap)
+    .replace(/\bsaving \d+%\b/gi, wrap)                    // e.g. "saving 23%"
+    .replace(/\bsaving \$\d+(?:\.\d+)?\b/gi, wrap)         // e.g. "saving $15.00"
     .replace(/\bfree item\b/gi, wrap)
 }
 
