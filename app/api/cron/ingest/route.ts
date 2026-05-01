@@ -136,10 +136,20 @@ export async function GET(request: NextRequest) {
           deal.deal_type !== 'bogo-free' &&
           deal.deal_type !== 'bogo-half' &&
           deal.deal_type !== 'free-item' &&
-          /(?:starting at|from|for|at)\s+\$\d+|enjoy\s+\$\d+\+?\s+on|^[\w\s]+for\s+\$\d+\.\d{2}/i.test(deal.description) &&
-          !/\d+%\s*off|\$\d+\s*off|save\s+\$\d+/i.test(deal.description)
+          /(?:starting at|from|for|at)\s+\$\d+|enjoy\s+\$\d+\+?\s+on|\$\d+\+?\s+on\s+select|^[\w\s]+for\s+\$\d+\.\d{2}/i.test(deal.description) &&
+          !/\d+%\s*off|\$\d+\s*(off|savings?)|save\s+\$\d+/i.test(deal.description)
         ) {
           console.log(`[ingest] skipping price-listing: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
+          continue
+        }
+
+        // Skip "earn $X store cash/credit" promotions — deferred value with
+        // spending requirements, not a real discount (e.g. LOFT Cash, Kohl's Cash)
+        if (
+          /earn\s+\$\d+\s+\w*\s*(cash|credit|reward)|get\s+\$\d+\s+\w*\s*(cash|credit)\s+when\s+you\s+spend/i.test(deal.description) &&
+          !/\d+%\s*off|\$\d+\s*off/i.test(deal.description)
+        ) {
+          console.log(`[ingest] skipping store-cash promo: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
           continue
         }
 

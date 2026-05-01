@@ -59,8 +59,9 @@ DO NOT EXTRACT:
 - Referral programs or "give $X, get $X" referral offers
 - Credit card member exclusives or store card promotions (earn points, special financing, etc.)
 - Price listings with no savings — emails that just show what items cost ("Jeans for $39.90", "Tops starting at $12") with no percentage off, no dollar-off amount, and no promo code. A price alone is not a deal.
-- "Enjoy $X+ on select styles" or "Shop styles from $X" messages — these are just price floors, not discounts
+- "Enjoy $X+ on select styles", "$X+ on select styles", or "Shop styles from $X" messages — these are just price floors, not discounts
 - "Starting at $X" promotions where no comparison price, discount amount, or promo code is given
+- "Earn $X store cash / store credit with a $Y purchase" — these are deferred-value promotions with redemption windows and spending requirements, not direct discounts (e.g. "Earn $25 LOFT Cash with a $75 purchase")
 
 Return ONLY this exact JSON structure:
 {
