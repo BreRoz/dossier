@@ -386,7 +386,8 @@ body.grain .grain-layer { opacity: 0.55; }
 .reveal-mask {
   display: inline-block;
   overflow: visible;
-  clip-path: inset(-0.05em -1em 0 -0.1em);
+  /* Bottom inset is negative so descenders (y, g, p, j) aren't clipped */
+  clip-path: inset(-0.05em -1em -0.3em -0.1em);
   vertical-align: top;
   white-space: nowrap;
   width: max-content;
