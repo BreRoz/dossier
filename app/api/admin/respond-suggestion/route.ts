@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy init so Resend isn't instantiated at build time (no API key available)
+function getResend() { return new Resend(process.env.RESEND_API_KEY) }
 
 const RESPONSES = {
   added: {
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
   // Send email if we have their address
   if (subscriberEmail) {
     const bodyHtml = response.body(suggestion.store_name, note)
-    await resend.emails.send({
+    await getResend().emails.send({
       from: 'Deal Dossier <noreply@dealdossier.io>',
       to: subscriberEmail,
       subject: response.subject,
