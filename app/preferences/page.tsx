@@ -102,6 +102,7 @@ export default function PreferencesPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [tier, setTier] = useState<'free' | 'paid'>('free')
   const [showChangeEmail, setShowChangeEmail] = useState(false)
   const [newEmail, setNewEmail] = useState('')
@@ -159,13 +160,22 @@ export default function PreferencesPage() {
   const handleSave = async () => {
     setSaving(true)
     setSaved(false)
+    setSaveError(null)
     try {
       const res = await fetch('/api/preferences', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ preferences: prefs }),
       })
-      if (res.ok) setSaved(true)
+      if (res.ok) {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 4000)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setSaveError(data.error ?? 'Save failed — please try again')
+      }
+    } catch {
+      setSaveError('Network error — please try again')
     } finally {
       setSaving(false)
     }
@@ -298,6 +308,14 @@ export default function PreferencesPage() {
             textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
           }}>
             Saved
+          </span>
+        )}
+        {saveError && (
+          <span style={{
+            fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em',
+            textTransform: 'uppercase', color: '#c0392b',
+          }}>
+            {saveError}
           </span>
         )}
         <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ padding: '8px 24px' }}>

@@ -100,6 +100,9 @@ export async function PUT(request: NextRequest) {
 
   const isPaid = subscriber.tier === 'paid'
 
+  console.log('[preferences PUT] subscriber tier:', subscriber.tier, '| isPaid:', isPaid)
+  console.log('[preferences PUT] incoming:', JSON.stringify(preferences))
+
   // Update core fields
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (preferences.zip_code !== undefined) updates.zip_code = preferences.zip_code
@@ -113,7 +116,13 @@ export async function PUT(request: NextRequest) {
     updates.subscription_mode = preferences.subscription_mode
   }
 
-  await service.from('subscribers').update(updates).eq('id', subscriber.id)
+  console.log('[preferences PUT] applying updates:', JSON.stringify(updates))
+
+  const { error: updateError } = await service.from('subscribers').update(updates).eq('id', subscriber.id)
+  if (updateError) {
+    console.error('[preferences PUT] subscribers update error:', JSON.stringify(updateError))
+    return NextResponse.json({ error: 'Failed to save preferences', detail: updateError.message }, { status: 500 })
+  }
 
   // Update categories (free tier restricted)
   if (preferences.categories) {
