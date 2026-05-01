@@ -108,6 +108,14 @@ export async function GET(request: NextRequest) {
         // Skip deals with no real value
         if (!deal.description || !deal.retailer) continue
 
+        // Skip welcome/first-order/new-customer offers — single-use, won't work for most readers
+        if (
+          /\b(welcome\s+(code|offer|discount|deal)|first[\s-]?(order|purchase|time)\s+(discount|offer|code|deal|off)|new\s+customer\s+(offer|discount|code|deal)|first\s+\d+%\s*off)\b/i.test(deal.description)
+        ) {
+          console.log(`[ingest] skipping welcome/first-order offer: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
+          continue
+        }
+
         // Skip loyalty/points promotions — earning points is not a price discount
         if (
           deal.deal_type === 'loyalty' ||
