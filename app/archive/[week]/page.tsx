@@ -10,7 +10,7 @@ import { ALL_CATEGORIES, CATEGORY_LABELS, FREE_CATEGORIES } from '@/types'
 import { rankDeals } from '@/lib/deals'
 import type { Deal, Edition, Category } from '@/types'
 
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 interface Props {
   params: Promise<{ week: string }>
