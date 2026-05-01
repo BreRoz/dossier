@@ -1031,6 +1031,51 @@ body.grain .grain-layer { opacity: 0.55; }
   .admin-table-row > div:nth-child(n + 3) { grid-column: 1 / -1; }
 }
 
+/* ─── Archive list row hover + mobile stack ──────────────────────────── */
+.archive-row { transition: padding 0.35s var(--easing); }
+.archive-row:hover {
+  padding-left: 12px !important;
+}
+@media (max-width: 768px) {
+  .archive-row {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 16px !important;
+    padding: 24px 0 !important;
+  }
+  .archive-row > div:nth-child(1),
+  .archive-row > div:nth-child(2),
+  .archive-row > div:nth-child(6) {
+    grid-column: 1 / -1 !important;
+    text-align: left !important;
+  }
+  .archive-row > div:nth-child(2) {
+    font-size: 28px !important;
+  }
+}
+
+/* ─── Code badge for promo codes ─────────────────────────────────────── */
+.code-badge {
+  display: inline-block;
+  border: 1.5px solid currentColor;
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+/* ─── Archive detail deal row mobile collapse ─────────────────────────── */
+@media (max-width: 768px) {
+  .deal-row {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  .deal-row > div:last-child {
+    text-align: left !important;
+  }
+}
+
 /* ─── Reduced-motion guard ───────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .route { animation: none; }

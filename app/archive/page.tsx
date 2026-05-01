@@ -3,16 +3,19 @@ import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
+import { Reveal } from '@/components/Reveal'
 import type { Edition } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Archive — Deal Dossier',
-  description: 'Browse every past edition of the Deal Dossier weekly deals brief.',
+  description:
+    'Browse every past edition of the Deal Dossier weekly deals brief.',
   openGraph: {
     title: 'Archive — Deal Dossier',
-    description: 'Browse every past edition of the Deal Dossier weekly deals brief.',
+    description:
+      'Browse every past edition of the Deal Dossier weekly deals brief.',
   },
 }
 
@@ -28,120 +31,160 @@ export default async function ArchivePage() {
   const allEditions = (editions || []) as Edition[]
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
+    <>
       <Nav />
 
-      <div style={{ flex: 1, maxWidth: 1280, margin: '0 auto', width: '100%', padding: '80px 40px 120px' }}>
-
-        {/* Header */}
-        <div style={{ marginBottom: 80, borderBottom: '1px solid rgba(10,10,10,0.12)', paddingBottom: 56 }}>
-          <p style={{
-            fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600,
-            letterSpacing: '0.28em', textTransform: 'uppercase',
-            color: 'rgba(10,10,10,0.4)', marginBottom: 20,
-          }}>
-            Archive
-          </p>
-          <h1 style={{
-            fontFamily: 'var(--font-serif)', fontSize: 'clamp(48px, 6vw, 88px)',
-            fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 0.92, marginBottom: 24,
-            color: 'var(--ink)',
-          }}>
-            Past Issues
-          </h1>
-          <p style={{
-            fontFamily: 'var(--font-sans)', fontSize: 15,
-            color: 'rgba(10,10,10,0.55)', lineHeight: 1.65, maxWidth: 480,
-          }}>
-            Browse every past edition of Deal Dossier.
-          </p>
-        </div>
-
-        {/* Grid */}
-        {allEditions.length === 0 ? (
-          <div style={{ padding: '80px 0', textAlign: 'center' }}>
-            <p style={{
-              fontFamily: 'var(--font-condensed)', fontSize: 11,
-              letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
-            }}>
-              No editions published yet
+      <section style={{ padding: 'clamp(56px, 7vw, 96px) 0 clamp(48px, 6vw, 80px)' }}>
+        <div className="wrap">
+          <Reveal>
+            <div className="t-eyebrow">Archive</div>
+          </Reveal>
+          <Reveal delay={100}>
+            <h1
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 300,
+                fontSize: 'clamp(56px, 9vw, 144px)',
+                marginTop: 20,
+                lineHeight: 0.95,
+                letterSpacing: '-0.035em',
+                maxWidth: '14ch',
+              }}
+            >
+              Past{' '}
+              <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>Issues</em>
+            </h1>
+          </Reveal>
+          <Reveal delay={200}>
+            <p
+              style={{
+                marginTop: 32,
+                color: 'var(--ink-70)',
+                fontSize: 17,
+                lineHeight: 1.55,
+                maxWidth: '52ch',
+              }}
+            >
+              Every edition. Searchable, archived, permanent. Browse the full history
+              of Deal Dossier.
             </p>
-          </div>
-        ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-            gap: 24,
-          }}>
-            {allEditions.map((edition) => {
-              const weekDate = parseISO(edition.week_of)
-              return (
-                <Link
-                  key={edition.id}
-                  href={`/archive/${edition.week_of}`}
-                  style={{ textDecoration: 'none', display: 'block' }}
-                >
-                  <div style={{
-                    background: 'var(--paper)',
-                    border: '1px solid rgba(10,10,10,0.10)',
-                    padding: '40px 36px',
-                    cursor: 'pointer',
-                    height: '100%',
-                  }}>
-                    <p style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 10,
-                      letterSpacing: '0.22em', textTransform: 'uppercase',
-                      color: 'rgba(10,10,10,0.4)', marginBottom: 14,
-                    }}>
-                      {edition.issue_number ? `Issue No. ${edition.issue_number}` : 'Weekly Brief'}
-                    </p>
-                    <h2 style={{
-                      fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300,
-                      letterSpacing: '-0.01em', lineHeight: 1.15, marginBottom: 24,
-                      color: 'var(--ink)',
-                    }}>
-                      Week of {format(weekDate, 'MMMM d, yyyy')}
-                    </h2>
-                    <div style={{ display: 'flex', gap: 24, marginBottom: 24 }}>
-                      {[
-                        { val: edition.deals_found,   label: 'Deals' },
-                        { val: edition.retailers_count, label: 'Retailers' },
-                        { val: edition.emails_scanned,  label: 'Scanned' },
-                      ].map(({ val, label }) => (
-                        <div key={label}>
-                          <div style={{
-                            fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300,
-                            color: 'var(--ink)', lineHeight: 1,
-                          }}>
-                            {val}
+          </Reveal>
+        </div>
+      </section>
+
+      <section style={{ paddingBottom: 'clamp(56px, 8vw, 120px)' }}>
+        <div className="wrap">
+          {allEditions.length === 0 ? (
+            <div
+              style={{
+                padding: '80px 0',
+                textAlign: 'center',
+                borderTop: '1px solid var(--ink-15)',
+              }}
+            >
+              <p className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                No editions published yet
+              </p>
+            </div>
+          ) : (
+            <div style={{ borderTop: '1px solid var(--ink)' }}>
+              {allEditions.map((edition, i) => {
+                const weekDate = parseISO(edition.week_of)
+                return (
+                  <Reveal key={edition.id} delay={Math.min(i, 8) * 60}>
+                    <Link
+                      href={`/archive/${edition.week_of}`}
+                      style={{ display: 'block', textDecoration: 'none' }}
+                    >
+                      <div
+                        className="archive-row"
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns:
+                            '120px 1fr auto auto auto 60px',
+                          gap: 32,
+                          padding: '32px 0',
+                          borderBottom: '1px solid var(--ink-15)',
+                          alignItems: 'baseline',
+                          cursor: 'pointer',
+                          transition: 'all .35s var(--easing)',
+                        }}
+                      >
+                        <div
+                          className="t-mono"
+                          style={{ color: 'var(--olive-deep)' }}
+                        >
+                          {edition.issue_number
+                            ? `No. ${String(edition.issue_number).padStart(3, '0')}`
+                            : '—'}
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 'clamp(28px, 3.4vw, 44px)',
+                            lineHeight: 1,
+                            fontStyle: 'italic',
+                            fontWeight: 350,
+                            letterSpacing: '-0.015em',
+                            color: 'var(--ink)',
+                          }}
+                        >
+                          Week of {format(weekDate, 'MMMM d, yyyy')}
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div className="t-mono" style={{ fontSize: 13 }}>
+                            {edition.deals_found ?? '—'}
                           </div>
-                          <div style={{
-                            fontFamily: 'var(--font-condensed)', fontSize: 10,
-                            letterSpacing: '0.2em', textTransform: 'uppercase',
-                            color: 'rgba(10,10,10,0.4)', marginTop: 4,
-                          }}>
-                            {label}
+                          <div
+                            className="t-meta"
+                            style={{ fontSize: 9, color: 'var(--ink-40)' }}
+                          >
+                            Deals
                           </div>
                         </div>
-                      ))}
-                    </div>
-                    <p style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 10,
-                      letterSpacing: '0.18em', textTransform: 'uppercase',
-                      color: 'rgba(10,10,10,0.4)',
-                      borderTop: '1px solid rgba(10,10,10,0.08)', paddingTop: 20,
-                    }}>
-                      View Issue →
-                    </p>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        )}
-      </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div className="t-mono" style={{ fontSize: 13 }}>
+                            {edition.retailers_count ?? '—'}
+                          </div>
+                          <div
+                            className="t-meta"
+                            style={{ fontSize: 9, color: 'var(--ink-40)' }}
+                          >
+                            Retailers
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div className="t-mono" style={{ fontSize: 13 }}>
+                            {edition.emails_scanned ?? '—'}
+                          </div>
+                          <div
+                            className="t-meta"
+                            style={{ fontSize: 9, color: 'var(--ink-40)' }}
+                          >
+                            Scanned
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            textAlign: 'right',
+                            fontSize: 24,
+                            fontFamily: 'var(--font-serif)',
+                            color: 'var(--ink)',
+                          }}
+                        >
+                          →
+                        </div>
+                      </div>
+                    </Link>
+                  </Reveal>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </section>
 
       <Footer />
-    </div>
+    </>
   )
 }
