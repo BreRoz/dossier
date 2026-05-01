@@ -402,6 +402,203 @@ body.grain .grain-layer { opacity: 0.55; }
 }
 .reveal-mask.in > span { transform: translateY(0); }
 
+/* ─── Editorial section spacing ──────────────────────────────────────── */
+.section { padding: clamp(64px, 10vw, 140px) 0; position: relative; }
+.section-tight { padding: clamp(48px, 6vw, 96px) 0; }
+
+/* ─── Eyebrow + mono labels ──────────────────────────────────────────── */
+.t-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--olive-deep);
+}
+.t-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  font-feature-settings: 'tnum';
+}
+
+/* Italic helper inside display headlines */
+.t-display em,
+.t-display .it {
+  font-style: italic;
+  font-weight: 300;
+}
+
+/* ─── Hero rings (decorative; positioned absolute by caller) ─────────── */
+.ring {
+  position: absolute;
+  border: 1px solid var(--ink-15);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* ─── Live ticker (issue meta + stats) ───────────────────────────────── */
+.ticker {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 0;
+  border-top: 1px solid var(--ink-15);
+  border-bottom: 1px solid var(--ink-15);
+  flex-wrap: wrap;
+}
+.ticker .dot {
+  width: 6px;
+  height: 6px;
+  background: var(--olive);
+  border-radius: 50%;
+  animation: pulse 2.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+.ticker-stats {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+.ticker-stats .item {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(1.3); }
+}
+
+/* ─── Marquee strip ──────────────────────────────────────────────────── */
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 22px 0;
+}
+.marquee-track {
+  display: inline-flex;
+  gap: 56px;
+  animation: marquee 38s linear infinite;
+  animation-duration: calc(38s / max(0.2, var(--motion)));
+  padding-right: 56px;
+}
+.marquee-track > span {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(36px, 5vw, 72px);
+  letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 56px;
+}
+.marquee-track > span::after {
+  content: "✦";
+  font-style: normal;
+  color: var(--olive);
+  font-size: 0.6em;
+}
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+/* ─── Cards (used by pricing, etc.) ──────────────────────────────────── */
+.card {
+  border: 1px solid var(--ink-15);
+  padding: 36px;
+  background: transparent;
+  transition: border-color 0.35s var(--easing), background 0.35s var(--easing);
+}
+.card:hover { border-color: var(--ink); }
+.card-dark {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+/* Inline divider inside cards */
+.hr {
+  height: 1px;
+  background: var(--ink-15);
+  width: 100%;
+  margin: 24px 0;
+}
+
+/* ─── Editorial form field (single-line bordered input + button) ─────── */
+.field {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--ink);
+}
+.field input {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  padding: 14px 0;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: var(--ink);
+  outline: none;
+  letter-spacing: 0.02em;
+}
+.field input::placeholder {
+  color: var(--ink-40);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 11.5px;
+}
+.field button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+/* Arrow nudge on hover for primary/ghost buttons (additive to existing styles) */
+.btn-primary .arr,
+.btn-ghost .arr {
+  display: inline-block;
+  transition: transform 0.4s var(--easing);
+}
+.btn-primary:hover .arr,
+.btn-ghost:hover .arr {
+  transform: translateX(4px);
+}
+
+/* ─── Split-flap glyph (used by FlapNumber component) ────────────────── */
+.flap-char {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+/* ─── Grid utilities (homepage uses .grid-2) ─────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+@media (max-width: 900px) {
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* Manifesto + FAQ split layouts collapse on tablet */
+@media (max-width: 900px) {
+  .manifesto-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+}
+
+/* Hero subline + form grid collapses on tablet */
+@media (max-width: 900px) {
+  .hero-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
+}
+
 /* ─── Reduced-motion guard ───────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .route { animation: none; }
@@ -415,4 +612,6 @@ body.grain .grain-layer { opacity: 0.55; }
     transition: none;
   }
   .grain-layer { display: none; }
+  .marquee-track { animation: none; }
+  .ticker .dot { animation: none; }
 }
