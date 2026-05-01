@@ -5,7 +5,7 @@ import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import type { Edition } from '@/types'
 
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 export const metadata = {
   title: 'Archive — Deal Dossier',
