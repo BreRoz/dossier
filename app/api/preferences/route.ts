@@ -62,8 +62,8 @@ export async function GET() {
       send_day: subscriber.send_day,
       min_discount: subscriber.min_discount,
       subscription_mode: subscriber.subscription_mode ?? 'category',
-      gender_filter: subscriber.gender_filter ?? ['men', 'women', 'unisex'],
-      spend_tier_filter: subscriber.spend_tier_filter ?? ['$', '$$', '$$$', '$$$$'],
+      gender_filter: subscriber.gender_filter ?? [...GENDER_OPTIONS],
+      spend_tier_filter: subscriber.spend_tier_filter ?? [...SPEND_TIERS],
       categories,
       deal_types,
       selected_retailers,
@@ -100,23 +100,13 @@ export async function PUT(request: NextRequest) {
 
   const isPaid = subscriber.tier === 'paid'
 
-  console.log('[preferences PUT] subscriber tier:', subscriber.tier, '| isPaid:', isPaid)
-  console.log('[preferences PUT] incoming:', JSON.stringify(preferences))
-
-  // Update core fields
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (preferences.zip_code !== undefined) updates.zip_code = preferences.zip_code
-  if (preferences.send_day && isPaid) updates.send_day = preferences.send_day
-  if (preferences.min_discount && isPaid) updates.min_discount = preferences.min_discount
+  if (preferences.send_day !== undefined && isPaid) updates.send_day = preferences.send_day
+  if (preferences.min_discount !== undefined && isPaid) updates.min_discount = preferences.min_discount
   if (preferences.gender_filter !== undefined) updates.gender_filter = preferences.gender_filter
-  // spend_tier_filter available to all users
   if (preferences.spend_tier_filter !== undefined) updates.spend_tier_filter = preferences.spend_tier_filter
-  // subscription_mode only for paid; free is always 'category'
-  if (preferences.subscription_mode !== undefined && isPaid) {
-    updates.subscription_mode = preferences.subscription_mode
-  }
-
-  console.log('[preferences PUT] applying updates:', JSON.stringify(updates))
+  if (preferences.subscription_mode !== undefined && isPaid) updates.subscription_mode = preferences.subscription_mode
 
   const { error: updateError } = await service.from('subscribers').update(updates).eq('id', subscriber.id)
   if (updateError) {
@@ -152,9 +142,7 @@ export async function PUT(request: NextRequest) {
       .upsert(rows, { onConflict: 'subscriber_id,deal_type' })
   }
 
-  // Update selected retailers (paid only)
   if (preferences.selected_retailers !== undefined && isPaid) {
-    // Delete all existing retailer prefs for this subscriber, re-insert
     await service
       .from('subscriber_retailers')
       .delete()

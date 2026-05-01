@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { sendEmail, sendAdminAlert } from '@/lib/resend'
 import { generateEmailHTML } from '@/lib/emailGenerator'
-import { filterDealsForSubscriber, getCurrentWeekOf, rankDeals } from '@/lib/deals'
+import { filterDealsForSubscriber, getCurrentWeekOf, rankDeals, isJunkDeal } from '@/lib/deals'
+import { fetchStoreData } from '@/lib/stores'
 import { format } from 'date-fns'
 import type { Deal, Subscriber, Edition, Category, DealType, SendDay } from '@/types'
 import { FREE_CATEGORIES, ALL_CATEGORIES } from '@/types'
@@ -11,46 +12,6 @@ export const maxDuration = 300
 
 const DAYS_OF_WEEK: SendDay[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
 
-// Strip accents, punctuation, spaces for fuzzy matching
-// e.g. "BÉIS" → "beis", "White & Warren" → "whitewarren", "Alo Yoga" → "aloyoga"
-function normalizeStoreName(name: string): string {
-  return name
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove accents
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '')                        // strip punctuation/spaces
-}
-
-// Fetch store name → website URL map AND store name → tier boost map from the sheet.
-// Indexes each store under multiple keys for fuzzy matching.
-async function fetchStoreData(appUrl: string): Promise<{
-  storeUrls: Record<string, string>
-  storeTiers: Record<string, number>
-}> {
-  const TIER_BOOST: Record<string, number> = { '$': 0, '$$': 3, '$$$': 10, '$$$$': 25 }
-  try {
-    const res = await fetch(`${appUrl}/api/stores`, { next: { revalidate: 3600 } })
-    if (!res.ok) return { storeUrls: {}, storeTiers: {} }
-    const { stores } = await res.json()
-    const storeUrls: Record<string, string> = {}
-    const storeTiers: Record<string, number> = {}
-    for (const store of stores ?? []) {
-      if (!store.name) continue
-      const normKey = normalizeStoreName(store.name)
-      const lcKey = store.name.toLowerCase()
-      if (store.website) {
-        const url = store.website.startsWith('http') ? store.website : `https://${store.website}`
-        storeUrls[lcKey] = url
-        storeUrls[normKey] = url
-      }
-      const boost = TIER_BOOST[store.spendTier?.trim()] ?? 0
-      storeTiers[normKey] = boost
-      storeTiers[lcKey] = boost
-    }
-    return { storeUrls, storeTiers }
-  } catch {
-    return { storeUrls: {}, storeTiers: {} }
-  }
-}
 
 function verifyCronSecret(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization')
@@ -137,13 +98,19 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  const deals = allDeals as Deal[]
+  // Backstop: strip junk deals that may have slipped past ingest filters
+  const deals = (allDeals as Deal[]).filter((d) => !isJunkDeal(d))
 
-  // Sync edition stats with actual DB counts (ingest may have timed out before updating these)
-  const { count: emailsScannedCount } = await supabase
-    .from('processed_emails')
-    .select('*', { count: 'exact', head: true })
-    .eq('week_of', weekOfStr)
+  // Parallelise independent queries: email count, store data, already-sent list
+  const [
+    { count: emailsScannedCount },
+    { storeUrls, storeTiers },
+    { data: alreadySent },
+  ] = await Promise.all([
+    supabase.from('processed_emails').select('*', { count: 'exact', head: true }).eq('week_of', weekOfStr),
+    fetchStoreData(appUrl),
+    supabase.from('sent_emails').select('subscriber_id').eq('edition_id', edition.id),
+  ])
 
   await supabase.from('editions').update({
     deals_found: deals.length,
@@ -151,23 +118,8 @@ export async function GET(request: NextRequest) {
     emails_scanned: emailsScannedCount ?? edition.emails_scanned ?? 0,
   }).eq('id', edition.id)
 
-  // Re-fetch edition with updated stats so the email shows correct numbers
-  const { data: freshEdition } = await supabase
-    .from('editions')
-    .select('*')
-    .eq('id', edition.id)
-    .single()
-
+  const { data: freshEdition } = await supabase.from('editions').select('*').eq('id', edition.id).single()
   if (freshEdition) edition = freshEdition
-
-  // Fetch store URLs + tier boosts once for all subscribers
-  const { storeUrls, storeTiers } = await fetchStoreData(appUrl)
-
-  // Get subscribers who already received this edition
-  const { data: alreadySent } = await supabase
-    .from('sent_emails')
-    .select('subscriber_id')
-    .eq('edition_id', edition.id)
 
   const alreadySentIds = new Set((alreadySent || []).map((s) => s.subscriber_id))
 

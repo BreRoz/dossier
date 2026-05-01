@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/resend'
 import { generateEmailHTML } from '@/lib/emailGenerator'
-import { filterDealsForSubscriber, getCurrentWeekOf, rankDeals } from '@/lib/deals'
+import { filterDealsForSubscriber, getCurrentWeekOf, rankDeals, isJunkDeal } from '@/lib/deals'
+import { fetchStoreData } from '@/lib/stores'
 import { format } from 'date-fns'
 import type { Deal, Subscriber, Edition, Category, DealType } from '@/types'
 import { FREE_CATEGORIES } from '@/types'
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest) {
   const excludeFreeShipping = subscriber.tier === 'paid'
 
   const subscriberDeals = filterDealsForSubscriber(
-    allDeals as Deal[],
+    (allDeals as Deal[]).filter((d) => !isJunkDeal(d)),
     effectiveMinDiscount,
     effectiveCategories,
     enabledDealTypes,
@@ -98,30 +99,7 @@ export async function POST(req: NextRequest) {
     { genderFilter, subscriptionMode, selectedRetailers, excludeFreeShipping }
   )
 
-  // Fetch store URLs + tier boosts before ranking so tier influences order
-  const TIER_BOOST: Record<string, number> = { '$': 0, '$$': 3, '$$$': 10, '$$$$': 25 }
-  let storeUrls: Record<string, string> = {}
-  let storeTiers: Record<string, number> = {}
-  try {
-    const res = await fetch(`${appUrl}/api/stores`, { next: { revalidate: 3600 } })
-    if (res.ok) {
-      const { stores } = await res.json()
-      for (const store of stores ?? []) {
-        if (!store.name) continue
-        const normKey = store.name.toLowerCase().replace(/[^a-z0-9]/g, '')
-        const lcKey = store.name.toLowerCase()
-        if (store.website) {
-          const url = store.website.startsWith('http') ? store.website : `https://${store.website}`
-          storeUrls[lcKey] = url
-          storeUrls[normKey] = url
-        }
-        const boost = TIER_BOOST[store.spendTier?.trim()] ?? 0
-        storeTiers[normKey] = boost
-        storeTiers[lcKey] = boost
-      }
-    }
-  } catch {}
-
+  const { storeUrls, storeTiers } = await fetchStoreData(appUrl)
   const rankedDeals = rankDeals(subscriberDeals, storeTiers)
 
   const html = generateEmailHTML({

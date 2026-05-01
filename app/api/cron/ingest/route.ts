@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { fetchPromotionalEmails } from '@/lib/gmail'
 import { extractDealsFromEmail } from '@/lib/openai'
-import { getCurrentWeekOf, makeDealKey } from '@/lib/deals'
+import { getCurrentWeekOf, makeDealKey, isJunkDeal } from '@/lib/deals'
 import { sendAdminAlert } from '@/lib/resend'
 import { addDays, format } from 'date-fns'
 import type { Category } from '@/types'
@@ -88,8 +88,6 @@ export async function GET(request: NextRequest) {
     let emailsWithNoDeals = 0
     const processedEmailIds: string[] = []
 
-    // Process one email: call OpenAI, filter deals, write to DB.
-    // Returns number of deals inserted.
     async function processEmail(email: (typeof newEmails)[number]): Promise<void> {
       // Fast-path: skip obviously transactional emails without an OpenAI call
       if (isTransactionalEmail(email.subject)) {
@@ -108,56 +106,8 @@ export async function GET(request: NextRequest) {
         // Skip deals with no real value
         if (!deal.description || !deal.retailer) continue
 
-        // Skip welcome/first-order/new-customer offers — single-use, won't work for most readers
-        if (
-          /\b(welcome\s+(code|offer|discount|deal)|first[\s-]?(order|purchase|time)\s+(discount|offer|code|deal|off)|new\s+customer\s+(offer|discount|code|deal)|first\s+\d+%\s*off)\b/i.test(deal.description)
-        ) {
-          console.log(`[ingest] skipping welcome/first-order offer: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
-          continue
-        }
-
-        // Skip loyalty/points promotions — earning points is not a price discount
-        if (
-          deal.deal_type === 'loyalty' ||
-          /earn\s+(double|triple|\d+x|bonus)\s+points|bonus\s+points\s+event|rewards?\s+(credit\s+card|members?\s+earn)/i.test(deal.description)
-        ) {
-          console.log(`[ingest] skipping loyalty/points promo: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
-          continue
-        }
-
-        // Skip vague flash-sale descriptions with no concrete savings info
-        if (
-          deal.deal_type === 'flash-sale' &&
-          !deal.percent_off &&
-          !deal.promo_code &&
-          !/\d+%|\$\d+\s*(off|savings?)|buy\s+\d+|bogo/i.test(deal.description)
-        ) {
-          console.log(`[ingest] skipping vague flash-sale: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
-          continue
-        }
-
-        // Skip price-listing "deals" with no actual discount
-        if (
-          !deal.percent_off &&
-          !deal.promo_code &&
-          deal.deal_type !== 'free-shipping' &&
-          deal.deal_type !== 'bogo-free' &&
-          deal.deal_type !== 'bogo-half' &&
-          deal.deal_type !== 'free-item' &&
-          /(?:starting at|from|for|at)\s+\$\d+|enjoy\s+\$\d+\+?\s+on|\$\d+\+?\s+on\s+select|^[\w\s]+for\s+\$\d+\.\d{2}/i.test(deal.description) &&
-          !/\d+%\s*off|\$\d+\s*(off|savings?)|save\s+\$\d+/i.test(deal.description)
-        ) {
-          console.log(`[ingest] skipping price-listing: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
-          continue
-        }
-
-        // Skip "earn $X store cash/credit" promotions — deferred value with
-        // spending requirements, not a real discount (e.g. LOFT Cash, Kohl's Cash)
-        if (
-          /earn\s+\$\d+\s+\w*\s*(cash|credit|reward)|get\s+\$\d+\s+\w*\s*(cash|credit)\s+when\s+you\s+spend/i.test(deal.description) &&
-          !/\d+%\s*off|\$\d+\s*off/i.test(deal.description)
-        ) {
-          console.log(`[ingest] skipping store-cash promo: ${deal.retailer} — "${deal.description.slice(0, 60)}"`)
+        if (isJunkDeal(deal)) {
+          console.log(`[ingest] skipping junk deal: ${deal.retailer} — "${deal.description.slice(0, 80)}"`)
           continue
         }
 
@@ -185,18 +135,12 @@ export async function GET(request: NextRequest) {
           is_manual: email.isManual,
         }
 
-        const { error: insertError } = await supabase.from('deals').insert(dealRow)
-        if (insertError) {
-          if (insertError.code === '23505') {
-            await supabase
-              .from('deals')
-              .update(dealRow)
-              .eq('source_email_id', dealRow.source_email_id)
-              .eq('retailer', dealRow.retailer)
-          } else {
-            console.error('Deal insert error:', JSON.stringify(insertError))
-            continue
-          }
+        const { error: upsertError } = await supabase
+          .from('deals')
+          .upsert(dealRow, { onConflict: 'source_email_id,retailer' })
+        if (upsertError) {
+          console.error('Deal upsert error:', JSON.stringify(upsertError))
+          continue
         }
         newDeals++
       }

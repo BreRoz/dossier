@@ -161,10 +161,6 @@ export function filterDealsForSubscriber(
 
     if (!enabledDealTypes.includes(deal.deal_type)) return false
 
-    if (deal.deal_type === 'up-to') {
-      return enabledDealTypes.includes('up-to')
-    }
-
     if (deal.percent_off !== null && deal.percent_off < minDiscount) {
       if (!['free-item', 'bogo-free', 'bogo-half', 'free-shipping'].includes(deal.deal_type)) {
         return false
@@ -186,6 +182,50 @@ export function formatExpiryDate(dateStr: string | null): string | null {
   } catch {
     return null
   }
+}
+
+const JUNK_DEAL_TYPES = new Set(['free-shipping', 'bogo-free', 'bogo-half', 'free-item'])
+
+/**
+ * Returns true for deals that should never appear in emails regardless of
+ * subscriber preferences: welcome offers, loyalty/points promos, store cash,
+ * price listings, and vague flash sales with no concrete savings.
+ *
+ * Used as a backstop in both the ingest route (to avoid DB pollution) and
+ * the send routes (to catch anything that slipped through ingest).
+ */
+export function isJunkDeal(deal: Pick<Deal, 'deal_type' | 'description'> & { percent_off?: number | null; promo_code?: string | null }): boolean {
+  const desc = deal.description ?? ''
+
+  // Welcome / first-order / new-customer offers — single-use, won't work for most readers
+  if (/\b(welcome\s+(code|offer|discount|deal)|first[\s-]?(order|purchase|time)\s+(discount|offer|code|deal|off)|new\s+customer\s+(offer|discount|code|deal)|first\s+\d+%\s*off)\b/i.test(desc))
+    return true
+
+  // Loyalty / points promotions — earning points is not a price discount
+  if (deal.deal_type === 'loyalty' || /earn\s+(double|triple|\d+x|bonus)\s+points|bonus\s+points\s+event|rewards?\s+(credit\s+card|members?\s+earn)/i.test(desc))
+    return true
+
+  // Store cash / deferred credit (e.g. LOFT Cash, Kohl's Cash)
+  if (/earn\s+\$\d+\s+\w*\s*(cash|credit|reward)|get\s+\$\d+\s+\w*\s*(cash|credit)\s+when\s+you\s+spend/i.test(desc) &&
+    !/\d+%\s*off|\$\d+\s*off/i.test(desc))
+    return true
+
+  // Price listings with no actual discount
+  if (!deal.percent_off &&
+    !deal.promo_code &&
+    !JUNK_DEAL_TYPES.has(deal.deal_type) &&
+    /(?:starting at|from|for|at)\s+\$\d+|enjoy\s+\$\d+\+?\s+on|\$\d+\+?\s+on\s+select|^[\w\s]+for\s+\$\d+\.\d{2}/i.test(desc) &&
+    !/\d+%\s*off|\$\d+\s*(off|savings?)|save\s+\$\d+/i.test(desc))
+    return true
+
+  // Vague flash sales with no concrete savings info
+  if (deal.deal_type === 'flash-sale' &&
+    !deal.percent_off &&
+    !deal.promo_code &&
+    !/\d+%|\$\d+\s*(off|savings?)|buy\s+\d+|bogo/i.test(desc))
+    return true
+
+  return false
 }
 
 export function formatSavings(deal: Deal): string {

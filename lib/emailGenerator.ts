@@ -227,6 +227,14 @@ export interface GenerateEmailOptions {
   storeUrls?: Record<string, string>
 }
 
+function buildSettingsSummary(subscriber: Subscriber, enabledCategories: Category[]): string {
+  const minPct = subscriber.tier === 'free' ? 40 : (subscriber.min_discount ?? 20)
+  const cats = enabledCategories.length > 0
+    ? enabledCategories.map((c) => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')
+    : 'All categories'
+  return `Showing ${minPct}%+ deals in ${cats}.`
+}
+
 export function generateEmailHTML(opts: GenerateEmailOptions): string {
   const { subscriber, deals, edition, enabledCategories, totalDeals, appUrl, storeUrls = {} } = opts
   const accent = getCurrentAccent()
@@ -288,6 +296,8 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
   const emailsScanned = edition.emails_scanned ?? '—'
   const dealsFound = edition.deals_found ?? '—'
   const storesCovered = edition.retailers_count ?? '—'
+
+  const settingsSummary = buildSettingsSummary(subscriber, enabledCategories)
 
   const preferencesUrl = `${appUrl}/preferences`
   const unsubscribeUrl = `${appUrl}/unsubscribe?email=${encodeURIComponent(subscriber.email)}`
@@ -380,13 +390,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
         <h1 class="htitle" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:44px;font-weight:300;letter-spacing:-0.02em;line-height:0.95;color:${C.ink};margin:0 0 16px;">The <em style="font-style:italic;">finest</em> deals,<br>curated.</h1>
         <p style="font-family:'Barlow Condensed','Arial Narrow',Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:rgba(13,13,15,0.4);margin:0 0 10px;">Scanned, filtered &amp; delivered — only what's worth your attention.</p>
         <p style="font-family:'Barlow',Arial,sans-serif;font-size:11px;color:rgba(13,13,15,0.38);margin:0;line-height:1.5;">
-          ${(() => {
-            const minPct = subscriber.tier === 'free' ? 40 : (subscriber.min_discount ?? 20)
-            const cats = enabledCategories.length > 0
-              ? enabledCategories.map((c) => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')
-              : 'All categories'
-            return `Showing ${minPct}%+ deals in ${cats}.`
-          })()}
+          ${settingsSummary}
           &nbsp;<a href="${appUrl}/preferences" style="color:rgba(13,13,15,0.38);text-decoration:underline;text-underline-offset:2px;white-space:nowrap;">Adjust settings</a>
         </p>
       </td>

@@ -40,7 +40,7 @@ export async function fetchPromotionalEmails(sinceDate: Date): Promise<GmailMess
   if (messages.length === 0) return []
 
   const results: GmailMessage[] = []
-  const batchSize = 10
+  const batchSize = 25
 
   for (let i = 0; i < messages.length; i += batchSize) {
     const batch = messages.slice(i, i + batchSize)
