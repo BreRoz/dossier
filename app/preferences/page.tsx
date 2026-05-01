@@ -202,7 +202,7 @@ export default function PreferencesPage() {
     try {
       const res = await fetch('/api/account/delete', { method: 'DELETE' })
       if (res.ok) {
-        await supabase.auth.signOut()
+        await createClient().auth.signOut()
         router.push('/?deleted=1')
       }
     } finally {
