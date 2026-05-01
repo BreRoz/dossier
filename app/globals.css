@@ -3,28 +3,75 @@
 @tailwind utilities;
 
 :root {
-  --ink:        oklch(9%  0.010 280);
-  --ink-70:     oklch(35% 0.010 280);
-  --ink-40:     oklch(62% 0.010 280);
-  --ink-15:     oklch(85% 0.008 280);
-  --ink-06:     oklch(94% 0.005 280);
-  --paper:      oklch(98% 0.004 90);
+  /* ── Brand: Bone / Ink / Olive ─────────────────────────────────────── */
+  --bone:    #F5F3EF;
+  --bone-2:  #EDEBE5;
+  --bone-3:  #E4E1D9;
+  --paper:   var(--bone); /* alias — existing pages reference --paper */
 
+  --ink:     #0E0E0E;
+  --ink-2:   #1A1A1A;
+  --ink-70:  rgba(14, 14, 14, 0.70);
+  --ink-55:  rgba(14, 14, 14, 0.55);
+  --ink-40:  rgba(14, 14, 14, 0.42);
+  --ink-25:  rgba(14, 14, 14, 0.25);
+  --ink-15:  rgba(14, 14, 14, 0.15);
+  --ink-08:  rgba(14, 14, 14, 0.08);
+  --ink-06:  var(--ink-08); /* alias — existing pages reference --ink-06 */
+  --ink-04:  rgba(14, 14, 14, 0.04);
+
+  --olive:       #8BA661;
+  --olive-deep:  #6E8849;
+  --olive-15:    rgba(139, 166, 97, 0.15);
+
+  --paper-on-ink:    rgba(245, 243, 239, 0.92);
+  --paper-on-ink-55: rgba(245, 243, 239, 0.55);
+  --paper-on-ink-25: rgba(245, 243, 239, 0.25);
+  --paper-on-ink-15: rgba(245, 243, 239, 0.12);
+
+  /* Accent now olive year-round; seasonal vars retained for any
+     remaining references but no longer drive --accent. */
   --accent-spring:  oklch(64% 0.160 22);
   --accent-summer:  oklch(56% 0.160 248);
   --accent-fall:    oklch(62% 0.155 48);
   --accent-winter:  oklch(42% 0.120 168);
-  --accent:         var(--accent-fall);
+  --accent:         var(--olive-deep);
 
+  /* ── Type ──────────────────────────────────────────────────────────── */
+  /* --font-serif / --font-sans / --font-condensed / --font-mono are set
+     in app/layout.tsx via next/font and bound to the Fraunces / Inter /
+     Barlow Condensed / JetBrains Mono families. */
+  --font-display: var(--font-serif);
+  --font-body:    var(--font-sans);
+
+  /* ── Spacing ───────────────────────────────────────────────────────── */
   --sp-xs:  6px;
   --sp-sm:  12px;
   --sp-md:  24px;
   --sp-lg:  48px;
   --sp-xl:  80px;
   --sp-2xl: 140px;
+  /* Prototype scale */
+  --sp-1:   4px;
+  --sp-2:   8px;
+  --sp-3:   12px;
+  --sp-4:   16px;
+  --sp-5:   24px;
+  --sp-6:   32px;
+  --sp-7:   48px;
+  --sp-8:   64px;
+  --sp-9:   96px;
+  --sp-10:  140px;
+  --sp-11:  200px;
 
+  /* ── Motion ────────────────────────────────────────────────────────── */
+  --easing:     cubic-bezier(0.2, 0.7, 0.2, 1);
+  --easing-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion:     1;
+
+  /* ── Layout ────────────────────────────────────────────────────────── */
   --rule: 1px solid var(--ink-15);
-  --max: 1280px;
+  --max:  1280px;
 }
 
 *, *::before, *::after {
@@ -41,7 +88,12 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  font-feature-settings: 'ss01', 'cv11';
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   overflow-x: hidden;
 }
 
