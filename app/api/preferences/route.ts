@@ -10,13 +10,13 @@ const SPEND_TIERS = ['$', '$$', '$$$', '$$$$'] as const
 const PreferencesSchema = z.object({
   preferences: z.object({
     zip_code: z.string().nullable().optional(),
-    send_day: z.enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']).optional(),
-    min_discount: z.union([z.literal(20), z.literal(30), z.literal(40), z.literal(50)]).optional(),
+    send_day: z.enum(['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']).nullable().optional(),
+    min_discount: z.union([z.literal(20), z.literal(30), z.literal(40), z.literal(50)]).nullable().optional(),
     categories: z.record(z.boolean()).optional(),
     deal_types: z.record(z.boolean()).optional(),
-    subscription_mode: z.enum(['category', 'retailer']).optional(),
-    gender_filter: z.array(z.enum(GENDER_OPTIONS)).optional(),
-    spend_tier_filter: z.array(z.enum(SPEND_TIERS)).optional(),
+    subscription_mode: z.enum(['category', 'retailer']).nullable().optional(),
+    gender_filter: z.array(z.enum(GENDER_OPTIONS)).nullable().optional(),
+    spend_tier_filter: z.array(z.enum(SPEND_TIERS)).nullable().optional(),
     selected_retailers: z.array(z.string()).optional(),
   }),
 })

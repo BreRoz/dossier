@@ -140,6 +140,8 @@ export default function PreferencesPage() {
         setPrefs((prev) => ({
           ...prev,
           ...data.preferences,
+          send_day: data.preferences?.send_day ?? 'thursday',
+          min_discount: data.preferences?.min_discount ?? 40,
           subscription_mode: data.preferences?.subscription_mode ?? 'category',
           gender_filter: data.preferences?.gender_filter ?? ['men', 'women', 'unisex'],
           spend_tier_filter: data.preferences?.spend_tier_filter ?? ['$', '$$', '$$$', '$$$$'],
