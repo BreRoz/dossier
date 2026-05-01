@@ -340,3 +340,79 @@ a {
 .toggle input:checked ~ .toggle-thumb {
   transform: translateX(18px);
 }
+
+/* ─── Route fade-in (triggered by app/template.tsx wrapping each route) ── */
+.route {
+  animation: routeIn 0.7s var(--easing-out);
+}
+@keyframes routeIn {
+  from {
+    opacity: 0;
+    transform: translateY(calc(12px * var(--motion)));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Grain overlay (dormant by default; toggle with body.grain) ───────── */
+.grain-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.4s var(--easing);
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.42 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 220px 220px;
+}
+body.grain .grain-layer { opacity: 0.55; }
+
+/* ─── Reveal-on-scroll utilities (used by client components in step 4) ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(calc(28px * var(--motion)));
+  transition:
+    opacity 0.9s var(--easing-out),
+    transform 0.9s var(--easing-out);
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-mask {
+  display: inline-block;
+  overflow: visible;
+  clip-path: inset(-0.05em -1em 0 -0.1em);
+  vertical-align: top;
+  white-space: nowrap;
+  width: max-content;
+  max-width: 100%;
+}
+.reveal-mask > span {
+  display: inline-block;
+  white-space: nowrap;
+  width: max-content;
+  transform: translateY(105%);
+  transition: transform 0.9s var(--easing-out);
+  transition-delay: var(--d, 0ms);
+}
+.reveal-mask.in > span { transform: translateY(0); }
+
+/* ─── Reduced-motion guard ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .route { animation: none; }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .reveal-mask > span {
+    transform: translateY(0);
+    transition: none;
+  }
+  .grain-layer { display: none; }
+}

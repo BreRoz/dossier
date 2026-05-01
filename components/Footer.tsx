@@ -1,5 +1,17 @@
 import Link from 'next/link'
 
+function DossierMark({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 22 22" fill="none" aria-hidden="true">
+      <rect x="1" y="1" width="20" height="20" stroke="currentColor" strokeWidth="1" />
+      <rect x="1" y="1" width="10" height="10" fill="currentColor" />
+      <rect x="11" y="11" width="10" height="10" fill="currentColor" />
+      <line x1="1" y1="11" x2="21" y2="11" stroke="currentColor" strokeWidth="0.5" opacity="0.4" />
+      <line x1="11" y1="1" x2="11" y2="21" stroke="currentColor" strokeWidth="0.5" opacity="0.4" />
+    </svg>
+  )
+}
+
 export function Footer() {
   return (
     <>
@@ -8,55 +20,75 @@ export function Footer() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 28px 40px;
-          border-top: 1px solid rgba(10,10,10,0.12);
+          padding: 36px 56px;
+          border-top: 1px solid var(--ink-15);
           background: var(--paper);
+          gap: 24px;
+          flex-wrap: wrap;
         }
-        .site-footer-label {
+        .site-footer-brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .site-footer-brand svg { display: block; color: var(--ink); }
+        .site-footer-brand span {
           font-family: var(--font-condensed);
-          font-size: 10px;
+          font-size: 10.5px;
           letter-spacing: 0.22em;
-          color: var(--ink);
+          text-transform: uppercase;
+          font-weight: 500;
+          color: var(--ink-70);
         }
         .site-footer-links {
           display: flex;
-          gap: 40px;
+          gap: 32px;
         }
         .site-footer-link {
           font-family: var(--font-condensed);
-          font-size: 10px;
+          font-size: 10.5px;
           letter-spacing: 0.22em;
-          text-decoration: none;
+          text-transform: uppercase;
+          font-weight: 500;
           color: var(--ink);
+          text-decoration: none;
+          opacity: 0.65;
+          transition: opacity .3s var(--easing), color .3s var(--easing);
         }
         .site-footer-link:hover {
-          opacity: 0.55;
+          opacity: 1;
+          color: var(--olive-deep);
         }
         .site-footer-copy {
           font-family: var(--font-condensed);
-          font-size: 10px;
-          letter-spacing: 0.18em;
-          color: rgba(10,10,10,0.4);
+          font-size: 10.5px;
+          letter-spacing: 0.22em;
+          text-transform: uppercase;
+          font-weight: 500;
+          color: var(--ink-40);
         }
         @media (max-width: 900px) {
-          .site-footer { padding: 28px 24px; flex-wrap: wrap; gap: 20px; }
+          .site-footer { padding: 32px 24px; }
           .site-footer-links { gap: 24px; }
         }
         @media (max-width: 540px) {
-          .site-footer { flex-direction: column; align-items: flex-start; padding: 24px 20px; gap: 16px; }
-          .site-footer-links { flex-wrap: wrap; gap: 16px 24px; }
-          .site-footer-label,
-          .site-footer-link,
-          .site-footer-copy { font-size: 12px; letter-spacing: 0.12em; }
+          .site-footer {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 28px 20px;
+            gap: 20px;
+          }
         }
       `}</style>
-
       <footer className="site-footer">
-        <span className="site-footer-label">( DEAL DOSSIER )</span>
+        <div className="site-footer-brand">
+          <DossierMark size={16} />
+          <span>Deal Dossier · Curated Weekly</span>
+        </div>
         <div className="site-footer-links">
-          {([['ARCHIVE', '/archive'], ['STORES', '/stores'], ['PRIVACY', '/privacy']] as const).map(([l, h]) => (
-            <Link key={l} href={h} className="site-footer-link">{l}</Link>
-          ))}
+          <Link href="/archive" className="site-footer-link">Archive</Link>
+          <Link href="/stores" className="site-footer-link">Stores</Link>
+          <Link href="/privacy" className="site-footer-link">Privacy</Link>
         </div>
         <span className="site-footer-copy">© 2026</span>
       </footer>

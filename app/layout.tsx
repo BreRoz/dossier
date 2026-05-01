@@ -71,7 +71,10 @@ export default function RootLayout({
       lang="en"
       className={`${fraunces.variable} ${inter.variable} ${barlowCondensed.variable} ${jetbrainsMono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {children}
+        <div className="grain-layer" aria-hidden="true" />
+      </body>
     </html>
   )
 }
