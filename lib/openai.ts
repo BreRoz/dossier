@@ -44,6 +44,7 @@ RULES:
 - Extract any sale, discount, promo code, or special offer — even if the percentage is not stated
 - "Up to X% off" deals use deal_type "up-to" not "percent-off"
 - "Sale" or "event" with no stated percentage: use deal_type "flash-sale" and percent_off null
+- For "up-to" and "flash-sale" deals where the email body lists specific brands, products, or categories on sale, include 2–4 of the most recognizable examples in the description. Format: "Up to 55% off KitchenAid, Dyson, Instant Pot and more as part of Deals of the Day." If no specific items are named, keep the description general.
 - For BOGO deals, use bogo-free or bogo-half accordingly
 - Free shipping promotions count as deals (deal_type "free-shipping")
 - If a retailer has multiple distinct deals, create separate entries for each
