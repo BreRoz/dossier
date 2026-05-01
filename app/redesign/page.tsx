@@ -49,7 +49,7 @@ export default function RedesignPage() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         /* ── Page ── */
-        .rd-page { background: #f7f6f3; color: #0a0a0a; overflow-x: hidden; }
+        .rd-page { background: var(--paper); color: var(--ink); overflow-x: hidden; }
 
         /* ── NAV ── */
         .rd-nav {
@@ -60,14 +60,14 @@ export default function RedesignPage() {
         }
         .rd-nav-link {
           font-family: var(--font-condensed); font-size: 10px; letter-spacing: 0.22em;
-          text-decoration: none; color: #0a0a0a;
+          text-decoration: none; color: var(--ink);
         }
-        .rd-nav-link.active { border-bottom: 1px solid #0a0a0a; padding-bottom: 2px; }
+        .rd-nav-link.active { border-bottom: 1px solid var(--ink); padding-bottom: 2px; }
         .rd-nav-hide { display: block; }
         .rd-nav-stats { text-align: right; }
         .rd-nav-stats-week {
           font-family: var(--font-condensed); font-size: 10px; letter-spacing: 0.18em;
-          color: #0a0a0a; margin-bottom: 4px;
+          color: var(--ink); margin-bottom: 4px;
         }
         .rd-nav-stats-row {
           display: flex; gap: 16px; justify-content: flex-end;
@@ -75,7 +75,7 @@ export default function RedesignPage() {
           color: rgba(10,10,10,0.45);
         }
         .rd-nav-stats-row strong {
-          color: #0a0a0a; font-weight: 700;
+          color: var(--ink); font-weight: 700;
         }
 
         /* ── FOLD ── */
@@ -110,7 +110,7 @@ export default function RedesignPage() {
 
         /* ── BLACK BAR ── */
         .rd-bar {
-          background: #0a0a0a; height: 56px; flex-shrink: 0;
+          background: var(--ink); height: 56px; flex-shrink: 0;
           display: flex; align-items: center; justify-content: space-between;
           padding: 0 40px;
         }
@@ -142,14 +142,14 @@ export default function RedesignPage() {
         .rd-bar-input {
           flex: 1; background: transparent; border: none;
           border-bottom: 1px solid rgba(10,10,10,0.25);
-          color: #0a0a0a; font-family: var(--font-condensed);
+          color: var(--ink); font-family: var(--font-condensed);
           font-size: 11px; letter-spacing: 0.22em; padding: 10px 0; outline: none;
         }
         .rd-bar-input::placeholder { color: rgba(10,10,10,0.3); }
         .rd-bar-btn {
           background: transparent; border: none;
           border-bottom: 1px solid rgba(10,10,10,0.25);
-          color: #0a0a0a; font-family: var(--font-condensed);
+          color: var(--ink); font-family: var(--font-condensed);
           font-size: 11px; letter-spacing: 0.28em;
           padding: 10px 0 10px 28px; cursor: pointer; white-space: nowrap;
         }
@@ -175,20 +175,20 @@ export default function RedesignPage() {
           gap: 1px; background: rgba(10,10,10,0.12);
         }
         .rd-pricing-tier {
-          background: #f7f6f3; padding: 56px 48px;
+          background: var(--paper); padding: 56px 48px;
           display: flex; flex-direction: column; gap: 32px;
         }
-        .rd-pricing-tier--dark { background: #0a0a0a; }
+        .rd-pricing-tier--dark { background: var(--ink); }
         .rd-pricing-name {
           font-size: clamp(40px, 4vw, 64px); font-weight: 300;
-          letter-spacing: -0.02em; line-height: 1; color: #0a0a0a;
+          letter-spacing: -0.02em; line-height: 1; color: var(--ink);
         }
         .rd-pricing-price {
           display: flex; align-items: baseline; gap: 10px;
         }
         .rd-pricing-price .rd-sans {
           font-size: clamp(56px, 6vw, 96px); font-weight: 800;
-          line-height: 1; letter-spacing: -0.03em; color: #0a0a0a;
+          line-height: 1; letter-spacing: -0.03em; color: var(--ink);
         }
         .rd-pricing-per {
           font-family: var(--font-condensed); font-size: 10px; letter-spacing: 0.22em;
@@ -219,10 +219,10 @@ export default function RedesignPage() {
           border-bottom: 1px solid; margin-top: auto;
         }
         .rd-pricing-cta--outline {
-          color: #0a0a0a; border-color: rgba(10,10,10,0.25);
+          color: var(--ink); border-color: rgba(10,10,10,0.25);
         }
         .rd-pricing-cta--fill {
-          color: #f7f6f3; border-color: rgba(247,246,243,0.25);
+          color: var(--paper); border-color: rgba(247,246,243,0.25);
         }
 
         .rd-footer {
@@ -434,9 +434,9 @@ export default function RedesignPage() {
 
               {/* PAID */}
               <div className="rd-pricing-tier rd-pricing-tier--dark">
-                <div className="rd-pricing-name rd-serif" style={{ color: '#f7f6f3' }}>PAID</div>
+                <div className="rd-pricing-name rd-serif" style={{ color: 'var(--paper)' }}>PAID</div>
                 <div className="rd-pricing-price">
-                  <span className="rd-sans" style={{ color: '#f7f6f3' }}>$4.99</span>
+                  <span className="rd-sans" style={{ color: 'var(--paper)' }}>$4.99</span>
                   <span className="rd-pricing-per" style={{ color: 'rgba(247,246,243,0.45)' }}>/ MONTH</span>
                 </div>
                 <div className="rd-pricing-alt">OR $45 / YEAR — SAVE 25%</div>

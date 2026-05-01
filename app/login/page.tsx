@@ -50,7 +50,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f7f6f3' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--paper)' }}>
       <Nav />
 
       <div style={{
@@ -81,7 +81,7 @@ export default function LoginPage() {
                 letterSpacing: '-0.01em',
                 lineHeight: 1.1,
                 marginBottom: 20,
-                color: '#0a0a0a',
+                color: 'var(--ink)',
               }}>
                 Magic link sent.
               </h1>
@@ -92,7 +92,7 @@ export default function LoginPage() {
                 lineHeight: 1.65,
               }}>
                 We sent a sign-in link to{' '}
-                <strong style={{ color: '#0a0a0a' }}>{email}</strong>.
+                <strong style={{ color: 'var(--ink)' }}>{email}</strong>.
                 Click the link to access your account and set preferences.
               </p>
               <p style={{
@@ -126,7 +126,7 @@ export default function LoginPage() {
                 letterSpacing: '-0.01em',
                 lineHeight: 1.1,
                 marginBottom: 16,
-                color: '#0a0a0a',
+                color: 'var(--ink)',
               }}>
                 Welcome to Deal Dossier.
               </h1>

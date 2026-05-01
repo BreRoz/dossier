@@ -18,8 +18,8 @@ export function Nav() {
     fontSize: 10,
     letterSpacing: '0.22em',
     textDecoration: 'none',
-    color: '#0a0a0a',
-    borderBottom: pathname === href ? '1px solid #0a0a0a' : 'none',
+    color: 'var(--ink)',
+    borderBottom: pathname === href ? '1px solid var(--ink)' : 'none',
     paddingBottom: pathname === href ? 2 : 0,
     whiteSpace: 'nowrap' as const,
   })
@@ -33,7 +33,7 @@ export function Nav() {
           justify-content: space-between;
           padding: 20px 40px;
           border-bottom: 1px solid rgba(10,10,10,0.12);
-          background: #f7f6f3;
+          background: var(--paper);
           position: sticky;
           top: 0;
           z-index: 100;

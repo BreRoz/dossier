@@ -76,7 +76,7 @@ function ToggleSwitch({
       title={locked ? 'Upgrade to paid to control individual stores' : enabled ? 'Receiving deals — click to mute' : 'Muted — click to unmute'}
       style={{
         width: 36, height: 20, borderRadius: 10, border: 'none', padding: 0,
-        background: locked ? 'rgba(10,10,10,0.12)' : enabled ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+        background: locked ? 'rgba(10,10,10,0.12)' : enabled ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
         cursor: locked ? 'not-allowed' : 'pointer',
         position: 'relative', flexShrink: 0, transition: 'background 0.2s',
         opacity: locked ? 0.5 : 1,
@@ -86,7 +86,7 @@ function ToggleSwitch({
         position: 'absolute', top: 2,
         left: enabled && !locked ? 18 : 2,
         width: 16, height: 16, borderRadius: '50%',
-        background: '#f7f6f3',
+        background: 'var(--paper)',
         transition: 'left 0.2s',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 11,
@@ -263,18 +263,18 @@ export default function StoresPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f6f3' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--paper)' }}>
         <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)' }}>Loading...</p>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f7f6f3' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
       <style>{`
         .stores-h1 { font-family: var(--font-serif); font-size: 48px; font-weight: 300; letter-spacing: -0.02em; margin-bottom: 12px; }
         .stores-stat-card { padding: 32px 40px; background: rgba(10,10,10,0.04); display: flex; flex-direction: column; gap: 8px; flex: 1; }
-        .stores-stat-num  { font-family: var(--font-serif); font-size: 52px; font-weight: 300; letter-spacing: -0.02em; line-height: 1; color: #0a0a0a; }
+        .stores-stat-num  { font-family: var(--font-serif); font-size: 52px; font-weight: 300; letter-spacing: -0.02em; line-height: 1; color: var(--ink); }
         .stores-filter-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
         .stores-count { margin-left: auto; text-align: right; }
         .stores-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -360,9 +360,9 @@ export default function StoresPage() {
                 <button key={tier} onClick={() => toggleSpend(tier)} title={SPEND_TIER_LABELS[tier]} style={{
                   fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
                   letterSpacing: '0.08em', padding: '5px 12px', border: '1.5px solid',
-                  borderColor: active ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                  background: active ? '#0a0a0a' : 'transparent',
-                  color: active ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
+                  borderColor: active ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
+                  background: active ? 'var(--ink)' : 'transparent',
+                  color: active ? 'var(--paper)' : 'rgba(10,10,10,0.4)',
                   cursor: 'pointer',
                 }}>
                   {tier}
@@ -379,9 +379,9 @@ export default function StoresPage() {
                 fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 500,
                 letterSpacing: '0.15em', textTransform: 'uppercase',
                 padding: '7px 14px', border: '1.5px solid',
-                borderColor: selectedCats.length > 0 ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                background: selectedCats.length > 0 ? '#0a0a0a' : 'transparent',
-                color: selectedCats.length > 0 ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
+                borderColor: selectedCats.length > 0 ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
+                background: selectedCats.length > 0 ? 'var(--ink)' : 'transparent',
+                color: selectedCats.length > 0 ? 'var(--paper)' : 'rgba(10,10,10,0.4)',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
                 whiteSpace: 'nowrap',
               }}
@@ -397,7 +397,7 @@ export default function StoresPage() {
             {catDropOpen && (
               <div style={{
                 position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
-                background: '#f7f6f3', border: '1.5px solid rgba(10,10,10,0.12)',
+                background: 'var(--paper)', border: '1.5px solid rgba(10,10,10,0.12)',
                 minWidth: 220, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
               }}>
                 {selectedCats.length > 0 && (
@@ -424,7 +424,7 @@ export default function StoresPage() {
                         width: '100%', textAlign: 'left', padding: '10px 14px',
                         display: 'flex', alignItems: 'center', gap: 10,
                         fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: active ? 600 : 400,
-                        color: '#0a0a0a', background: active ? 'rgba(10,10,10,0.04)' : 'none',
+                        color: 'var(--ink)', background: active ? 'rgba(10,10,10,0.04)' : 'none',
                         border: 'none', borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer',
                       }}
                     >
@@ -449,9 +449,9 @@ export default function StoresPage() {
                   fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 500,
                   letterSpacing: '0.15em', textTransform: 'uppercase',
                   padding: '7px 14px', border: '1.5px solid',
-                  borderColor: selectedAge ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                  background: selectedAge ? '#0a0a0a' : 'transparent',
-                  color: selectedAge ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
+                  borderColor: selectedAge ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
+                  background: selectedAge ? 'var(--ink)' : 'transparent',
+                  color: selectedAge ? 'var(--paper)' : 'rgba(10,10,10,0.4)',
                   cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
                   whiteSpace: 'nowrap',
                 }}
@@ -462,7 +462,7 @@ export default function StoresPage() {
               {ageDropOpen && (
                 <div style={{
                   position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
-                  background: '#f7f6f3', border: '1.5px solid rgba(10,10,10,0.12)',
+                  background: 'var(--paper)', border: '1.5px solid rgba(10,10,10,0.12)',
                   minWidth: 160, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
                 }}>
                   {(['', 'Kids', 'Teens', "20's", "30's", "40's", '50+'] as const).map((age) => {
@@ -475,7 +475,7 @@ export default function StoresPage() {
                           width: '100%', textAlign: 'left', padding: '10px 14px',
                           fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: active ? 600 : 400,
                           letterSpacing: '0.12em', textTransform: 'uppercase',
-                          color: active ? '#0a0a0a' : 'rgba(10,10,10,0.4)',
+                          color: active ? 'var(--ink)' : 'rgba(10,10,10,0.4)',
                           background: active ? 'rgba(10,10,10,0.04)' : 'none',
                           border: 'none', borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer',
                         }}
@@ -577,7 +577,7 @@ export default function StoresPage() {
               <div>
                 <p style={{
                   fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
-                  color: '#0a0a0a', marginBottom: 4,
+                  color: 'var(--ink)', marginBottom: 4,
                 }}>
                   Paid feature
                 </p>
@@ -586,7 +586,7 @@ export default function StoresPage() {
                   lineHeight: 1.5,
                 }}>
                   Upgrade to suggest stores for us to track.{' '}
-                  <Link href="/upgrade" style={{ color: '#0a0a0a', textDecoration: 'underline' }}>
+                  <Link href="/upgrade" style={{ color: 'var(--ink)', textDecoration: 'underline' }}>
                     See what's included →
                   </Link>
                 </p>
@@ -699,7 +699,7 @@ export default function StoresPage() {
         <div style={{ marginTop: 48, paddingTop: 40, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
           <Link href="/preferences" style={{
             fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.2em',
-            textTransform: 'uppercase', color: '#0a0a0a', textDecoration: 'underline',
+            textTransform: 'uppercase', color: 'var(--ink)', textDecoration: 'underline',
           }}>
             Adjust your subscription settings
           </Link>
@@ -747,7 +747,7 @@ function StoreRowItem({
             rel="noopener noreferrer"
             style={{
               fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
-              color: '#0a0a0a', textDecoration: 'none',
+              color: 'var(--ink)', textDecoration: 'none',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             }}
           >
@@ -755,7 +755,7 @@ function StoreRowItem({
           </a>
         ) : (
           <span style={{
-            fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600, color: '#0a0a0a',
+            fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600, color: 'var(--ink)',
           }}>
             {store.name}
           </span>
@@ -764,7 +764,7 @@ function StoreRowItem({
           <span style={{
             fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 700,
             letterSpacing: '0.18em', textTransform: 'uppercase',
-            background: 'var(--accent)', color: '#f7f6f3',
+            background: 'var(--accent)', color: 'var(--paper)',
             padding: '2px 6px', flexShrink: 0,
           }}>
             New
@@ -780,7 +780,7 @@ function StoreRowItem({
       {/* Spend tier */}
       <span style={{
         fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: 600,
-        letterSpacing: '0.06em', color: '#0a0a0a',
+        letterSpacing: '0.06em', color: 'var(--ink)',
       }}>
         {store.spendTier}
       </span>
@@ -790,7 +790,7 @@ function StoreRowItem({
         title={dealCount > 0 ? `${dealCount} deal${dealCount !== 1 ? 's' : ''} shared` : 'No deals yet'}
         style={{
           fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.08em',
-          color: dealCount > 0 ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+          color: dealCount > 0 ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
           fontWeight: dealCount > 0 ? 600 : 400,
         }}
       >

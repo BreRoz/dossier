@@ -38,7 +38,7 @@ const SECTIONS = [
 
 export default function PrivacyPage() {
   return (
-    <div style={{ minHeight: '100vh', background: '#f7f6f3', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
       <Nav />
 
       <div style={{ flex: 1, maxWidth: 720, margin: '0 auto', width: '100%', padding: '80px 40px 120px' }}>
@@ -53,7 +53,7 @@ export default function PrivacyPage() {
         <h1 style={{
           fontFamily: 'var(--font-serif)', fontSize: 'clamp(44px, 6vw, 72px)',
           fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 0.95,
-          marginBottom: 32, color: '#0a0a0a',
+          marginBottom: 32, color: 'var(--ink)',
         }}>
           Privacy Policy
         </h1>
@@ -73,7 +73,7 @@ export default function PrivacyPage() {
             <p style={{
               fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
               letterSpacing: '0.22em', textTransform: 'uppercase',
-              color: '#0a0a0a', marginBottom: 16,
+              color: 'var(--ink)', marginBottom: 16,
             }}>
               {title}
             </p>

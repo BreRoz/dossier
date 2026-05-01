@@ -10,13 +10,13 @@ export function Footer() {
           justify-content: space-between;
           padding: 28px 40px;
           border-top: 1px solid rgba(10,10,10,0.12);
-          background: #f7f6f3;
+          background: var(--paper);
         }
         .site-footer-label {
           font-family: var(--font-condensed);
           font-size: 10px;
           letter-spacing: 0.22em;
-          color: #0a0a0a;
+          color: var(--ink);
         }
         .site-footer-links {
           display: flex;
@@ -27,7 +27,7 @@ export function Footer() {
           font-size: 10px;
           letter-spacing: 0.22em;
           text-decoration: none;
-          color: #0a0a0a;
+          color: var(--ink);
         }
         .site-footer-link:hover {
           opacity: 0.55;

@@ -28,7 +28,7 @@ export default async function ArchivePage() {
   const allEditions = (editions || []) as Edition[]
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f7f6f3', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
       <Nav />
 
       <div style={{ flex: 1, maxWidth: 1280, margin: '0 auto', width: '100%', padding: '80px 40px 120px' }}>
@@ -45,7 +45,7 @@ export default async function ArchivePage() {
           <h1 style={{
             fontFamily: 'var(--font-serif)', fontSize: 'clamp(48px, 6vw, 88px)',
             fontWeight: 300, letterSpacing: '-0.03em', lineHeight: 0.92, marginBottom: 24,
-            color: '#0a0a0a',
+            color: 'var(--ink)',
           }}>
             Past Issues
           </h1>
@@ -82,7 +82,7 @@ export default async function ArchivePage() {
                   style={{ textDecoration: 'none', display: 'block' }}
                 >
                   <div style={{
-                    background: '#f7f6f3',
+                    background: 'var(--paper)',
                     border: '1px solid rgba(10,10,10,0.10)',
                     padding: '40px 36px',
                     cursor: 'pointer',
@@ -98,7 +98,7 @@ export default async function ArchivePage() {
                     <h2 style={{
                       fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300,
                       letterSpacing: '-0.01em', lineHeight: 1.15, marginBottom: 24,
-                      color: '#0a0a0a',
+                      color: 'var(--ink)',
                     }}>
                       Week of {format(weekDate, 'MMMM d, yyyy')}
                     </h2>
@@ -111,7 +111,7 @@ export default async function ArchivePage() {
                         <div key={label}>
                           <div style={{
                             fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300,
-                            color: '#0a0a0a', lineHeight: 1,
+                            color: 'var(--ink)', lineHeight: 1,
                           }}>
                             {val}
                           </div>

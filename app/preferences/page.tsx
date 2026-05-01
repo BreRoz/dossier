@@ -58,7 +58,7 @@ function Toggle({
       title={locked ? lockedTitle : checked ? 'On — click to turn off' : 'Off — click to turn on'}
       style={{
         width: 36, height: 20, borderRadius: 10, border: 'none', padding: 0,
-        background: locked ? 'rgba(10,10,10,0.12)' : checked ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
+        background: locked ? 'rgba(10,10,10,0.12)' : checked ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
         cursor: locked ? 'not-allowed' : 'pointer',
         position: 'relative', flexShrink: 0, transition: 'background 0.2s',
         opacity: locked ? 0.5 : 1,
@@ -68,7 +68,7 @@ function Toggle({
         position: 'absolute', top: 2,
         left: checked && !locked ? 18 : 2,
         width: 16, height: 16, borderRadius: '50%',
-        background: '#f7f6f3',
+        background: 'var(--paper)',
         transition: 'left 0.2s',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         fontSize: 11,
@@ -264,7 +264,7 @@ export default function PreferencesPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#f7f6f3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)' }}>Loading...</p>
       </div>
     )
@@ -273,10 +273,10 @@ export default function PreferencesPage() {
   const subscriptionMode = prefs.subscription_mode ?? 'category'
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f7f6f3' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
       <style>{`
         .pref-save-bar {
-          position: sticky; top: 56px; z-index: 9; background: #f7f6f3;
+          position: sticky; top: 56px; z-index: 9; background: var(--paper);
           border-bottom: 1px solid rgba(10,10,10,0.12); height: 48px;
           display: flex; align-items: center; justify-content: flex-end;
           padding: 0 60px; gap: 16px;
@@ -340,8 +340,8 @@ export default function PreferencesPage() {
             <span style={{
               fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600,
               letterSpacing: '0.2em', textTransform: 'uppercase',
-              background: tier === 'paid' ? '#0a0a0a' : 'rgba(10,10,10,0.05)',
-              color: tier === 'paid' ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
+              background: tier === 'paid' ? 'var(--ink)' : 'rgba(10,10,10,0.05)',
+              color: tier === 'paid' ? 'var(--paper)' : 'rgba(10,10,10,0.4)',
               padding: '4px 10px',
             }}>
               {tier === 'paid' ? 'Paid' : 'Free Tier'}
@@ -371,9 +371,9 @@ export default function PreferencesPage() {
                     fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
                     letterSpacing: '0.18em', textTransform: 'uppercase',
                     padding: '10px 28px', border: '1.5px solid',
-                    borderColor: subscriptionMode === mode ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                    background: subscriptionMode === mode ? '#0a0a0a' : 'transparent',
-                    color: subscriptionMode === mode ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
+                    borderColor: subscriptionMode === mode ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
+                    background: subscriptionMode === mode ? 'var(--ink)' : 'transparent',
+                    color: subscriptionMode === mode ? 'var(--paper)' : 'rgba(10,10,10,0.4)',
                     cursor: 'pointer',
                   }}
                 >
@@ -396,7 +396,7 @@ export default function PreferencesPage() {
                   lineHeight: 1.5, marginBottom: 8,
                 }}>
                   Select the specific retailers you want deals from.{' '}
-                  <span style={{ color: '#0a0a0a' }}>
+                  <span style={{ color: 'var(--ink)' }}>
                     {(prefs.selected_retailers ?? []).length} selected
                   </span>
                 </p>
@@ -438,13 +438,13 @@ export default function PreferencesPage() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <div style={{
                               width: 18, height: 18, border: '1.5px solid', flexShrink: 0,
-                              borderColor: isSelected ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                              background: isSelected ? '#0a0a0a' : 'transparent',
+                              borderColor: isSelected ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
+                              background: isSelected ? 'var(--ink)' : 'transparent',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                             }}>
                               {isSelected && (
                                 <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                                  <path d="M1 4L4 7L9 1" stroke="#f7f6f3" strokeWidth="1.5" strokeLinecap="square"/>
+                                  <path d="M1 4L4 7L9 1" stroke="var(--paper)" strokeWidth="1.5" strokeLinecap="square"/>
                                 </svg>
                               )}
                             </div>
@@ -542,9 +542,9 @@ export default function PreferencesPage() {
                     fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
                     letterSpacing: '0.18em', textTransform: 'uppercase',
                     padding: '8px 16px', border: '1.5px solid',
-                    borderColor: prefs.send_day === value ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                    background: prefs.send_day === value ? '#0a0a0a' : 'transparent',
-                    color: prefs.send_day === value ? '#f7f6f3' : tier === 'free' && value !== 'thursday' ? 'rgba(10,10,10,0.12)' : 'rgba(10,10,10,0.4)',
+                    borderColor: prefs.send_day === value ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
+                    background: prefs.send_day === value ? 'var(--ink)' : 'transparent',
+                    color: prefs.send_day === value ? 'var(--paper)' : tier === 'free' && value !== 'thursday' ? 'rgba(10,10,10,0.12)' : 'rgba(10,10,10,0.4)',
                     cursor: tier === 'free' ? 'default' : 'pointer',
                   }}
                 >
@@ -574,9 +574,9 @@ export default function PreferencesPage() {
                     style={{
                       fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: 600,
                       letterSpacing: '0.1em', padding: '10px 20px', border: '1.5px solid',
-                      borderColor: active ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                      background: active ? '#0a0a0a' : 'transparent',
-                      color: active ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
+                      borderColor: active ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
+                      background: active ? 'var(--ink)' : 'transparent',
+                      color: active ? 'var(--paper)' : 'rgba(10,10,10,0.4)',
                       cursor: 'pointer',
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
                     }}
@@ -605,9 +605,9 @@ export default function PreferencesPage() {
                     fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
                     letterSpacing: '0.18em', textTransform: 'uppercase',
                     padding: '8px 20px', border: '1.5px solid',
-                    borderColor: prefs.min_discount === v ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                    background: prefs.min_discount === v ? '#0a0a0a' : 'transparent',
-                    color: prefs.min_discount === v ? '#f7f6f3' : tier === 'free' && v !== 40 ? 'rgba(10,10,10,0.12)' : 'rgba(10,10,10,0.4)',
+                    borderColor: prefs.min_discount === v ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
+                    background: prefs.min_discount === v ? 'var(--ink)' : 'transparent',
+                    color: prefs.min_discount === v ? 'var(--paper)' : tier === 'free' && v !== 40 ? 'rgba(10,10,10,0.12)' : 'rgba(10,10,10,0.4)',
                     cursor: tier === 'free' ? 'default' : 'pointer',
                   }}
                 >
@@ -637,9 +637,9 @@ export default function PreferencesPage() {
                       fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
                       letterSpacing: '0.18em', textTransform: 'uppercase',
                       padding: '10px 28px', border: '1.5px solid',
-                      borderColor: active ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                      background: active ? '#0a0a0a' : 'transparent',
-                      color: active ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
+                      borderColor: active ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
+                      background: active ? 'var(--ink)' : 'transparent',
+                      color: active ? 'var(--paper)' : 'rgba(10,10,10,0.4)',
                       cursor: 'pointer',
                     }}
                   >
