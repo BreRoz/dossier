@@ -383,51 +383,6 @@ export default async function AdminPage() {
           </div>
         </div>
 
-        {/* Top retailers */}
-        {topRetailerList.length > 0 && (
-          <div style={{ marginBottom: 64 }}>
-            <SectionHeader>Top Retailers by Deals (Last 30 Days)</SectionHeader>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {topRetailerList.map(([retailer, count], i) => (
-                <div key={retailer} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <span style={{
-                    fontFamily: 'var(--font-condensed)',
-                    fontSize: 10,
-                    letterSpacing: '0.1em',
-                    color: 'var(--ink-40)',
-                    width: 20,
-                    textAlign: 'right',
-                    flexShrink: 0,
-                  }}>
-                    {i + 1}
-                  </span>
-                  <span style={{
-                    fontFamily: 'var(--font-sans)',
-                    fontSize: 13,
-                    fontWeight: 600,
-                    width: 180,
-                    flexShrink: 0,
-                    color: 'var(--ink)',
-                  }}>
-                    {retailer}
-                  </span>
-                  <Bar pct={(count / maxRetailerCount) * 100} />
-                  <span style={{
-                    fontFamily: 'var(--font-condensed)',
-                    fontSize: 11,
-                    color: 'var(--ink-40)',
-                    width: 48,
-                    textAlign: 'right',
-                    flexShrink: 0,
-                  }}>
-                    {count} deal{count !== 1 ? 's' : ''}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Top toggled-on stores */}
         {topToggledStores.length > 0 && (
           <div style={{ marginBottom: 64 }}>
@@ -463,65 +418,102 @@ export default async function AdminPage() {
           </div>
         )}
 
-        {/* Newsletter performance */}
-        {(retailerScanLog || []).length > 0 && (
-          <div className="r2grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, marginBottom: 64 }}>
+        {/* Retailer + newsletter performance — 3-column row */}
+        {(topRetailerList.length > 0 || (retailerScanLog || []).length > 0) && (
+          <div className="r3grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 48, marginBottom: 64 }}>
 
-            {/* Deal producers */}
-            <div>
-              <SectionHeader>Deal-Producing Newsletters</SectionHeader>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {dealProducers.slice(0, 15).map((r) => (
-                  <div key={r.retailer} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{
-                      fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 600,
-                      flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      color: 'var(--ink)',
-                    }}>
-                      {r.retailer}
-                    </span>
-                    <Bar pct={(r.deals_extracted / Math.max(...dealProducers.map(d => d.deals_extracted), 1)) * 100} accent />
-                    <span style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 10, color: 'var(--ink-40)',
-                      width: 56, textAlign: 'right', flexShrink: 0,
-                    }}>
-                      {r.deals_extracted} deal{r.deals_extracted !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Zero-deal senders */}
-            <div>
-              <SectionHeader>Zero-Deal Senders (Consider Unsubscribing)</SectionHeader>
-              {zeroDealSenders.length === 0 ? (
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)' }}>
-                  All scanned senders have produced at least one deal.
-                </p>
-              ) : (
+            {/* Top retailers (last 30 days) */}
+            {topRetailerList.length > 0 && (
+              <div>
+                <SectionHeader>Top Retailers by Deals (Last 30 Days)</SectionHeader>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {zeroDealSenders.slice(0, 15).map((r) => (
-                    <div key={r.retailer} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {topRetailerList.map(([retailer, count], i) => (
+                    <div key={retailer} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{
+                        fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.1em',
+                        color: 'var(--ink-40)', width: 18, textAlign: 'right', flexShrink: 0,
+                      }}>
+                        {i + 1}
+                      </span>
                       <span style={{
                         fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 600,
                         flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        color: 'var(--ink-40)',
+                        color: 'var(--ink)',
                       }}>
-                        {r.retailer}
+                        {retailer}
                       </span>
-                      <Bar pct={(r.emails_processed / maxEmailsProcessed) * 100} />
+                      <Bar pct={(count / maxRetailerCount) * 100} />
                       <span style={{
                         fontFamily: 'var(--font-condensed)', fontSize: 10, color: 'var(--ink-40)',
-                        width: 64, textAlign: 'right', flexShrink: 0,
+                        width: 56, textAlign: 'right', flexShrink: 0,
                       }}>
-                        {r.emails_processed} email{r.emails_processed !== 1 ? 's' : ''}
+                        {count} deal{count !== 1 ? 's' : ''}
                       </span>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* Deal producers */}
+            {(retailerScanLog || []).length > 0 && (
+              <div>
+                <SectionHeader>Deal-Producing Newsletters</SectionHeader>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {dealProducers.slice(0, 15).map((r) => (
+                    <div key={r.retailer} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{
+                        fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 600,
+                        flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        color: 'var(--ink)',
+                      }}>
+                        {r.retailer}
+                      </span>
+                      <Bar pct={(r.deals_extracted / Math.max(...dealProducers.map(d => d.deals_extracted), 1)) * 100} accent />
+                      <span style={{
+                        fontFamily: 'var(--font-condensed)', fontSize: 10, color: 'var(--ink-40)',
+                        width: 56, textAlign: 'right', flexShrink: 0,
+                      }}>
+                        {r.deals_extracted} deal{r.deals_extracted !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Zero-deal senders */}
+            {(retailerScanLog || []).length > 0 && (
+              <div>
+                <SectionHeader>Zero-Deal Senders (Consider Unsubscribing)</SectionHeader>
+                {zeroDealSenders.length === 0 ? (
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)' }}>
+                    All scanned senders have produced at least one deal.
+                  </p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {zeroDealSenders.slice(0, 15).map((r) => (
+                      <div key={r.retailer} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <span style={{
+                          fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 600,
+                          flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          color: 'var(--ink-40)',
+                        }}>
+                          {r.retailer}
+                        </span>
+                        <Bar pct={(r.emails_processed / maxEmailsProcessed) * 100} />
+                        <span style={{
+                          fontFamily: 'var(--font-condensed)', fontSize: 10, color: 'var(--ink-40)',
+                          width: 64, textAlign: 'right', flexShrink: 0,
+                        }}>
+                          {r.emails_processed} email{r.emails_processed !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
           </div>
         )}
