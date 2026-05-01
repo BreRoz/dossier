@@ -17,15 +17,26 @@ export async function fetchPromotionalEmails(sinceDate: Date): Promise<GmailMess
   const gmail = google.gmail({ version: 'v1', auth })
 
   const sinceTimestamp = Math.floor(sinceDate.getTime() / 1000)
-  const query = `after:${sinceTimestamp} (category:promotions OR label:manual OR label:restaurant OR label:restaurants) -is:sent`
+  // Include promotions, updates, and primary so brands that land outside
+  // the Promotions tab (e.g. Credo, Body Shop) are still captured.
+  const query = `after:${sinceTimestamp} (category:promotions OR category:updates OR category:primary OR label:manual OR label:restaurant OR label:restaurants) -is:sent -in:spam -in:trash`
 
-  const listRes = await gmail.users.messages.list({
-    userId: 'me',
-    q: query,
-    maxResults: 250,
-  })
+  // Paginate through all results — a busy inbox can easily exceed 250/week
+  const messages: { id?: string | null }[] = []
+  let pageToken: string | undefined
 
-  const messages = listRes.data.messages || []
+  do {
+    const listRes = await gmail.users.messages.list({
+      userId: 'me',
+      q: query,
+      maxResults: 500,
+      pageToken,
+    })
+    const page = listRes.data.messages || []
+    messages.push(...page)
+    pageToken = listRes.data.nextPageToken ?? undefined
+  } while (pageToken)
+
   if (messages.length === 0) return []
 
   const results: GmailMessage[] = []
