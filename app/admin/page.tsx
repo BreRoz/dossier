@@ -5,7 +5,6 @@ import { format, parseISO, subDays } from 'date-fns'
 import { Nav } from '@/components/Nav'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { SuggestionActions } from '@/components/SuggestionActions'
-import { ResetWeekButton } from '@/components/ResetWeekButton'
 import { RunIngestButton } from '@/components/RunIngestButton'
 import { RunSendButton } from '@/components/RunSendButton'
 import { SendPreviewButton } from '@/components/SendPreviewButton'
@@ -578,9 +577,6 @@ export default async function AdminPage() {
               <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--ink-40)', margin: 0 }}>
                 Recent Editions
               </p>
-              {editions && editions.length > 0 && (
-                <ResetWeekButton weekOf={editions[0].week_of} />
-              )}
             </div>
             {!editions || editions.length === 0 ? (
               <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)' }}>No editions yet.</p>
