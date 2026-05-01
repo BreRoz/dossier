@@ -7,9 +7,17 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
+import { Reveal } from '@/components/Reveal'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { createClient } from '@/lib/supabase/client'
-import type { Category, DealType, SendDay, UserPreferences, GenderOption, SpendTier } from '@/types'
+import type {
+  Category,
+  DealType,
+  SendDay,
+  UserPreferences,
+  GenderOption,
+  SpendTier,
+} from '@/types'
 import { ALL_CATEGORIES, FREE_CATEGORIES, CATEGORY_LABELS, DEAL_TYPE_LABELS } from '@/types'
 import type { StoreRow } from '@/app/api/stores/route'
 
@@ -19,13 +27,13 @@ const ALL_DEAL_TYPES: DealType[] = [
 ]
 
 const SEND_DAYS: { value: SendDay; label: string }[] = [
-  { value: 'monday', label: 'Monday' },
-  { value: 'tuesday', label: 'Tuesday' },
-  { value: 'wednesday', label: 'Wednesday' },
-  { value: 'thursday', label: 'Thursday' },
-  { value: 'friday', label: 'Friday' },
-  { value: 'saturday', label: 'Saturday' },
-  { value: 'sunday', label: 'Sunday' },
+  { value: 'monday', label: 'Mon' },
+  { value: 'tuesday', label: 'Tue' },
+  { value: 'wednesday', label: 'Wed' },
+  { value: 'thursday', label: 'Thu' },
+  { value: 'friday', label: 'Fri' },
+  { value: 'saturday', label: 'Sat' },
+  { value: 'sunday', label: 'Sun' },
 ]
 
 const GENDER_OPTIONS: { value: GenderOption; label: string }[] = [
@@ -34,13 +42,9 @@ const GENDER_OPTIONS: { value: GenderOption; label: string }[] = [
   { value: 'unisex', label: 'Unisex' },
 ]
 
-const SPEND_TIER_OPTIONS: { value: SpendTier; label: string; sub: string }[] = [
-  { value: '$',    label: '$',    sub: 'Budget' },
-  { value: '$$',   label: '$$',   sub: 'Mid-Range' },
-  { value: '$$$',  label: '$$$',  sub: 'Premium' },
-  { value: '$$$$', label: '$$$$', sub: 'Luxury' },
-]
+const SPEND_TIER_OPTIONS: SpendTier[] = ['$', '$$', '$$$', '$$$$']
 
+// ── Square architectural toggle (matches stores page) ──────────────────
 function Toggle({
   checked,
   onChange,
@@ -54,40 +58,56 @@ function Toggle({
 }) {
   return (
     <button
+      type="button"
       onClick={() => !locked && onChange(!checked)}
       title={locked ? lockedTitle : checked ? 'On — click to turn off' : 'Off — click to turn on'}
-      style={{
-        width: 36, height: 20, borderRadius: 10, border: 'none', padding: 0,
-        background: locked ? 'rgba(10,10,10,0.12)' : checked ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
-        cursor: locked ? 'not-allowed' : 'pointer',
-        position: 'relative', flexShrink: 0, transition: 'background 0.2s',
-        opacity: locked ? 0.5 : 1,
-      }}
+      className={`dd-toggle ${checked && !locked ? 'on' : ''} ${locked ? 'locked' : ''}`}
+      disabled={locked}
+      aria-label={checked ? 'Turn off' : 'Turn on'}
     >
-      <span style={{
-        position: 'absolute', top: 2,
-        left: checked && !locked ? 18 : 2,
-        width: 16, height: 16, borderRadius: '50%',
-        background: 'var(--paper)',
-        transition: 'left 0.2s',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 11,
-      }}>
-        {locked ? '🔒' : ''}
-      </span>
+      <span className="thumb">{locked ? '🔒' : ''}</span>
     </button>
   )
 }
 
-function SectionHeader({ label, tag }: { label: string; tag?: string }) {
+// ── Numbered section header with optional "Paid Only" tag ──────────────
+function SectionLabel({
+  n,
+  label,
+  tag,
+}: {
+  n: string
+  label: string
+  tag?: string
+}) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-      <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)' }}>{label}</p>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: 16,
+        paddingBottom: 16,
+        borderBottom: '1px solid var(--ink)',
+      }}
+    >
+      <span className="t-mono" style={{ color: 'var(--olive-deep)' }}>
+        {n}
+      </span>
+      <span
+        style={{
+          fontSize: 12,
+          letterSpacing: '0.22em',
+          textTransform: 'uppercase',
+          fontWeight: 500,
+        }}
+      >
+        {label}
+      </span>
       {tag && (
-        <span style={{
-          fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.15em',
-          textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', background: 'rgba(10,10,10,0.04)', padding: '2px 8px',
-        }}>
+        <span
+          className="t-meta"
+          style={{ color: 'var(--olive-deep)', marginLeft: 'auto' }}
+        >
           {tag}
         </span>
       )}
@@ -118,16 +138,26 @@ export default function PreferencesPage() {
     subscription_mode: 'category',
     gender_filter: ['men', 'women', 'unisex'],
     spend_tier_filter: ['$', '$$', '$$$', '$$$$'] as SpendTier[],
-    categories: Object.fromEntries(ALL_CATEGORIES.map((c) => [c, FREE_CATEGORIES.includes(c)])) as Record<Category, boolean>,
-    deal_types: Object.fromEntries(ALL_DEAL_TYPES.map((t) => [t, t !== 'up-to'])) as Record<DealType, boolean>,
+    categories: Object.fromEntries(
+      ALL_CATEGORIES.map((c) => [c, FREE_CATEGORIES.includes(c)])
+    ) as Record<Category, boolean>,
+    deal_types: Object.fromEntries(
+      ALL_DEAL_TYPES.map((t) => [t, t !== 'up-to'])
+    ) as Record<DealType, boolean>,
     selected_retailers: [],
   })
 
+  // ── Load prefs + retailers ────────────────────────────────────────────
   useEffect(() => {
     async function load() {
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/login')
+        return
+      }
 
       const [prefsRes, retailersRes] = await Promise.all([
         fetch('/api/preferences'),
@@ -144,21 +174,26 @@ export default function PreferencesPage() {
           min_discount: data.preferences?.min_discount ?? 40,
           subscription_mode: data.preferences?.subscription_mode ?? 'category',
           gender_filter: data.preferences?.gender_filter ?? ['men', 'women', 'unisex'],
-          spend_tier_filter: data.preferences?.spend_tier_filter ?? ['$', '$$', '$$$', '$$$$'],
+          spend_tier_filter:
+            data.preferences?.spend_tier_filter ?? ['$', '$$', '$$$', '$$$$'],
           selected_retailers: data.preferences?.selected_retailers ?? [],
         }))
       }
 
       if (retailersRes.ok) {
         const data = await retailersRes.json()
-        setRetailers((data.stores || []).filter((s: StoreRow) => s.status === 'Confirmed'))
+        setRetailers(
+          (data.stores || []).filter((s: StoreRow) => s.status === 'Confirmed')
+        )
       }
 
       setLoading(false)
     }
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // ── Save / change email / delete account ──────────────────────────────
   const handleSave = async () => {
     setSaving(true)
     setSaved(false)
@@ -184,20 +219,25 @@ export default function PreferencesPage() {
   }
 
   const handleChangeEmail = async () => {
-    if (!newEmail || !newEmail.includes('@')) { setEmailMsg('Please enter a valid email address.'); return }
+    if (!newEmail || !newEmail.includes('@')) {
+      setEmailMsg('Please enter a valid email address.')
+      return
+    }
     const supabase = createClient()
     const { error } = await supabase.auth.updateUser({ email: newEmail })
     if (error) {
       setEmailMsg(error.message)
     } else {
-      setEmailMsg('Check your new email address for a confirmation link. Your email will update once confirmed.')
+      setEmailMsg(
+        'Check your new email address for a confirmation link. Your email will update once confirmed.'
+      )
       setNewEmail('')
       setShowChangeEmail(false)
     }
   }
 
   const handleDeleteAccount = async () => {
-    if (deleteConfirm.toLowerCase() !== 'delete') { return }
+    if (deleteConfirm.toLowerCase() !== 'delete') return
     setDeletingAccount(true)
     try {
       const res = await fetch('/api/account/delete', { method: 'DELETE' })
@@ -210,24 +250,31 @@ export default function PreferencesPage() {
     }
   }
 
+  // ── Mutators ──────────────────────────────────────────────────────────
   const toggleCategory = (cat: Category) => {
     if (tier === 'free' && !FREE_CATEGORIES.includes(cat)) return
-    setPrefs((p) => ({ ...p, categories: { ...p.categories, [cat]: !p.categories[cat] } }))
+    setPrefs((p) => ({
+      ...p,
+      categories: { ...p.categories, [cat]: !p.categories[cat] },
+    }))
   }
 
   const toggleDealType = (dt: DealType) => {
     if (tier === 'free') return
-    setPrefs((p) => ({ ...p, deal_types: { ...p.deal_types, [dt]: !p.deal_types[dt] } }))
+    setPrefs((p) => ({
+      ...p,
+      deal_types: { ...p.deal_types, [dt]: !p.deal_types[dt] },
+    }))
   }
 
-  const toggleSpendTier = (tier: SpendTier) => {
+  const toggleSpendTier = (t: SpendTier) => {
     setPrefs((p) => {
       const current = p.spend_tier_filter ?? ['$', '$$', '$$$', '$$$$']
-      const has = current.includes(tier)
-      if (has && current.length === 1) return p   // keep at least one
+      const has = current.includes(t)
+      if (has && current.length === 1) return p
       return {
         ...p,
-        spend_tier_filter: has ? current.filter((t) => t !== tier) : [...current, tier],
+        spend_tier_filter: has ? current.filter((x) => x !== t) : [...current, t],
       }
     })
   }
@@ -236,7 +283,6 @@ export default function PreferencesPage() {
     setPrefs((p) => {
       const current = p.gender_filter ?? ['men', 'women', 'unisex']
       const has = current.includes(g)
-      // Keep at least one selected
       if (has && current.length === 1) return p
       return {
         ...p,
@@ -250,512 +296,784 @@ export default function PreferencesPage() {
     setPrefs((p) => {
       const cur = p.selected_retailers ?? []
       const has = cur.includes(name)
-      return { ...p, selected_retailers: has ? cur.filter((r) => r !== name) : [...cur, name] }
+      return {
+        ...p,
+        selected_retailers: has ? cur.filter((r) => r !== name) : [...cur, name],
+      }
     })
   }
 
   const filteredRetailers = useMemo(
     () =>
-      retailers.filter((r) =>
-        retailerSearch ? r.name.toLowerCase().includes(retailerSearch.toLowerCase()) : true
-      ).sort((a, b) => a.name.localeCompare(b.name)),
+      retailers
+        .filter((r) =>
+          retailerSearch
+            ? r.name.toLowerCase().includes(retailerSearch.toLowerCase())
+            : true
+        )
+        .sort((a, b) => a.name.localeCompare(b.name)),
     [retailers, retailerSearch]
   )
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)' }}>Loading...</p>
-      </div>
+      <>
+        <Nav />
+        <div
+          style={{
+            minHeight: '60vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <p className="t-meta" style={{ color: 'var(--ink-40)' }}>
+            Loading…
+          </p>
+        </div>
+      </>
     )
   }
 
   const subscriptionMode = prefs.subscription_mode ?? 'category'
+  const inRetailerMode = subscriptionMode === 'retailer' && tier === 'paid'
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
-      <style>{`
-        .pref-save-bar {
-          position: sticky; top: 56px; z-index: 9; background: var(--paper);
-          border-bottom: 1px solid rgba(10,10,10,0.12); height: 48px;
-          display: flex; align-items: center; justify-content: flex-end;
-          padding: 0 60px; gap: 16px;
-        }
-        .pref-2col {
-          display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
-          margin-bottom: 56px; padding-bottom: 56px;
-          border-bottom: 1px solid rgba(10,10,10,0.12);
-        }
-        .pref-bottom-actions {
-          display: flex; justify-content: flex-end; gap: 24px; align-items: center;
-        }
-        @media (max-width: 768px) {
-          .pref-save-bar { padding: 0 24px; }
-          .pref-2col { grid-template-columns: 1fr; gap: 40px; }
-          .pref-bottom-actions { flex-direction: column; align-items: stretch; }
-          .pref-bottom-actions a,
-          .pref-bottom-actions button { text-align: center; }
-          .spend-tier-row { flex-wrap: wrap; }
-          .gender-row { flex-wrap: wrap; }
-          .send-day-row { flex-wrap: wrap; }
-          .min-disc-row { flex-wrap: wrap; }
-        }
-      `}</style>
+    <>
       <Nav />
 
-      {/* Save action bar */}
-      <div className="pref-save-bar">
-        {saved && (
-          <span style={{
-            fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em',
-            textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
-          }}>
-            Saved
-          </span>
-        )}
-        {saveError && (
-          <span style={{
-            fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em',
-            textTransform: 'uppercase', color: '#c0392b',
-          }}>
-            {saveError}
-          </span>
-        )}
-        <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ padding: '8px 24px' }}>
-          {saving ? 'Saving...' : 'Save Preferences'}
+      {/* ── Sticky save bar ───────────────────────────────────────────── */}
+      <div
+        style={{
+          position: 'sticky',
+          top: 60,
+          zIndex: 30,
+          background: 'var(--paper)',
+          borderBottom: '1px solid var(--ink-15)',
+          padding: '14px 56px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: 16,
+          flexWrap: 'wrap',
+        }}
+        className="pref-save-bar"
+      >
+        <div
+          className="t-meta"
+          style={{
+            color: saved
+              ? 'var(--olive-deep)'
+              : saveError
+              ? 'oklch(50% 0.2 20)'
+              : 'var(--ink-55)',
+          }}
+        >
+          {saved ? '✓ Saved' : saveError ? saveError : 'Unsaved changes'}
+        </div>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="btn-primary"
+        >
+          {saving ? 'Saving…' : 'Save Preferences'}
         </button>
       </div>
 
-      <div className="wrap" style={{ paddingTop: 64, paddingBottom: 120 }}>
-        {/* Header */}
-        <div style={{ marginBottom: 64, borderBottom: '1px solid rgba(10,10,10,0.12)', paddingBottom: 48 }}>
-          <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', marginBottom: 12 }}>Your Account</p>
-          <h1 style={{
-            fontFamily: 'var(--font-serif)', fontSize: 48, fontWeight: 300,
-            letterSpacing: '-0.02em', marginBottom: 16,
-          }}>
-            Preferences
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            <span style={{
-              fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600,
-              letterSpacing: '0.2em', textTransform: 'uppercase',
-              background: tier === 'paid' ? 'var(--ink)' : 'rgba(10,10,10,0.05)',
-              color: tier === 'paid' ? 'var(--paper)' : 'rgba(10,10,10,0.4)',
-              padding: '4px 10px',
-            }}>
-              {tier === 'paid' ? 'Paid' : 'Free Tier'}
-            </span>
-            {tier === 'free' && (
-              <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)' }}>Paid tier coming soon</span>
-            )}
-          </div>
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      <section style={{ padding: 'clamp(56px, 7vw, 96px) 0 clamp(40px, 5vw, 64px)' }}>
+        <div className="wrap">
+          <Reveal>
+            <div className="t-eyebrow">Your Account</div>
+          </Reveal>
+          <Reveal delay={100}>
+            <h1
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 300,
+                fontSize: 'clamp(48px, 7vw, 88px)',
+                marginTop: 20,
+                lineHeight: 1,
+                letterSpacing: '-0.025em',
+              }}
+            >
+              Preferences
+            </h1>
+          </Reveal>
+          <Reveal delay={200}>
+            <div
+              style={{
+                marginTop: 24,
+                display: 'flex',
+                gap: 16,
+                alignItems: 'center',
+                flexWrap: 'wrap',
+              }}
+            >
+              <span className="pill on" style={{ cursor: 'default' }}>
+                {tier === 'paid' ? 'Paid Tier' : 'Free Tier'}
+              </span>
+              {tier === 'free' && (
+                <span className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                  Paid tier coming soon
+                </span>
+              )}
+            </div>
+          </Reveal>
         </div>
+      </section>
 
-        {/* ── SECTION 1: Subscription Mode (paid only) ─────────────── */}
-        {tier === 'paid' && (
-          <div style={{ marginBottom: 56, paddingBottom: 56, borderBottom: '1px solid rgba(10,10,10,0.12)' }}>
-            <SectionHeader label="Subscribe By" />
-            <p style={{
-              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)',
-              lineHeight: 1.5, marginBottom: 20, maxWidth: 480,
-            }}>
-              Choose whether to receive deals by category or by individual retailers you select.
+      {/* ── Subscription mode (paid only) ─────────────────────────────── */}
+      {tier === 'paid' && (
+        <section style={{ paddingBottom: 'clamp(40px, 5vw, 64px)' }}>
+          <div className="wrap">
+            <SectionLabel n="00" label="Subscribe By" />
+            <p
+              style={{
+                marginTop: 16,
+                fontSize: 14,
+                color: 'var(--ink-70)',
+                lineHeight: 1.55,
+                maxWidth: 520,
+              }}
+            >
+              Choose whether to receive deals by category or by individual retailers
+              you select.
             </p>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ marginTop: 20, display: 'flex', gap: 8 }}>
               {(['category', 'retailer'] as const).map((mode) => (
                 <button
                   key={mode}
+                  type="button"
                   onClick={() => setPrefs((p) => ({ ...p, subscription_mode: mode }))}
-                  style={{
-                    fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
-                    letterSpacing: '0.18em', textTransform: 'uppercase',
-                    padding: '10px 28px', border: '1.5px solid',
-                    borderColor: subscriptionMode === mode ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
-                    background: subscriptionMode === mode ? 'var(--ink)' : 'transparent',
-                    color: subscriptionMode === mode ? 'var(--paper)' : 'rgba(10,10,10,0.4)',
-                    cursor: 'pointer',
-                  }}
+                  className={`pill ${subscriptionMode === mode ? 'on' : ''}`}
                 >
                   {mode === 'category' ? 'Category' : 'Individual Retailers'}
                 </button>
               ))}
             </div>
           </div>
-        )}
+        </section>
+      )}
 
-        {/* ── ROW 1: Categories | Deal Types ───────────────────────── */}
-        <div className="pref-2col">
-          {/* Left: Categories OR Retailer Selector */}
-          <div>
-            {subscriptionMode === 'retailer' && tier === 'paid' ? (
-              <>
-                <SectionHeader label="Retailers" />
-                <p style={{
-                  fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)',
-                  lineHeight: 1.5, marginBottom: 8,
-                }}>
-                  Select the specific retailers you want deals from.{' '}
-                  <span style={{ color: 'var(--ink)' }}>
-                    {(prefs.selected_retailers ?? []).length} selected
-                  </span>
-                </p>
-                <p style={{ marginBottom: 20 }}>
-                  <Link href="/stores" style={{
-                    fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.18em',
-                    textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', textDecoration: 'underline',
-                  }}>
-                    View all stores →
-                  </Link>
-                </p>
-                <input
-                  type="text"
-                  placeholder="Search retailers..."
-                  value={retailerSearch}
-                  onChange={(e) => setRetailerSearch(e.target.value)}
-                  className="field-input"
-                  style={{ marginBottom: 16 }}
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 480, overflowY: 'auto' }}>
-                  {filteredRetailers.length === 0 ? (
-                    <p style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 11,
-                      letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
-                      padding: '16px 0',
-                    }}>No retailers found</p>
-                  ) : (
-                    filteredRetailers.map((r) => {
-                      const isSelected = (prefs.selected_retailers ?? []).includes(r.name)
-                      return (
-                        <div
-                          key={r.name}
-                          onClick={() => toggleRetailer(r.name)}
-                          style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            padding: '12px 16px', background: 'rgba(10,10,10,0.04)', cursor: 'pointer',
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div style={{
-                              width: 18, height: 18, border: '1.5px solid', flexShrink: 0,
-                              borderColor: isSelected ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
-                              background: isSelected ? 'var(--ink)' : 'transparent',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            }}>
-                              {isSelected && (
-                                <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                                  <path d="M1 4L4 7L9 1" stroke="var(--paper)" strokeWidth="1.5" strokeLinecap="square"/>
-                                </svg>
-                              )}
-                            </div>
-                            <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600 }}>{r.name}</span>
-                          </div>
-                          <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.12em', color: 'rgba(10,10,10,0.4)' }}>
-                            {r.spendTier}
-                          </span>
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <SectionHeader label="Categories" />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {ALL_CATEGORIES.map((cat) => {
-                    const locked = tier === 'free' && !FREE_CATEGORIES.includes(cat)
-                    return (
-                      <div
-                        key={cat}
-                        style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '12px 16px', background: locked ? 'transparent' : 'rgba(10,10,10,0.04)',
-                          opacity: locked ? 0.4 : 1,
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <CategoryIcon category={cat} size={18} />
-                          <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600 }}>
-                            {CATEGORY_LABELS[cat]}
-                          </span>
-                          {locked && (
-                            <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)' }}>
-                              Paid
-                            </span>
-                          )}
-                        </div>
-                        <Toggle
-                          checked={prefs.categories[cat]}
-                          onChange={() => toggleCategory(cat)}
-                          locked={locked}
-                          lockedTitle="Upgrade to paid to unlock this category"
-                        />
-                      </div>
-                    )
-                  })}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Right: Deal Types */}
-          <div>
-            <SectionHeader label="Deal Types" tag={tier === 'free' ? 'Paid Only' : undefined} />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {ALL_DEAL_TYPES.map((dt) => (
-                <div
-                  key={dt}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '12px 16px', background: 'rgba(10,10,10,0.04)',
-                    opacity: tier === 'free' ? 0.4 : 1,
-                  }}
-                >
-                  <span style={{ fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600 }}>
-                    {DEAL_TYPE_LABELS[dt]}
-                  </span>
-                  <Toggle
-                    checked={prefs.deal_types[dt]}
-                    onChange={() => toggleDealType(dt)}
-                    locked={tier === 'free'}
-                    lockedTitle="Upgrade to paid to filter by deal type"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── ROW 2: Send Day | Spend Tier ─────────────────────────── */}
-        <div className="pref-2col">
-          {/* Left: Send Day */}
-          <div>
-            <SectionHeader label="Send Day" tag={tier === 'free' ? 'Paid Only' : undefined} />
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {SEND_DAYS.map(({ value, label }) => (
-                <button
-                  key={value}
-                  disabled={tier === 'free' && value !== 'thursday'}
-                  onClick={() => tier === 'paid' && setPrefs((p) => ({ ...p, send_day: value }))}
-                  style={{
-                    fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
-                    letterSpacing: '0.18em', textTransform: 'uppercase',
-                    padding: '8px 16px', border: '1.5px solid',
-                    borderColor: prefs.send_day === value ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
-                    background: prefs.send_day === value ? 'var(--ink)' : 'transparent',
-                    color: prefs.send_day === value ? 'var(--paper)' : tier === 'free' && value !== 'thursday' ? 'rgba(10,10,10,0.12)' : 'rgba(10,10,10,0.4)',
-                    cursor: tier === 'free' ? 'default' : 'pointer',
-                  }}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Right: Spend Tier */}
-          <div>
-            <SectionHeader label="Spend Tier" />
-            <p style={{
-              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)',
-              lineHeight: 1.5, marginBottom: 20,
-            }}>
-              Filter deals by how much brands typically charge.
-            </p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {SPEND_TIER_OPTIONS.map(({ value, label, sub }) => {
-                const active = (prefs.spend_tier_filter ?? ['$', '$$', '$$$', '$$$$']).includes(value)
-                return (
-                  <button
-                    key={value}
-                    onClick={() => toggleSpendTier(value)}
-                    title={sub}
+      {/* ── Section grid 1: Categories | Deal Types | Send Day ────────── */}
+      <section style={{ paddingBottom: 'clamp(48px, 6vw, 80px)' }}>
+        <div className="wrap">
+          <div className="grid-3" style={{ gap: 48 }}>
+            {/* 01 — Categories or Retailer selector */}
+            <Reveal>
+              {inRetailerMode ? (
+                <>
+                  <SectionLabel n="01" label="Retailers" />
+                  <p
                     style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: 600,
-                      letterSpacing: '0.1em', padding: '10px 20px', border: '1.5px solid',
-                      borderColor: active ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
-                      background: active ? 'var(--ink)' : 'transparent',
-                      color: active ? 'var(--paper)' : 'rgba(10,10,10,0.4)',
-                      cursor: 'pointer',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                      marginTop: 16,
+                      fontSize: 13,
+                      color: 'var(--ink-70)',
+                      lineHeight: 1.55,
                     }}
                   >
-                    <span>{label}</span>
-                    <span style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', opacity: 0.7 }}>{sub}</span>
-                  </button>
-                )
-              })}
-            </div>
+                    Select specific retailers you want deals from.{' '}
+                    <span style={{ color: 'var(--ink)' }}>
+                      {(prefs.selected_retailers ?? []).length} selected
+                    </span>
+                    .
+                  </p>
+                  <p style={{ marginTop: 8 }}>
+                    <Link
+                      href="/stores"
+                      className="t-meta"
+                      style={{
+                        color: 'var(--ink-40)',
+                        textDecoration: 'none',
+                        borderBottom: '1px solid var(--ink-15)',
+                        paddingBottom: 2,
+                      }}
+                    >
+                      View all stores →
+                    </Link>
+                  </p>
+                  <input
+                    type="text"
+                    placeholder="Search retailers..."
+                    value={retailerSearch}
+                    onChange={(e) => setRetailerSearch(e.target.value)}
+                    className="field-input"
+                    style={{ marginTop: 16 }}
+                  />
+                  <div
+                    style={{
+                      marginTop: 12,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      maxHeight: 480,
+                      overflowY: 'auto',
+                    }}
+                  >
+                    {filteredRetailers.length === 0 ? (
+                      <p
+                        className="t-meta"
+                        style={{ color: 'var(--ink-40)', padding: '16px 0' }}
+                      >
+                        No retailers found
+                      </p>
+                    ) : (
+                      filteredRetailers.map((r) => {
+                        const isSelected = (prefs.selected_retailers ?? []).includes(
+                          r.name
+                        )
+                        return (
+                          <button
+                            key={r.name}
+                            type="button"
+                            onClick={() => toggleRetailer(r.name)}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '12px 0',
+                              borderBottom: '1px solid var(--ink-08)',
+                              background: 'transparent',
+                              border: 'none',
+                              borderBottomColor: 'var(--ink-08)',
+                              borderBottomStyle: 'solid',
+                              borderBottomWidth: 1,
+                              cursor: 'pointer',
+                              textAlign: 'left',
+                              width: '100%',
+                            }}
+                          >
+                            <span
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 12,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  width: 16,
+                                  height: 16,
+                                  border: '1.5px solid',
+                                  flexShrink: 0,
+                                  borderColor: isSelected
+                                    ? 'var(--ink)'
+                                    : 'var(--ink-25)',
+                                  background: isSelected
+                                    ? 'var(--ink)'
+                                    : 'transparent',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                {isSelected && (
+                                  <svg
+                                    width="10"
+                                    height="8"
+                                    viewBox="0 0 10 8"
+                                    fill="none"
+                                  >
+                                    <path
+                                      d="M1 4L4 7L9 1"
+                                      stroke="var(--paper)"
+                                      strokeWidth="1.5"
+                                      strokeLinecap="square"
+                                    />
+                                  </svg>
+                                )}
+                              </span>
+                              <span
+                                style={{
+                                  fontFamily: 'var(--font-sans)',
+                                  fontSize: 14,
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {r.name}
+                              </span>
+                            </span>
+                            <span
+                              className="t-mono"
+                              style={{ color: 'var(--ink-55)' }}
+                            >
+                              {r.spendTier}
+                            </span>
+                          </button>
+                        )
+                      })
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <SectionLabel n="01" label="Categories" />
+                  <div
+                    style={{
+                      marginTop: 24,
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    {ALL_CATEGORIES.map((cat) => {
+                      const locked = tier === 'free' && !FREE_CATEGORIES.includes(cat)
+                      return (
+                        <div
+                          key={cat}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '14px 0',
+                            borderBottom: '1px solid var(--ink-08)',
+                            opacity: locked ? 0.4 : 1,
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 10,
+                              minWidth: 0,
+                            }}
+                          >
+                            <CategoryIcon category={cat} size={14} />
+                            <span style={{ fontSize: 14, fontWeight: 500 }}>
+                              {CATEGORY_LABELS[cat]}
+                            </span>
+                            {locked && (
+                              <span
+                                className="t-meta"
+                                style={{
+                                  color: 'var(--olive-deep)',
+                                  fontSize: 9,
+                                }}
+                              >
+                                Paid
+                              </span>
+                            )}
+                          </div>
+                          <Toggle
+                            checked={prefs.categories[cat]}
+                            onChange={() => toggleCategory(cat)}
+                            locked={locked}
+                            lockedTitle="Upgrade to paid to unlock this category"
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
+            </Reveal>
+
+            {/* 02 — Deal Types */}
+            <Reveal delay={120}>
+              <SectionLabel
+                n="02"
+                label="Deal Types"
+                tag={tier === 'free' ? 'Paid Only' : undefined}
+              />
+              <div
+                style={{
+                  marginTop: 24,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  opacity: tier === 'free' ? 0.4 : 1,
+                }}
+              >
+                {ALL_DEAL_TYPES.map((dt) => (
+                  <div
+                    key={dt}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '14px 0',
+                      borderBottom: '1px solid var(--ink-08)',
+                    }}
+                  >
+                    <span style={{ fontSize: 14, fontWeight: 500 }}>
+                      {DEAL_TYPE_LABELS[dt]}
+                    </span>
+                    <Toggle
+                      checked={prefs.deal_types[dt]}
+                      onChange={() => toggleDealType(dt)}
+                      locked={tier === 'free'}
+                      lockedTitle="Upgrade to paid to filter by deal type"
+                    />
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+
+            {/* 03 — Send Day */}
+            <Reveal delay={240}>
+              <SectionLabel
+                n="03"
+                label="Send Day"
+                tag={tier === 'free' ? 'Paid Only' : undefined}
+              />
+              <div
+                style={{
+                  marginTop: 24,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6,
+                }}
+              >
+                {SEND_DAYS.map(({ value, label }) => {
+                  const locked = tier === 'free' && value !== 'thursday'
+                  const active = prefs.send_day === value
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => !locked && setPrefs((p) => ({ ...p, send_day: value }))}
+                      disabled={locked}
+                      className={`pill ${active ? 'on' : ''}`}
+                      style={{
+                        opacity: locked ? 0.4 : 1,
+                        cursor: locked ? 'not-allowed' : 'pointer',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                      }}
+                    >
+                      <span>{label}</span>
+                      <span style={{ opacity: 0.6, fontSize: 11 }}>
+                        {locked ? '🔒' : active ? '●' : ''}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </Reveal>
           </div>
         </div>
+      </section>
 
-        {/* ── ROW 3: Minimum Discount | Gender ─────────────────────── */}
-        <div className="pref-2col">
-          {/* Left: Minimum Discount */}
-          <div>
-            <SectionHeader label="Minimum Discount" tag={tier === 'free' ? 'Paid Only' : undefined} />
-            <div style={{ display: 'flex', gap: 8 }}>
-              {[20, 30, 40, 50].map((v) => (
-                <button
-                  key={v}
-                  disabled={tier === 'free' && v !== 40}
-                  onClick={() => tier === 'paid' && setPrefs((p) => ({ ...p, min_discount: v as 20 | 30 | 40 | 50 }))}
-                  style={{
-                    fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
-                    letterSpacing: '0.18em', textTransform: 'uppercase',
-                    padding: '8px 20px', border: '1.5px solid',
-                    borderColor: prefs.min_discount === v ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
-                    background: prefs.min_discount === v ? 'var(--ink)' : 'transparent',
-                    color: prefs.min_discount === v ? 'var(--paper)' : tier === 'free' && v !== 40 ? 'rgba(10,10,10,0.12)' : 'rgba(10,10,10,0.4)',
-                    cursor: tier === 'free' ? 'default' : 'pointer',
-                  }}
-                >
-                  {v}%+
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* ── Section grid 2: Spend | Min Discount | Gender ─────────────── */}
+      <section style={{ paddingBottom: 'clamp(56px, 8vw, 96px)' }}>
+        <div className="wrap">
+          <div className="grid-3" style={{ gap: 48 }}>
+            <Reveal>
+              <SectionLabel n="04" label="Spend Tier" />
+              <p
+                style={{
+                  marginTop: 16,
+                  fontSize: 13,
+                  color: 'var(--ink-70)',
+                  lineHeight: 1.55,
+                }}
+              >
+                Filter deals by how much brands typically charge.
+              </p>
+              <div
+                style={{
+                  marginTop: 20,
+                  display: 'flex',
+                  gap: 6,
+                  flexWrap: 'wrap',
+                }}
+              >
+                {SPEND_TIER_OPTIONS.map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => toggleSpendTier(v)}
+                    className={`pill ${
+                      (prefs.spend_tier_filter ?? []).includes(v) ? 'on' : ''
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+            </Reveal>
 
-          {/* Right: Gender */}
-          <div>
-            <SectionHeader label="Gender" />
-            <p style={{
-              fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)',
-              lineHeight: 1.5, marginBottom: 20,
-            }}>
-              Only show deals relevant to the genders you shop for.
-            </p>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {GENDER_OPTIONS.map(({ value, label }) => {
-                const active = (prefs.gender_filter ?? ['men', 'women', 'unisex']).includes(value)
-                return (
+            <Reveal delay={120}>
+              <SectionLabel
+                n="05"
+                label="Min Discount"
+                tag={tier === 'free' ? 'Paid Only' : undefined}
+              />
+              <p
+                style={{
+                  marginTop: 16,
+                  fontSize: 13,
+                  color: 'var(--ink-70)',
+                  lineHeight: 1.55,
+                }}
+              >
+                {tier === 'free'
+                  ? 'Free tier locked at 40%+.'
+                  : 'Choose how aggressive your filter should be.'}
+              </p>
+              <div
+                style={{
+                  marginTop: 20,
+                  display: 'flex',
+                  gap: 6,
+                  flexWrap: 'wrap',
+                }}
+              >
+                {[20, 30, 40, 50].map((v) => {
+                  const locked = tier === 'free' && v !== 40
+                  const active = prefs.min_discount === v
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() =>
+                        !locked &&
+                        setPrefs((p) => ({
+                          ...p,
+                          min_discount: v as 20 | 30 | 40 | 50,
+                        }))
+                      }
+                      disabled={locked}
+                      className={`pill ${active ? 'on' : ''}`}
+                      style={{ opacity: locked ? 0.4 : 1 }}
+                    >
+                      {v}%+
+                    </button>
+                  )
+                })}
+              </div>
+            </Reveal>
+
+            <Reveal delay={240}>
+              <SectionLabel n="06" label="Gender" />
+              <p
+                style={{
+                  marginTop: 16,
+                  fontSize: 13,
+                  color: 'var(--ink-70)',
+                  lineHeight: 1.55,
+                }}
+              >
+                Only show deals relevant to the genders you shop for.
+              </p>
+              <div
+                style={{
+                  marginTop: 20,
+                  display: 'flex',
+                  gap: 6,
+                  flexWrap: 'wrap',
+                }}
+              >
+                {GENDER_OPTIONS.map(({ value, label }) => (
                   <button
                     key={value}
+                    type="button"
                     onClick={() => toggleGender(value)}
-                    style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500,
-                      letterSpacing: '0.18em', textTransform: 'uppercase',
-                      padding: '10px 28px', border: '1.5px solid',
-                      borderColor: active ? 'var(--ink)' : 'rgba(10,10,10,0.12)',
-                      background: active ? 'var(--ink)' : 'transparent',
-                      color: active ? 'var(--paper)' : 'rgba(10,10,10,0.4)',
-                      cursor: 'pointer',
-                    }}
+                    className={`pill ${
+                      (prefs.gender_filter ?? []).includes(value) ? 'on' : ''
+                    }`}
                   >
                     {label}
                   </button>
-                )
-              })}
-            </div>
+                ))}
+              </div>
+            </Reveal>
           </div>
-        </div>
 
-
-        {/* Save button bottom */}
-        <div className="pref-bottom-actions">
-          <Link
-            href="/stores"
+          {/* Footer link to Stores */}
+          <div
             style={{
-              fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.2em',
-              textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', textDecoration: 'none',
+              marginTop: 56,
+              paddingTop: 32,
+              borderTop: '1px solid var(--ink-15)',
             }}
           >
-            View Subscribed Stores →
-          </Link>
-          <button onClick={handleSave} disabled={saving} className="btn-primary">
-            {saving ? 'Saving...' : 'Save Preferences'}
-          </button>
+            <Link
+              href="/stores"
+              className="t-meta"
+              style={{
+                color: 'var(--ink)',
+                textDecoration: 'none',
+                borderBottom: '1px solid var(--ink-15)',
+                paddingBottom: 2,
+              }}
+            >
+              View Subscribed Stores →
+            </Link>
+          </div>
         </div>
+      </section>
 
-        {/* ── Account ───────────────────────────────────────────────── */}
-        <div style={{ marginTop: 80, paddingTop: 40, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
-          <SectionHeader label="Account" />
+      {/* ── Account ──────────────────────────────────────────────────── */}
+      <section
+        style={{
+          paddingTop: 'clamp(48px, 6vw, 80px)',
+          paddingBottom: 'clamp(56px, 8vw, 96px)',
+          borderTop: '1px solid var(--ink-15)',
+        }}
+      >
+        <div className="wrap">
+          <h2
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontWeight: 300,
+              fontSize: 'clamp(36px, 4vw, 56px)',
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+              marginBottom: 40,
+            }}
+          >
+            Account
+          </h2>
 
-          {/* Change Email */}
-          <div style={{ marginBottom: 32 }}>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.65)', marginBottom: 12 }}>
-              Update the email address your weekly brief is sent to.
-            </p>
-            {!showChangeEmail ? (
-              <button
-                onClick={() => setShowChangeEmail(true)}
+          <div className="grid-2" style={{ gap: 32 }}>
+            {/* Change Email */}
+            <div className="card">
+              <div className="t-eyebrow">Change Email</div>
+              <p
                 style={{
-                  fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-                  letterSpacing: '0.18em', textTransform: 'uppercase',
-                  padding: '10px 24px', border: '1.5px solid rgba(10,10,10,0.12)',
-                  background: 'transparent', color: 'rgba(10,10,10,0.65)', cursor: 'pointer',
+                  marginTop: 14,
+                  fontSize: 14,
+                  color: 'var(--ink-70)',
+                  lineHeight: 1.6,
                 }}
               >
-                Change Email
-              </button>
-            ) : (
-              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                <input
-                  type="email"
-                  placeholder="new@email.com"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  className="field-input"
-                  style={{ maxWidth: 280 }}
-                />
-                <button onClick={handleChangeEmail} className="btn-primary" style={{ flexShrink: 0 }}>
-                  Send Confirmation
-                </button>
+                Update the email address your weekly brief is sent to.
+              </p>
+
+              {!showChangeEmail ? (
                 <button
-                  onClick={() => { setShowChangeEmail(false); setNewEmail(''); setEmailMsg('') }}
+                  type="button"
+                  onClick={() => setShowChangeEmail(true)}
+                  className="btn-ghost"
+                  style={{ marginTop: 24 }}
+                >
+                  Change Email
+                </button>
+              ) : (
+                <div style={{ marginTop: 24 }}>
+                  <input
+                    type="email"
+                    placeholder="new@email.com"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    className="field-input"
+                  />
+                  <div
+                    style={{
+                      marginTop: 12,
+                      display: 'flex',
+                      gap: 8,
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={handleChangeEmail}
+                      className="btn-primary"
+                    >
+                      Send Confirmation
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowChangeEmail(false)
+                        setNewEmail('')
+                        setEmailMsg('')
+                      }}
+                      className="t-meta"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--ink-40)',
+                        cursor: 'pointer',
+                        padding: '0 8px',
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+              {emailMsg && (
+                <p
                   style={{
-                    fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.18em',
-                    textTransform: 'uppercase', padding: '10px 16px', border: 'none',
-                    background: 'transparent', color: 'rgba(10,10,10,0.4)', cursor: 'pointer',
+                    marginTop: 12,
+                    fontSize: 13,
+                    color: 'var(--ink-55)',
+                    lineHeight: 1.55,
                   }}
                 >
-                  Cancel
-                </button>
-              </div>
-            )}
-            {emailMsg && (
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)', marginTop: 8 }}>
-                {emailMsg}
-              </p>
-            )}
-          </div>
+                  {emailMsg}
+                </p>
+              )}
+            </div>
 
-          {/* Delete Account */}
-          <div style={{ paddingTop: 24, borderTop: '1px solid rgba(10,10,10,0.05)' }}>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)', marginBottom: 12 }}>
-              Permanently delete your account and all preferences. This cannot be undone.
-            </p>
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            {/* Delete Account */}
+            <div className="card">
+              <div className="t-eyebrow" style={{ color: '#9C3A2E' }}>
+                Delete Account
+              </div>
+              <p
+                style={{
+                  marginTop: 14,
+                  fontSize: 14,
+                  color: 'var(--ink-70)',
+                  lineHeight: 1.6,
+                }}
+              >
+                Permanently delete your account and all preferences. This cannot be
+                undone.
+              </p>
               <input
                 type="text"
                 placeholder='Type "delete" to confirm'
                 value={deleteConfirm}
                 onChange={(e) => setDeleteConfirm(e.target.value)}
                 className="field-input"
-                style={{ maxWidth: 240 }}
+                style={{ marginTop: 24 }}
               />
               <button
+                type="button"
                 onClick={handleDeleteAccount}
-                disabled={deleteConfirm.toLowerCase() !== 'delete' || deletingAccount}
+                disabled={
+                  deleteConfirm.toLowerCase() !== 'delete' || deletingAccount
+                }
                 style={{
-                  fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-                  letterSpacing: '0.18em', textTransform: 'uppercase',
-                  padding: '10px 24px', border: '1.5px solid',
-                  borderColor: deleteConfirm.toLowerCase() === 'delete' ? '#c0392b' : 'rgba(10,10,10,0.12)',
-                  background: deleteConfirm.toLowerCase() === 'delete' ? '#c0392b' : 'transparent',
-                  color: deleteConfirm.toLowerCase() === 'delete' ? '#fff' : 'rgba(10,10,10,0.4)',
-                  cursor: deleteConfirm.toLowerCase() === 'delete' ? 'pointer' : 'default',
+                  marginTop: 16,
+                  fontFamily: 'var(--font-condensed)',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  padding: '14px 32px',
+                  border: '1.5px solid',
+                  borderColor:
+                    deleteConfirm.toLowerCase() === 'delete'
+                      ? '#9C3A2E'
+                      : 'var(--ink-15)',
+                  background:
+                    deleteConfirm.toLowerCase() === 'delete'
+                      ? '#9C3A2E'
+                      : 'transparent',
+                  color:
+                    deleteConfirm.toLowerCase() === 'delete'
+                      ? 'var(--paper)'
+                      : 'var(--ink-40)',
+                  cursor:
+                    deleteConfirm.toLowerCase() === 'delete' ? 'pointer' : 'default',
                   opacity: deletingAccount ? 0.6 : 1,
+                  display: 'inline-block',
+                  transition: 'background 0.15s, border-color 0.15s',
                 }}
               >
-                {deletingAccount ? 'Deleting...' : 'Delete Account'}
+                {deletingAccount ? 'Deleting…' : 'Delete Account'}
               </button>
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
       <Footer />
-    </div>
+    </>
   )
 }
