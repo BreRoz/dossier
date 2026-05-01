@@ -15,42 +15,34 @@ export function RunIngestButton() {
       setResult(data)
       setStatus(res.ok ? 'done' : 'error')
       if (res.ok) setTimeout(() => setStatus('idle'), 8000)
-    } catch (err) {
+    } catch {
       setStatus('error')
       setTimeout(() => setStatus('idle'), 5000)
     }
   }
 
+  const summary =
+    status === 'done' && result
+      ? `${(result.emails_processed as number) ?? 0} emails · ${(result.new_deals as number) ?? 0} new deals`
+      : null
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-      <button
-        onClick={handleRun}
-        disabled={status === 'running'}
-        style={{
-          fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 700,
-          letterSpacing: '0.18em', textTransform: 'uppercase',
-          padding: '6px 18px', border: '1.5px solid',
-          borderColor: status === 'done' ? 'rgba(10,10,10,0.2)' : status === 'error' ? '#c0392b' : 'var(--ink)',
-          background: status === 'running' ? 'rgba(10,10,10,0.06)' : status === 'done' ? 'transparent' : 'var(--ink)',
-          color: status === 'running' ? 'rgba(10,10,10,0.4)' : status === 'done' ? 'rgba(10,10,10,0.5)' : status === 'error' ? '#c0392b' : 'var(--paper)',
-          cursor: status === 'running' ? 'default' : 'pointer',
-        }}
-      >
-        {status === 'running' ? 'Running…' : status === 'done' ? '✓ Done' : status === 'error' ? 'Error — try again' : 'Run Ingest Now'}
-      </button>
-      {result && status === 'done' && (
-        <span style={{
-          fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em',
-          color: 'rgba(10,10,10,0.5)',
-        }}>
-          {(result.emails_processed as number) ?? 0} emails · {(result.new_deals as number) ?? 0} new deals
-        </span>
-      )}
-      {result && status === 'error' && (
-        <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', color: '#c0392b' }}>
-          {(result.error as string) ?? 'Unknown error'}
-        </span>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={handleRun}
+      disabled={status === 'running'}
+      className={`admin-btn ${status === 'running' ? 'is-running' : ''} ${
+        status === 'done' ? 'is-done' : ''
+      }`}
+    >
+      <span>
+        {status === 'idle' && 'Run Ingest'}
+        {status === 'running' && 'Scanning…'}
+        {status === 'done' && (summary || '✓ Done')}
+        {status === 'error' &&
+          ((result?.error as string | undefined) ?? 'Error — try again')}
+      </span>
+      {status === 'running' && <span className="admin-btn-spinner" aria-hidden="true" />}
+    </button>
   )
 }

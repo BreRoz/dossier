@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const PRESETS = [
-  { value: 'added',           label: '✅ Added to watchlist' },
-  { value: 'not_us',          label: '❌ Not available in the US' },
-  { value: 'no_online_store', label: '❌ No online store' },
-  { value: 'no_deals',        label: '❌ Doesn\'t provide deals/coupons' },
+  { value: 'added',           label: 'Added to watchlist',        glyph: '✓' },
+  { value: 'not_us',          label: 'Not available in the US',   glyph: '✕' },
+  { value: 'no_online_store', label: 'No online store',           glyph: '✕' },
+  { value: 'no_deals',        label: "Doesn't provide deals/coupons", glyph: '✕' },
 ]
 
 export function SuggestionActions({
@@ -18,33 +18,39 @@ export function SuggestionActions({
   storeName: string
   initialStatus: string
 }) {
-  const [status, setStatus]       = useState(initialStatus)
-  const [open, setOpen]           = useState(false)
-  const [note, setNote]           = useState('')
-  const [sending, setSending]     = useState(false)
-  const [sent, setSent]           = useState(false)
-  const [selected, setSelected]   = useState('')
+  const [status, setStatus]   = useState(initialStatus)
+  const [open, setOpen]       = useState(false)
+  const [note, setNote]       = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent]       = useState(false)
+  const [selected, setSelected] = useState('')
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [open])
 
   if (status !== 'pending') {
+    const isAdded = status === 'added'
     return (
-      <span style={{
-        fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.15em',
-        textTransform: 'uppercase', padding: '2px 8px', border: '1px solid',
-        borderColor: status === 'added' ? 'var(--accent)' : 'var(--ink-15)',
-        color: status === 'added' ? 'var(--accent)' : 'var(--ink-40)',
-      }}>
-        {status}
+      <span
+        className="t-meta"
+        style={{ color: isAdded ? 'var(--olive-deep)' : 'var(--ink-40)' }}
+      >
+        {isAdded ? '● Added' : `● ${status}`}
       </span>
     )
   }
 
   if (sent) {
     return (
-      <span style={{
-        fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.15em',
-        textTransform: 'uppercase', color: 'var(--accent)',
-      }}>
-        Response sent ✓
+      <span className="t-meta" style={{ color: 'var(--olive-deep)' }}>
+        ✓ Response sent
       </span>
     )
   }
@@ -55,10 +61,13 @@ export function SuggestionActions({
     const res = await fetch('/api/admin/respond-suggestion', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ suggestion_id: suggestionId, response_type: selected, note }),
+      body: JSON.stringify({
+        suggestion_id: suggestionId,
+        response_type: selected,
+        note,
+      }),
     })
     if (res.ok) {
-      const d = await res.json()
       setStatus(selected === 'added' ? 'added' : 'declined')
       setSent(true)
       setOpen(false)
@@ -67,88 +76,70 @@ export function SuggestionActions({
   }
 
   return (
-    <div style={{ position: 'relative' }}>
-      {!open ? (
-        <button
-          onClick={() => setOpen(true)}
-          style={{
-            fontFamily: 'var(--font-condensed)', fontSize: 9, fontWeight: 600,
-            letterSpacing: '0.15em', textTransform: 'uppercase',
-            background: 'var(--ink)', color: 'var(--paper)',
-            border: 'none', padding: '4px 10px', cursor: 'pointer',
-          }}
-        >
-          Respond
-        </button>
-      ) : (
-        <div style={{
-          position: 'absolute', right: 0, top: 0, zIndex: 50,
-          background: 'var(--paper)', border: '1.5px solid var(--ink-15)',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
-          width: 300, padding: 20,
-        }}>
-          <p style={{
-            fontFamily: 'var(--font-condensed)', fontSize: 9, fontWeight: 600,
-            letterSpacing: '0.2em', textTransform: 'uppercase',
-            color: 'var(--ink-40)', marginBottom: 12,
-          }}>
+    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+      <button
+        type="button"
+        className="admin-link-btn"
+        onClick={() => setOpen((o) => !o)}
+      >
+        Respond ↳
+      </button>
+      {open && (
+        <div className="admin-popover">
+          <div className="t-meta" style={{ color: 'var(--ink-40)', marginBottom: 10 }}>
             Respond to: {storeName}
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 }}>
-            {PRESETS.map(({ value, label }) => (
-              <button
-                key={value}
-                onClick={() => setSelected(value)}
+          </div>
+          {PRESETS.map((r) => (
+            <label
+              key={r.value}
+              className={`sug-row ${selected === r.value ? 'on' : ''}`}
+            >
+              <input
+                type="radio"
+                name={`s-${suggestionId}`}
+                checked={selected === r.value}
+                onChange={() => setSelected(r.value)}
+              />
+              <span
                 style={{
-                  textAlign: 'left', padding: '9px 12px',
-                  border: '1.5px solid',
-                  borderColor: selected === value ? 'var(--ink)' : 'var(--ink-15)',
-                  background: selected === value ? 'var(--ink)' : 'transparent',
-                  cursor: 'pointer',
-                  fontFamily: 'var(--font-sans)', fontSize: 12,
-                  color: selected === value ? 'var(--paper)' : 'var(--ink)',
+                  marginRight: 8,
+                  color: r.value === 'added' ? 'var(--olive-deep)' : 'var(--ink-40)',
                 }}
               >
-                {label}
-              </button>
-            ))}
-          </div>
-
+                {r.glyph}
+              </span>
+              <span>{r.label}</span>
+            </label>
+          ))}
           <textarea
+            className="sug-note"
+            placeholder="Optional note…"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Add a personal note (optional)..."
             rows={2}
-            className="field-input"
-            style={{ fontSize: 12, resize: 'none', marginBottom: 12 }}
           />
-
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: 8,
+              justifyContent: 'flex-end',
+              marginTop: 10,
+            }}
+          >
             <button
-              onClick={handleSend}
-              disabled={!selected || sending}
-              style={{
-                flex: 1, fontFamily: 'var(--font-condensed)', fontSize: 10,
-                fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase',
-                background: selected ? 'var(--ink)' : 'var(--ink-15)',
-                color: 'var(--paper)', border: 'none',
-                padding: '10px 0', cursor: selected ? 'pointer' : 'not-allowed',
-              }}
-            >
-              {sending ? 'Sending...' : 'Send'}
-            </button>
-            <button
+              type="button"
+              className="admin-link-btn"
               onClick={() => setOpen(false)}
-              style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 10,
-                letterSpacing: '0.15em', textTransform: 'uppercase',
-                background: 'transparent', color: 'var(--ink-40)',
-                border: '1.5px solid var(--ink-15)', padding: '10px 16px',
-                cursor: 'pointer',
-              }}
             >
               Cancel
+            </button>
+            <button
+              type="button"
+              className="admin-btn admin-btn-sm"
+              disabled={!selected || sending}
+              onClick={handleSend}
+            >
+              {sending ? 'Sending…' : 'Send'}
             </button>
           </div>
         </div>

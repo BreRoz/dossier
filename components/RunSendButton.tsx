@@ -21,36 +21,28 @@ export function RunSendButton() {
     }
   }
 
+  const summary =
+    status === 'done' && result
+      ? `${(result.sent as number) ?? 0} sent · ${(result.failed as number) ?? 0} failed`
+      : null
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-      <button
-        onClick={handleRun}
-        disabled={status === 'running'}
-        style={{
-          fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 700,
-          letterSpacing: '0.18em', textTransform: 'uppercase',
-          padding: '6px 18px', border: '1.5px solid',
-          borderColor: status === 'done' ? 'rgba(10,10,10,0.2)' : status === 'error' ? '#c0392b' : 'var(--ink)',
-          background: status === 'running' ? 'rgba(10,10,10,0.06)' : status === 'done' ? 'transparent' : 'var(--ink)',
-          color: status === 'running' ? 'rgba(10,10,10,0.4)' : status === 'done' ? 'rgba(10,10,10,0.5)' : status === 'error' ? '#c0392b' : 'var(--paper)',
-          cursor: status === 'running' ? 'default' : 'pointer',
-        }}
-      >
-        {status === 'running' ? 'Sending…' : status === 'done' ? '✓ Sent' : status === 'error' ? 'Error — try again' : 'Run Send Now'}
-      </button>
-      {result && status === 'done' && (
-        <span style={{
-          fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em',
-          color: 'rgba(10,10,10,0.5)',
-        }}>
-          {(result.sent as number) ?? 0} sent · {(result.failed as number) ?? 0} failed
-        </span>
-      )}
-      {result && status === 'error' && (
-        <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', color: '#c0392b' }}>
-          {(result.error as string) ?? 'Unknown error'}
-        </span>
-      )}
-    </div>
+    <button
+      type="button"
+      onClick={handleRun}
+      disabled={status === 'running'}
+      className={`admin-btn ${status === 'running' ? 'is-running' : ''} ${
+        status === 'done' ? 'is-done' : ''
+      }`}
+    >
+      <span>
+        {status === 'idle' && 'Run Send'}
+        {status === 'running' && 'Sending…'}
+        {status === 'done' && (summary || '✓ Sent')}
+        {status === 'error' &&
+          ((result?.error as string | undefined) ?? 'Error — try again')}
+      </span>
+      {status === 'running' && <span className="admin-btn-spinner" aria-hidden="true" />}
+    </button>
   )
 }
