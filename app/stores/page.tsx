@@ -98,7 +98,6 @@ function ToggleSwitch({
 }
 
 export default function StoresPage() {
-  const supabase = createClient()
   const catDropRef = useRef<HTMLDivElement>(null)
   const ageDropRef = useRef<HTMLDivElement>(null)
 
@@ -138,6 +137,7 @@ export default function StoresPage() {
 
   useEffect(() => {
     async function load() {
+      const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { window.location.href = '/login'; return }
 

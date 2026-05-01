@@ -22,7 +22,6 @@ const SEND_DAYS: { value: SendDay; label: string; sub: string }[] = [
 
 export default function WelcomePage() {
   const router = useRouter()
-  const supabase = createClient()
 
   const [step, setStep]         = useState<1 | 2 | 3 | 'done'>(1)
   const [tier, setTier]         = useState<'free' | 'paid'>('free')
@@ -35,6 +34,7 @@ export default function WelcomePage() {
 
   useEffect(() => {
     async function load() {
+      const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user?.email) { router.replace('/login'); return }
 

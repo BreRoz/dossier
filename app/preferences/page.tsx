@@ -97,7 +97,6 @@ function SectionHeader({ label, tag }: { label: string; tag?: string }) {
 
 export default function PreferencesPage() {
   const router = useRouter()
-  const supabase = createClient()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -126,6 +125,7 @@ export default function PreferencesPage() {
 
   useEffect(() => {
     async function load() {
+      const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
 
@@ -185,6 +185,7 @@ export default function PreferencesPage() {
 
   const handleChangeEmail = async () => {
     if (!newEmail || !newEmail.includes('@')) { setEmailMsg('Please enter a valid email address.'); return }
+    const supabase = createClient()
     const { error } = await supabase.auth.updateUser({ email: newEmail })
     if (error) {
       setEmailMsg(error.message)
