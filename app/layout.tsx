@@ -2,9 +2,12 @@ import type { Metadata, Viewport } from 'next'
 import { Fraunces, Inter, Barlow_Condensed, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
+// Load Fraunces as a true variable font — the SOFT axis (and auto-loaded
+// optical-size axis) lets .t-display use 'SOFT' 30 (roman) / 'SOFT' 50
+// (italic) for the prototype's softer editorial character.
 const fraunces = Fraunces({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
+  axes: ['SOFT'],
   style: ['normal', 'italic'],
   variable: '--font-serif',
   display: 'swap',
@@ -71,7 +74,7 @@ export default function RootLayout({
       lang="en"
       className={`${fraunces.variable} ${inter.variable} ${barlowCondensed.variable} ${jetbrainsMono.variable}`}
     >
-      <body>
+      <body className="grain">
         {children}
         <div className="grain-layer" aria-hidden="true" />
       </body>

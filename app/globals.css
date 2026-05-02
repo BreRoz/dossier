@@ -423,11 +423,16 @@ body.grain .grain-layer { opacity: 0.55; }
   font-feature-settings: 'tnum';
 }
 
-/* Italic helper inside display headlines */
+/* Display headline — Fraunces with optical-size + softness axes */
+.t-display {
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+}
+/* Italic helper inside display headlines — softer terminals */
 .t-display em,
 .t-display .it {
   font-style: italic;
   font-weight: 300;
+  font-variation-settings: 'opsz' 144, 'SOFT' 50;
 }
 
 /* ─── Hero rings (decorative; positioned absolute by caller) ─────────── */
