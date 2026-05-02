@@ -112,27 +112,20 @@ function brandMark(size: number, color: string): string {
 </svg>`
 }
 
-// ── Single deal row (per prototype: retailer / source / desc / ends / code) ──
-function dealRow(
-  deal: Deal,
-  storeUrls: Record<string, string>,
-  isLast: boolean
-): string {
-  const link = getRetailerLink(deal.retailer, deal, storeUrls)
+// ── Single deal entry within a store block (description / expiry / code) ──
+// Note: the retailer name is owned by the parent storeBlock, not repeated here.
+function dealEntry(deal: Deal, isLast: boolean): string {
   const expiry = formatExpiryDate(deal.expiration_date)
   const description = highlightDeal(deal.description)
-  const sourceLink = deal.source_email_link
 
   return `
 <tr>
-  <td style="padding:14px 0 16px;${isLast ? '' : `border-bottom:1px solid ${C.ink08};`}">
+  <td style="padding:8px 0 ${isLast ? 0 : 12}px;">
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
       <tr>
         <td style="vertical-align:top;">
-          <a href="${link}" style="font-family:${FONT_BODY};font-size:15px;font-weight:600;color:${C.ink};text-decoration:none;display:block;margin:0 0 ${sourceLink ? '2px' : '6px'};">${deal.retailer}</a>
-          ${sourceLink ? `<a href="${sourceLink}" style="font-family:${FONT_BODY};font-size:9.5px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:${C.oliveDeep};text-decoration:none;display:inline-block;margin:0 0 8px;">${EXT_ICON}&nbsp;Original Email</a>` : ''}
           <p style="font-family:${FONT_BODY};font-size:14px;line-height:1.55;color:${C.ink70};margin:0;">${description}</p>
-          ${expiry ? `<div style="font-family:${FONT_BODY};font-size:9.5px;font-weight:500;letter-spacing:0.20em;text-transform:uppercase;color:${C.ink40};margin-top:8px;">Ends ${expiry}</div>` : ''}
+          ${expiry ? `<div style="font-family:${FONT_BODY};font-size:9.5px;font-weight:500;letter-spacing:0.20em;text-transform:uppercase;color:${C.ink40};margin-top:6px;">Ends ${expiry}</div>` : ''}
         </td>
         ${deal.promo_code ? `<td style="vertical-align:top;text-align:right;padding-left:16px;white-space:nowrap;width:1%;"><span style="font-family:${FONT_MONO};font-size:10.5px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;border:1.5px solid ${C.ink};padding:6px 10px;color:${C.ink};display:inline-block;">${deal.promo_code}</span></td>` : ''}
       </tr>
@@ -141,7 +134,37 @@ function dealRow(
 </tr>`
 }
 
-// ── Category section (olive eyebrow + hairline + deal rows) ───────────────
+// ── Store block (retailer name + optional source link + grouped deals) ───
+// Retailers with multiple deals get one header; deals stack underneath.
+function storeBlock(
+  retailer: string,
+  deals: Deal[],
+  storeUrls: Record<string, string>,
+  isLast: boolean
+): string {
+  const link = getRetailerLink(retailer, deals[0], storeUrls)
+  // Pick the first deal that has a source_email_link to represent the retailer
+  const sourceLink = deals.find((d) => d.source_email_link)?.source_email_link
+
+  return `
+<tr>
+  <td style="padding:18px 0 ${isLast ? 4 : 18}px;${isLast ? '' : `border-bottom:1px solid ${C.ink15};`}">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+      <tr>
+        <td style="vertical-align:middle;">
+          <a href="${link}" style="font-family:${FONT_DISPLAY};font-size:22px;font-style:italic;font-weight:400;letter-spacing:-0.01em;color:${C.ink};text-decoration:none;">${retailer}</a>
+        </td>
+        ${sourceLink ? `<td style="vertical-align:middle;text-align:right;white-space:nowrap;padding-left:16px;"><a href="${sourceLink}" style="font-family:${FONT_BODY};font-size:9.5px;font-weight:500;letter-spacing:0.18em;text-transform:uppercase;color:${C.oliveDeep};text-decoration:none;">${EXT_ICON}&nbsp;Original Email</a></td>` : ''}
+      </tr>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:8px;">
+      ${deals.map((d, i) => dealEntry(d, i === deals.length - 1)).join('')}
+    </table>
+  </td>
+</tr>`
+}
+
+// ── Category section (olive eyebrow + hairline + store blocks) ────────────
 function categorySection(
   category: Category,
   deals: Deal[],
@@ -150,6 +173,14 @@ function categorySection(
   const label = CATEGORY_LABELS[category]
   const ranked = rankDeals(deals)
 
+  // Group by retailer, preserving rank order — first appearance wins position
+  const groups = new Map<string, Deal[]>()
+  for (const deal of ranked) {
+    if (!groups.has(deal.retailer)) groups.set(deal.retailer, [])
+    groups.get(deal.retailer)!.push(deal)
+  }
+  const groupEntries = Array.from(groups.entries())
+
   return `
 <tr>
   <td style="padding:32px 32px 8px;">
@@ -157,7 +188,7 @@ function categorySection(
       <span style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.28em;text-transform:uppercase;color:${C.oliveDeep};">${label}</span>
     </div>
     <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-      ${ranked.map((d, i) => dealRow(d, storeUrls, i === ranked.length - 1)).join('')}
+      ${groupEntries.map(([retailer, rDeals], i) => storeBlock(retailer, rDeals, storeUrls, i === groupEntries.length - 1)).join('')}
     </table>
   </td>
 </tr>`
