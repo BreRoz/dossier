@@ -38,7 +38,7 @@ For each deal:
 5. PROMO_CODE: The promotional code if present (null if none)
 6. EXPIRATION_DATE: The expiration date in YYYY-MM-DD format (null if unknown)
 7. LINK: The direct URL to the deal (null if not found)
-8. CATEGORIES: Array of relevant categories from: accessories, beauty, baby, entertainment, fashion, grocery, home, kids, shoes, restaurants, tools, tech, travel
+8. CATEGORIES: Array of relevant categories from: accessories, beauty, baby, entertainment, fashion, grocery, home, kids, shoes, restaurants, tools, tech, pets
 
 RULES:
 - Extract any sale, discount, promo code, or special offer — even if the percentage is not stated

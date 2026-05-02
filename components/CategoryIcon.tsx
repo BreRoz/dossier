@@ -134,13 +134,15 @@ function getCategoryInner(category: Category, color: string) {
         </>
       )
 
-    case 'travel':
-      // Globe arc
+    case 'pets':
+      // Paw — central pad + four toe beans
       return (
         <>
-          <path d="M 1 30 A 21 21 0 0 1 43 30" fill={color} />
-          <line x1="1"  y1="30" x2="43" y2="30" stroke={color} strokeWidth="1.5" />
-          <line x1="22" y1="1"  x2="22" y2="30" stroke={color} strokeWidth="1.5" />
+          <ellipse cx="22" cy="28" rx="8.5" ry="7" fill={color} />
+          <circle cx="11" cy="17" r="3.5" fill={color} />
+          <circle cx="20" cy="11" r="3.5" fill={color} />
+          <circle cx="30" cy="11" r="3.5" fill={color} />
+          <circle cx="33" cy="20" r="3.5" fill={color} />
         </>
       )
 

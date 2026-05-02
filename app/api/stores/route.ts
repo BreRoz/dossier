@@ -68,7 +68,7 @@ const CATEGORY_MAP: Record<string, string> = {
   'restaurants':   'restaurants',
   'tools':         'tools',
   'tech':          'tech',
-  'travel':        'travel',
+  'pets':          'pets',
   // legacy / alternate names
   'athletic':      'fashion',
   'premium fashion': 'fashion',

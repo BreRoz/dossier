@@ -18,7 +18,7 @@ export type Category =
   | 'restaurants'
   | 'tools'
   | 'tech'
-  | 'travel'
+  | 'pets'
 
 export type DealType =
   | 'percent-off'
@@ -123,7 +123,7 @@ export const ALL_CATEGORIES: Category[] = [
   'restaurants',
   'tools',
   'tech',
-  'travel',
+  'pets',
 ]
 
 export const CATEGORY_LABELS: Record<Category, string> = {
@@ -139,7 +139,7 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   'restaurants':   'Restaurants',
   'tools':         'Tools',
   'tech':          'Tech',
-  'travel':        'Travel',
+  'pets':          'Pets',
 }
 
 export const DEAL_TYPE_LABELS: Record<DealType, string> = {
