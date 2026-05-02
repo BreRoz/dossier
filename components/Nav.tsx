@@ -19,13 +19,16 @@ function DossierMark({ size = 22 }: { size?: number }) {
 export function Nav() {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
-  const links = [
+  const baseLinks = [
     { label: 'Home', href: '/' },
     { label: 'Archive', href: '/archive' },
     { label: 'Stores', href: '/stores' },
     { label: 'Settings', href: '/preferences' },
   ]
+  const adminLink = { label: 'Admin', href: '/admin' }
+  const links = isAdmin ? [...baseLinks, adminLink] : baseLinks
 
   // Desktop nav drops "Home" since the logo already links there
   const desktopLinks = links.filter((l) => l.href !== '/')
@@ -34,6 +37,17 @@ export function Nav() {
     href === '/'
       ? pathname === '/'
       : pathname === href || pathname.startsWith(href + '/')
+
+  // Check whether the signed-in user is the configured admin (server-side check
+  // via /api/admin/check so ADMIN_EMAIL never reaches the client bundle)
+  useEffect(() => {
+    fetch('/api/admin/check')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.isAdmin) setIsAdmin(true)
+      })
+      .catch(() => {})
+  }, [pathname])
 
   // Close menu on route change
   useEffect(() => {
