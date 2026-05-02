@@ -436,9 +436,12 @@ body.grain .grain-layer { opacity: 0.55; }
 }
 
 /* ─── Hero rings (decorative; positioned absolute by caller) ─────────── */
+/* Using a literal warm grey instead of var(--ink-15) — translucent black
+   on bone can read cool against the warm ground depending on display
+   gamma. An explicit warm grey reads neutrally everywhere. */
 .ring {
   position: absolute;
-  border: 1px solid var(--ink-15);
+  border: 1px solid #B8B5AE;
   border-radius: 50%;
   pointer-events: none;
 }
