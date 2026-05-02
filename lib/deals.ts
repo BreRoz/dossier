@@ -16,14 +16,14 @@ export function getCurrentWeekOf(sendDay: SendDay = 'thursday'): Date {
   return addDays(today, -daysBack)
 }
 
-export function getValidWindowForWeek(weekOf: Date): { from: Date; through: Date } {
+function getValidWindowForWeek(weekOf: Date): { from: Date; through: Date } {
   return {
     from: weekOf,
     through: addDays(weekOf, 6), // through following Wednesday (6 days later)
   }
 }
 
-export function isDealValidForWeek(deal: Deal, weekOf: Date): boolean {
+function isDealValidForWeek(deal: Deal, weekOf: Date): boolean {
   if (!deal.expiration_date) return true
 
   const window = getValidWindowForWeek(weekOf)
@@ -78,7 +78,7 @@ export function makeDealKey(deal: { retailer: string; deal_type: string; percent
 
 // Remove duplicate sales: if the same retailer has the same deal_type + percent_off,
 // keep only the highest-ranked one (best description, promo code, etc.)
-export function dedupeDeals(deals: Deal[]): Deal[] {
+function dedupeDeals(deals: Deal[]): Deal[] {
   const seen = new Map<string, Deal>()
   for (const deal of deals) {
     const key = makeDealKey(deal)
@@ -195,7 +195,7 @@ const BLOCKED_RETAILER_PATTERNS: RegExp[] = [
   /\bftd\b/i,
 ]
 
-export function isBlockedRetailer(retailer: string | null | undefined): boolean {
+function isBlockedRetailer(retailer: string | null | undefined): boolean {
   if (!retailer) return false
   return BLOCKED_RETAILER_PATTERNS.some((p) => p.test(retailer))
 }

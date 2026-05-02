@@ -5,7 +5,7 @@
 const TIER_BOOST: Record<string, number> = { '$': 0, '$$': 3, '$$$': 10, '$$$$': 25 }
 
 /** Normalise a store name for fuzzy key matching (strips accents, punctuation, spaces). */
-export function normalizeStoreName(name: string): string {
+function normalizeStoreName(name: string): string {
   return name
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .toLowerCase()
@@ -15,7 +15,7 @@ export function normalizeStoreName(name: string): string {
 /** Title-case a string by capitalizing the first letter of each space-delimited
  *  word, preserving the rest as-is. Existing acronyms / mixed-case names
  *  (H-E-B, COS, CB2) survive untouched. */
-export function titleCaseRetailer(name: string): string {
+function titleCaseRetailer(name: string): string {
   return name
     .split(' ')
     .map((w) => (w ? w.charAt(0).toUpperCase() + w.slice(1) : w))

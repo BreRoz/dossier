@@ -24,7 +24,7 @@ const ExtractionSchema = z.object({
   deals: z.array(DealSchema),
 })
 
-export type ExtractedDeal = z.infer<typeof DealSchema>
+type ExtractedDeal = z.infer<typeof DealSchema>
 
 const SYSTEM_PROMPT = `You are a deal extraction specialist for an editorial newsletter called Deal Dossier.
 
