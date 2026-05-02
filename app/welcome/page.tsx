@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { CategoryIcon } from '@/components/CategoryIcon'
+import { Reveal } from '@/components/Reveal'
 import { ALL_CATEGORIES, FREE_CATEGORIES, CATEGORY_LABELS } from '@/types'
 import type { Category, SendDay } from '@/types'
 
@@ -23,20 +23,27 @@ const SEND_DAYS: { value: SendDay; label: string; sub: string }[] = [
 export default function WelcomePage() {
   const router = useRouter()
 
-  const [step, setStep]         = useState<1 | 2 | 3 | 'done'>(1)
-  const [tier, setTier]         = useState<'free' | 'paid'>('free')
+  const [step, setStep] = useState<1 | 2 | 3 | 'done'>(1)
+  const [tier, setTier] = useState<'free' | 'paid'>('free')
   const [firstName, setFirstName] = useState('')
   const [categories, setCategories] = useState<Record<Category, boolean>>(
-    Object.fromEntries(ALL_CATEGORIES.map((c) => [c, FREE_CATEGORIES.includes(c)])) as Record<Category, boolean>
+    Object.fromEntries(
+      ALL_CATEGORIES.map((c) => [c, FREE_CATEGORIES.includes(c)])
+    ) as Record<Category, boolean>
   )
-  const [sendDay, setSendDay]   = useState<SendDay>('thursday')
-  const [saving, setSaving]     = useState(false)
+  const [sendDay, setSendDay] = useState<SendDay>('thursday')
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     async function load() {
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user?.email) { router.replace('/login'); return }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user?.email) {
+        router.replace('/login')
+        return
+      }
 
       const { data: sub } = await supabase
         .from('subscribers')
@@ -44,14 +51,18 @@ export default function WelcomePage() {
         .eq('email', user.email)
         .single()
 
-      if (sub?.onboarding_completed) { router.replace('/preferences'); return }
+      if (sub?.onboarding_completed) {
+        router.replace('/preferences')
+        return
+      }
       if (sub?.tier) setTier(sub.tier)
 
-      // Derive first name from email as a friendly fallback
+      // Friendly first-name fallback derived from local part of email
       const name = user.email.split('@')[0].split('.')[0]
       setFirstName(name.charAt(0).toUpperCase() + name.slice(1))
     }
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const toggleCategory = (cat: Category) => {
@@ -70,382 +81,439 @@ export default function WelcomePage() {
     setStep('done')
   }
 
-  const progress = step === 'done' ? 100 : ((Number(step) - 1) / 3) * 100
+  const progress =
+    step === 'done' ? 1 : (Number(step) - 1) / 3
 
   return (
-    <div style={{
-      minHeight: '100vh', background: 'var(--paper)',
-      display: 'flex', flexDirection: 'column',
-    }}>
-
-      {/* Progress bar */}
+    <>
+      {/* Progress bar — pinned to top */}
       {step !== 'done' && (
-        <div style={{ height: 3, background: 'var(--ink-06)', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100 }}>
-          <div style={{
-            height: '100%', background: 'var(--accent)',
-            width: `${progress}%`, transition: 'width 0.4s ease',
-          }} />
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 2,
+            background: 'var(--ink-08)',
+            zIndex: 40,
+          }}
+        >
+          <div
+            style={{
+              height: '100%',
+              background: 'var(--olive-deep)',
+              width: `${progress * 100}%`,
+              transition: 'width .8s var(--easing)',
+            }}
+          />
         </div>
       )}
 
-      <div style={{
-        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '60px 24px',
-      }}>
-        <div style={{ width: '100%', maxWidth: 560 }}>
+      <section
+        style={{
+          minHeight: '90vh',
+          display: 'flex',
+          alignItems: 'center',
+          padding: 'clamp(80px, 10vw, 140px) 0',
+        }}
+      >
+        <div className="wrap" style={{ maxWidth: 720 }}>
 
-          {/* ── Step 1: Welcome ─────────────────────────────────────────── */}
+          {/* ── Step 1: Welcome ─────────────────────────────────────── */}
           {step === 1 && (
-            <div>
-              <p style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-                letterSpacing: '0.28em', textTransform: 'uppercase',
-                color: 'var(--accent)', marginBottom: 20,
-              }}>
-                Step 1 of 3
-              </p>
-              <h1 style={{
-                fontFamily: 'var(--font-serif)', fontSize: 'clamp(44px, 6vw, 72px)',
-                fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 0.95,
-                color: 'var(--ink)', marginBottom: 32,
-              }}>
-                Hey{firstName ? `, ${firstName}` : ''}.<br />
-                Welcome to<br />
-                <em style={{ fontStyle: 'italic' }}>Deal Dossier.</em>
-              </h1>
-              <p style={{
-                fontFamily: 'var(--font-sans)', fontSize: 16,
-                color: 'var(--ink-70)', lineHeight: 1.7, marginBottom: 16,
-              }}>
-                We scan hundreds of retailer emails every week so you don't have to.
-              </p>
-              <p style={{
-                fontFamily: 'var(--font-sans)', fontSize: 16,
-                color: 'var(--ink-70)', lineHeight: 1.7, marginBottom: 16,
-              }}>
-                Every week, your personalized brief lands in your inbox with only the deals that meet your standards. No noise, no fluff. Just the good stuff.
-              </p>
-              <p style={{
-                fontFamily: 'var(--font-sans)', fontSize: 16,
-                color: 'var(--ink-70)', lineHeight: 1.7, marginBottom: 48,
-              }}>
-                Takes about 60 seconds to set up. Let's go.
-              </p>
-              <button
-                onClick={() => setStep(2)}
-                className="btn-primary"
-                style={{ padding: '14px 40px' }}
-              >
-                Let's Go →
-              </button>
-            </div>
+            <>
+              <Reveal>
+                <div className="t-eyebrow">Step 01 / 03</div>
+              </Reveal>
+              <Reveal delay={100}>
+                <h1
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 300,
+                    fontSize: 'clamp(44px, 6.5vw, 88px)',
+                    marginTop: 20,
+                    lineHeight: 1,
+                    letterSpacing: '-0.025em',
+                  }}
+                >
+                  {firstName ? `Hey, ${firstName}.` : 'Hey there.'}
+                  <br />
+                  Welcome to{' '}
+                  <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>
+                    Deal Dossier.
+                  </em>
+                </h1>
+              </Reveal>
+              <Reveal delay={200}>
+                <p
+                  style={{
+                    marginTop: 32,
+                    fontSize: 18,
+                    color: 'var(--ink-70)',
+                    lineHeight: 1.55,
+                    maxWidth: '46ch',
+                  }}
+                >
+                  We scan hundreds of retailer emails every week so you don&rsquo;t
+                  have to. Every week, your personalized brief lands in your inbox
+                  — only the deals that meet your standards. No noise, no fluff.
+                </p>
+              </Reveal>
+              <Reveal delay={300}>
+                <p className="t-meta" style={{ marginTop: 32, color: 'var(--ink-40)' }}>
+                  Takes about 60 seconds.
+                </p>
+              </Reveal>
+              <Reveal delay={400}>
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="btn-primary"
+                  style={{ marginTop: 40 }}
+                >
+                  Let&rsquo;s Go <span className="arr">→</span>
+                </button>
+              </Reveal>
+            </>
           )}
 
-          {/* ── Step 2: Categories ──────────────────────────────────────── */}
+          {/* ── Step 2: Categories ──────────────────────────────────── */}
           {step === 2 && (
-            <div>
-              <p style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-                letterSpacing: '0.28em', textTransform: 'uppercase',
-                color: 'var(--accent)', marginBottom: 20,
-              }}>
-                Step 2 of 3
-              </p>
-              <h1 style={{
-                fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 5vw, 56px)',
-                fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1,
-                color: 'var(--ink)', marginBottom: 12,
-              }}>
-                What do you shop for?
+            <>
+              <div className="t-eyebrow">Step 02 / 03</div>
+              <h1
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontWeight: 300,
+                  fontSize: 'clamp(40px, 5.5vw, 72px)',
+                  marginTop: 20,
+                  lineHeight: 1,
+                  letterSpacing: '-0.025em',
+                }}
+              >
+                What do you{' '}
+                <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>
+                  shop for?
+                </em>
               </h1>
-              <p style={{
-                fontFamily: 'var(--font-sans)', fontSize: 15,
-                color: 'var(--ink-40)', lineHeight: 1.6, marginBottom: 32,
-              }}>
+              <p
+                style={{
+                  marginTop: 24,
+                  fontSize: 16,
+                  color: 'var(--ink-70)',
+                  lineHeight: 1.55,
+                  maxWidth: '46ch',
+                }}
+              >
                 Pick the categories you care about.
                 {tier === 'free' && ' More categories available on paid.'}
               </p>
 
-              <div style={{
-                display: 'grid', gridTemplateColumns: '1fr 1fr',
-                gap: 8, marginBottom: 40,
-              }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: 12,
+                  marginTop: 40,
+                }}
+              >
                 {ALL_CATEGORIES.map((cat) => {
                   const locked = tier === 'free' && !FREE_CATEGORIES.includes(cat)
                   const active = categories[cat]
                   return (
                     <button
                       key={cat}
+                      type="button"
                       onClick={() => toggleCategory(cat)}
                       disabled={locked}
                       style={{
-                        display: 'flex', alignItems: 'center', gap: 12,
-                        padding: '14px 16px', border: '1.5px solid',
+                        padding: '18px 22px',
+                        border: '1px solid',
                         borderColor: active && !locked ? 'var(--ink)' : 'var(--ink-15)',
                         background: active && !locked ? 'var(--ink)' : 'transparent',
-                        cursor: locked ? 'not-allowed' : 'pointer',
-                        textAlign: 'left', transition: 'all 0.15s',
-                        opacity: locked ? 0.4 : 1,
-                      }}
-                    >
-                      <CategoryIcon
-                        category={cat}
-                        size={16}
-                        color={active && !locked ? 'var(--paper)' : 'var(--ink-40)'}
-                      />
-                      <span style={{
-                        fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600,
                         color: active && !locked ? 'var(--paper)' : 'var(--ink)',
-                        flex: 1,
-                      }}>
-                        {CATEGORY_LABELS[cat]}
-                      </span>
-                      {locked && (
-                        <span style={{ fontSize: 11 }}>🔒</span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-
-              <div style={{ display: 'flex', gap: 12 }}>
-                <button
-                  onClick={() => setStep(1)}
-                  style={{
-                    fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-                    letterSpacing: '0.18em', textTransform: 'uppercase',
-                    background: 'transparent', color: 'var(--ink-40)',
-                    border: '1.5px solid var(--ink-15)', padding: '12px 24px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  ← Back
-                </button>
-                <button
-                  onClick={() => setStep(3)}
-                  className="btn-primary"
-                  style={{ padding: '12px 40px' }}
-                >
-                  Next →
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ── Step 3: Send day ────────────────────────────────────────── */}
-          {step === 3 && (
-            <div>
-              <p style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-                letterSpacing: '0.28em', textTransform: 'uppercase',
-                color: 'var(--accent)', marginBottom: 20,
-              }}>
-                Step 3 of 3
-              </p>
-              <h1 style={{
-                fontFamily: 'var(--font-serif)', fontSize: 'clamp(36px, 5vw, 56px)',
-                fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1,
-                color: 'var(--ink)', marginBottom: 12,
-              }}>
-                When should we<br />send it?
-              </h1>
-              <p style={{
-                fontFamily: 'var(--font-sans)', fontSize: 15,
-                color: 'var(--ink-40)', lineHeight: 1.6, marginBottom: 32,
-              }}>
-                Pick the day that works for you.
-                {tier === 'free' && ' Thursday delivery is included on the free plan.'}
-              </p>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 40 }}>
-                {SEND_DAYS.map(({ value, label, sub }) => {
-                  const locked = tier === 'free' && value !== 'thursday'
-                  const active = sendDay === value
-                  return (
-                    <button
-                      key={value}
-                      onClick={() => !locked && setSendDay(value)}
-                      disabled={locked}
-                      style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '16px 20px', border: '1.5px solid',
-                        borderColor: active ? 'var(--ink)' : 'var(--ink-15)',
-                        background: active ? 'var(--ink)' : 'transparent',
+                        opacity: locked ? 0.4 : 1,
+                        textAlign: 'left',
+                        fontFamily: 'var(--font-sans)',
+                        fontSize: 14,
+                        fontWeight: 500,
+                        letterSpacing: '0.04em',
                         cursor: locked ? 'not-allowed' : 'pointer',
-                        textAlign: 'left', opacity: locked ? 0.4 : 1,
-                        transition: 'all 0.15s',
+                        transition: 'all .3s var(--easing)',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
                       }}
                     >
-                      <div>
-                        <span style={{
-                          fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
-                          color: active ? 'var(--paper)' : 'var(--ink)',
-                          display: 'block',
-                        }}>
-                          {label}
-                        </span>
-                        <span style={{
-                          fontFamily: 'var(--font-sans)', fontSize: 12,
-                          color: active ? 'oklch(75% 0.005 280)' : 'var(--ink-40)',
-                        }}>
-                          {sub}
-                        </span>
-                      </div>
+                      <span>{CATEGORY_LABELS[cat]}</span>
                       {locked ? (
-                        <span style={{ fontSize: 12 }}>🔒</span>
+                        <span style={{ fontSize: 11 }}>🔒</span>
                       ) : active ? (
-                        <span style={{
-                          fontFamily: 'var(--font-condensed)', fontSize: 10,
-                          letterSpacing: '0.18em', textTransform: 'uppercase',
-                          color: 'var(--accent)',
-                        }}>
-                          ✓
-                        </span>
+                        <span>✓</span>
                       ) : null}
                     </button>
                   )
                 })}
               </div>
 
-              <div style={{ display: 'flex', gap: 12 }}>
+              <div style={{ marginTop: 40, display: 'flex', gap: 16 }}>
                 <button
-                  onClick={() => setStep(2)}
-                  style={{
-                    fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-                    letterSpacing: '0.18em', textTransform: 'uppercase',
-                    background: 'transparent', color: 'var(--ink-40)',
-                    border: '1.5px solid var(--ink-15)', padding: '12px 24px',
-                    cursor: 'pointer',
-                  }}
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className="btn-ghost"
                 >
                   ← Back
                 </button>
                 <button
+                  type="button"
+                  onClick={() => setStep(3)}
+                  className="btn-primary"
+                >
+                  Next <span className="arr">→</span>
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ── Step 3: Send day ────────────────────────────────────── */}
+          {step === 3 && (
+            <>
+              <div className="t-eyebrow">Step 03 / 03</div>
+              <h1
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontWeight: 300,
+                  fontSize: 'clamp(40px, 5.5vw, 72px)',
+                  marginTop: 20,
+                  lineHeight: 1,
+                  letterSpacing: '-0.025em',
+                }}
+              >
+                When should we{' '}
+                <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>
+                  send it?
+                </em>
+              </h1>
+              <p
+                style={{
+                  marginTop: 24,
+                  fontSize: 16,
+                  color: 'var(--ink-70)',
+                  lineHeight: 1.55,
+                  maxWidth: '46ch',
+                }}
+              >
+                {tier === 'free'
+                  ? 'Thursday is included on the free plan. Other days require paid.'
+                  : 'Pick the day that works for you.'}
+              </p>
+
+              <div
+                style={{
+                  marginTop: 40,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 1,
+                  background: 'var(--ink-15)',
+                }}
+              >
+                {SEND_DAYS.map(({ value, label, sub }) => {
+                  const locked = tier === 'free' && value !== 'thursday'
+                  const active = sendDay === value
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => !locked && setSendDay(value)}
+                      disabled={locked}
+                      style={{
+                        padding: '20px 24px',
+                        background: active ? 'var(--ink)' : 'var(--paper)',
+                        color: active ? 'var(--paper)' : 'var(--ink)',
+                        opacity: locked ? 0.4 : 1,
+                        cursor: locked ? 'not-allowed' : 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        textAlign: 'left',
+                        border: 'none',
+                        transition: 'all .3s var(--easing)',
+                      }}
+                    >
+                      <span>
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 22,
+                            fontStyle: active ? 'italic' : 'normal',
+                            fontWeight: 350,
+                            letterSpacing: '-0.01em',
+                            display: 'block',
+                          }}
+                        >
+                          {label}
+                        </span>
+                        <span
+                          style={{
+                            fontFamily: 'var(--font-sans)',
+                            fontSize: 12,
+                            color: active ? 'var(--paper-on-ink-55)' : 'var(--ink-55)',
+                            marginTop: 2,
+                            display: 'block',
+                          }}
+                        >
+                          {sub}
+                        </span>
+                      </span>
+                      {locked ? <span>🔒</span> : active ? <span>✓</span> : null}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div style={{ marginTop: 40, display: 'flex', gap: 16 }}>
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="btn-ghost"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
                   onClick={handleFinish}
                   disabled={saving}
                   className="btn-primary"
-                  style={{ padding: '12px 40px' }}
                 >
-                  {saving ? 'Saving...' : 'Finish Setup →'}
+                  {saving ? 'Saving…' : (
+                    <>
+                      Finish Setup <span className="arr">→</span>
+                    </>
+                  )}
                 </button>
               </div>
-            </div>
+            </>
           )}
 
-          {/* ── Done ────────────────────────────────────────────────────── */}
+          {/* ── Done ─────────────────────────────────────────────────── */}
           {step === 'done' && (
-            <div>
-              <p style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-                letterSpacing: '0.28em', textTransform: 'uppercase',
-                color: 'var(--accent)', marginBottom: 20,
-              }}>
-                You're all set
-              </p>
-              <h1 style={{
-                fontFamily: 'var(--font-serif)', fontSize: 'clamp(44px, 6vw, 72px)',
-                fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 0.95,
-                color: 'var(--ink)', marginBottom: 32,
-              }}>
-                Your first brief<br />
-                is on its way.
-              </h1>
-              <p style={{
-                fontFamily: 'var(--font-sans)', fontSize: 16,
-                color: 'var(--ink-70)', lineHeight: 1.7, marginBottom: 48,
-              }}>
-                We'll send your first edition on {sendDay.charAt(0).toUpperCase() + sendDay.slice(1)}. In the meantime, take a look around.
-              </p>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <Link
-                  href="/stores"
+            <>
+              <Reveal>
+                <div className="t-eyebrow" style={{ color: 'var(--olive-deep)' }}>
+                  ✓ You&rsquo;re all set
+                </div>
+              </Reveal>
+              <Reveal delay={100}>
+                <h1
                   style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '24px 28px', background: 'var(--ink)',
-                    textDecoration: 'none',
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 300,
+                    fontSize: 'clamp(48px, 7vw, 96px)',
+                    marginTop: 20,
+                    lineHeight: 1,
+                    letterSpacing: '-0.03em',
                   }}
                 >
-                  <div>
-                    <p style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600,
-                      letterSpacing: '0.22em', textTransform: 'uppercase',
-                      color: 'var(--accent)', marginBottom: 4,
-                    }}>
-                      Stores
-                    </p>
-                    <p style={{
-                      fontFamily: 'var(--font-sans)', fontSize: 15, fontWeight: 600,
-                      color: 'var(--paper)',
-                    }}>
-                      See which stores we're watching →
-                    </p>
-                    <p style={{
-                      fontFamily: 'var(--font-sans)', fontSize: 13,
-                      color: 'oklch(65% 0.005 280)', marginTop: 4,
-                    }}>
-                      Follow individual retailers and see deal history
-                    </p>
-                  </div>
-                </Link>
-
-                <Link
-                  href="/preferences"
+                  Your first brief
+                  <br />
+                  <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>
+                    is on its way.
+                  </em>
+                </h1>
+              </Reveal>
+              <Reveal delay={200}>
+                <p
                   style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '24px 28px', border: '1.5px solid var(--ink-15)',
-                    textDecoration: 'none',
+                    marginTop: 32,
+                    fontSize: 17,
+                    color: 'var(--ink-70)',
+                    lineHeight: 1.55,
+                    maxWidth: '46ch',
                   }}
                 >
-                  <div>
-                    <p style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600,
-                      letterSpacing: '0.22em', textTransform: 'uppercase',
-                      color: 'var(--ink-40)', marginBottom: 4,
-                    }}>
-                      Settings
-                    </p>
-                    <p style={{
-                      fontFamily: 'var(--font-sans)', fontSize: 15, fontWeight: 600,
-                      color: 'var(--ink)',
-                    }}>
-                      Fine-tune your preferences →
-                    </p>
-                    <p style={{
-                      fontFamily: 'var(--font-sans)', fontSize: 13,
-                      color: 'var(--ink-40)', marginTop: 4,
-                    }}>
-                      Set price thresholds, deal types, gender & spend filters
-                    </p>
-                  </div>
-                </Link>
+                  We&rsquo;ll send your first edition on{' '}
+                  {sendDay.charAt(0).toUpperCase() + sendDay.slice(1)}. In the
+                  meantime, take a look around.
+                </p>
+              </Reveal>
+
+              <div
+                style={{
+                  marginTop: 56,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 12,
+                }}
+              >
+                <Reveal delay={300}>
+                  <Link
+                    href="/stores"
+                    className="card card-dark"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '28px 32px',
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <div>
+                      <div className="t-eyebrow" style={{ color: 'var(--olive)' }}>
+                        Stores
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 26,
+                          fontStyle: 'italic',
+                          marginTop: 8,
+                          fontWeight: 350,
+                          color: 'var(--paper)',
+                        }}
+                      >
+                        See which stores we&rsquo;re watching
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 24, color: 'var(--paper)' }}>→</span>
+                  </Link>
+                </Reveal>
+                <Reveal delay={380}>
+                  <Link
+                    href="/preferences"
+                    className="card"
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '28px 32px',
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <div>
+                      <div className="t-eyebrow">Settings</div>
+                      <div
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 26,
+                          fontStyle: 'italic',
+                          marginTop: 8,
+                          fontWeight: 350,
+                        }}
+                      >
+                        Fine-tune your preferences
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 24 }}>→</span>
+                  </Link>
+                </Reveal>
               </div>
-            </div>
+            </>
           )}
-
         </div>
-      </div>
-
-      {/* Footer */}
-      <div style={{
-        padding: '20px 40px', borderTop: 'var(--rule)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}>
-        <span style={{
-          fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 700,
-          letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink)',
-        }}>
-          Deal Dossier
-        </span>
-        {step !== 'done' && (
-          <span style={{
-            fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em',
-            textTransform: 'uppercase', color: 'var(--ink-40)',
-          }}>
-            Step {step} of 3
-          </span>
-        )}
-      </div>
-    </div>
+      </section>
+    </>
   )
 }

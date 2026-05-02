@@ -51,14 +51,29 @@ export default function AuthCallbackPage() {
   }, [router])
 
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', background: 'var(--paper)',
-    }}>
-      <p style={{
-        fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-        letterSpacing: '0.28em', textTransform: 'uppercase', color: 'var(--ink-40)',
-      }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 16,
+        background: 'var(--paper)',
+      }}
+    >
+      <div
+        style={{
+          width: 12,
+          height: 12,
+          border: '1.5px solid var(--olive-deep)',
+          borderTopColor: 'transparent',
+          borderRadius: '50%',
+          animation: 'adminSpin 0.7s linear infinite',
+        }}
+        aria-hidden="true"
+      />
+      <p className="t-meta" style={{ color: 'var(--ink-40)' }}>
         Signing you in…
       </p>
     </div>

@@ -1,5 +1,6 @@
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
+import { Reveal } from '@/components/Reveal'
 
 export const metadata = {
   title: 'Privacy Policy — Deal Dossier',
@@ -38,56 +39,95 @@ const SECTIONS = [
 
 export default function PrivacyPage() {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)', display: 'flex', flexDirection: 'column' }}>
+    <>
       <Nav />
 
-      <div style={{ flex: 1, maxWidth: 720, margin: '0 auto', width: '100%', padding: '80px 40px 120px' }}>
+      <section style={{ padding: 'clamp(56px, 7vw, 96px) 0 clamp(56px, 8vw, 120px)' }}>
+        <div className="wrap" style={{ maxWidth: 880 }}>
+          <Reveal>
+            <div className="t-eyebrow">Legal</div>
+          </Reveal>
+          <Reveal delay={100}>
+            <h1
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 300,
+                fontSize: 'clamp(48px, 7vw, 96px)',
+                marginTop: 20,
+                lineHeight: 1,
+                letterSpacing: '-0.03em',
+              }}
+            >
+              Privacy{' '}
+              <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>
+                Policy
+              </em>
+            </h1>
+          </Reveal>
+          <Reveal delay={200}>
+            <div
+              className="t-meta"
+              style={{ marginTop: 24, color: 'var(--ink-40)' }}
+            >
+              Last Updated: April 2026
+            </div>
+          </Reveal>
 
-        <p style={{
-          fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600,
-          letterSpacing: '0.28em', textTransform: 'uppercase',
-          color: 'rgba(10,10,10,0.4)', marginBottom: 20,
-        }}>
-          Legal
-        </p>
-        <h1 style={{
-          fontFamily: 'var(--font-serif)', fontSize: 'clamp(44px, 6vw, 72px)',
-          fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 0.95,
-          marginBottom: 32, color: 'var(--ink)',
-        }}>
-          Privacy Policy
-        </h1>
-        <p style={{
-          fontFamily: 'var(--font-condensed)', fontSize: 10,
-          letterSpacing: '0.18em', textTransform: 'uppercase',
-          color: 'rgba(10,10,10,0.35)', marginBottom: 72,
-        }}>
-          Last Updated: April 2026
-        </p>
-
-        {SECTIONS.map(({ title, body }) => (
-          <div key={title} style={{
-            marginBottom: 48, paddingBottom: 48,
-            borderBottom: '1px solid rgba(10,10,10,0.08)',
-          }}>
-            <p style={{
-              fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-              letterSpacing: '0.22em', textTransform: 'uppercase',
-              color: 'var(--ink)', marginBottom: 16,
-            }}>
-              {title}
-            </p>
-            <p style={{
-              fontFamily: 'var(--font-sans)', fontSize: 15,
-              color: 'rgba(10,10,10,0.65)', lineHeight: 1.65,
-            }}>
-              {body}
-            </p>
+          <div style={{ marginTop: 80 }}>
+            {SECTIONS.map(({ title, body }, i) => (
+              <Reveal key={title} delay={i * 50}>
+                <div
+                  style={{
+                    paddingTop: 40,
+                    paddingBottom: 40,
+                    borderTop: '1px solid var(--ink-15)',
+                  }}
+                >
+                  <div
+                    className="manifesto-grid"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '120px 1fr',
+                      gap: 32,
+                    }}
+                  >
+                    <div className="t-mono" style={{ color: 'var(--olive-deep)' }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </div>
+                    <div>
+                      <h3
+                        style={{
+                          fontSize: 12,
+                          letterSpacing: '0.18em',
+                          textTransform: 'uppercase',
+                          fontWeight: 500,
+                          fontFamily: 'var(--font-sans)',
+                          color: 'var(--ink)',
+                        }}
+                      >
+                        {title}
+                      </h3>
+                      <p
+                        style={{
+                          marginTop: 16,
+                          color: 'var(--ink-70)',
+                          fontSize: 16,
+                          lineHeight: 1.65,
+                          maxWidth: '62ch',
+                        }}
+                      >
+                        {body}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      </section>
 
       <Footer />
-    </div>
+    </>
   )
 }
