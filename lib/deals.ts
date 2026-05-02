@@ -186,6 +186,20 @@ export function formatExpiryDate(dateStr: string | null): string | null {
 
 const JUNK_DEAL_TYPES = new Set(['free-shipping', 'bogo-free', 'bogo-half', 'free-item'])
 
+// Retailers we never want to publish under any circumstance. The LLM
+// occasionally extracts these as the retailer when promotional content is
+// embedded inside another brand's email (e.g. an FTD bouquet promotion in
+// a third-party newsletter). Blocked at ingest (so nothing new lands in the
+// DB) and at render (so legacy rows are filtered out of email + archive).
+const BLOCKED_RETAILER_PATTERNS: RegExp[] = [
+  /\bftd\b/i,
+]
+
+export function isBlockedRetailer(retailer: string | null | undefined): boolean {
+  if (!retailer) return false
+  return BLOCKED_RETAILER_PATTERNS.some((p) => p.test(retailer))
+}
+
 /**
  * Returns true for deals that should never appear in emails regardless of
  * subscriber preferences: welcome offers, loyalty/points promos, store cash,
@@ -194,8 +208,11 @@ const JUNK_DEAL_TYPES = new Set(['free-shipping', 'bogo-free', 'bogo-half', 'fre
  * Used as a backstop in both the ingest route (to avoid DB pollution) and
  * the send routes (to catch anything that slipped through ingest).
  */
-export function isJunkDeal(deal: Pick<Deal, 'deal_type' | 'description'> & { percent_off?: number | null; promo_code?: string | null }): boolean {
+export function isJunkDeal(deal: Pick<Deal, 'deal_type' | 'description'> & { retailer?: string | null; percent_off?: number | null; promo_code?: string | null }): boolean {
   const desc = deal.description ?? ''
+
+  // Blocked retailers (e.g. FTD) — never publish regardless of content
+  if (isBlockedRetailer(deal.retailer)) return true
 
   // Welcome / first-order / new-customer offers — single-use, won't work for most readers
   if (/\b(welcome\s+(code|offer|discount|deal)|code\s+welcome\b|first[\s-]?(order|purchase|time)\s+(discount|offer|code|deal|off)|new\s+customer\s+(offer|discount|code|deal)|first\s+\d+%\s*off|valid\s+(only\s+)?once\s+per\s+(person|customer|user|account|household))\b/i.test(desc))

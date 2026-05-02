@@ -2,6 +2,7 @@ import { format, parseISO } from 'date-fns'
 import type { Deal, Subscriber, Edition, Category } from '@/types'
 import { CATEGORY_LABELS, ALL_CATEGORIES } from '@/types'
 import { formatExpiryDate, rankDeals } from './deals'
+import { canonicalRetailerName } from './stores'
 
 // ── Brand palette (literal hex / rgba — CSS vars don't work in mail) ──────
 const C = {
@@ -168,16 +169,20 @@ function storeBlock(
 function categorySection(
   category: Category,
   deals: Deal[],
-  storeUrls: Record<string, string>
+  storeUrls: Record<string, string>,
+  storeNames: Record<string, string>
 ): string {
   const label = CATEGORY_LABELS[category]
   const ranked = rankDeals(deals)
 
-  // Group by retailer, preserving rank order — first appearance wins position
+  // Group by canonical retailer name, preserving rank order. Mapping to the
+  // canonical name (from the Google Sheet) means legacy DB rows with bad
+  // casing — e.g. "carter's" — display correctly as "Carter's".
   const groups = new Map<string, Deal[]>()
   for (const deal of ranked) {
-    if (!groups.has(deal.retailer)) groups.set(deal.retailer, [])
-    groups.get(deal.retailer)!.push(deal)
+    const canonical = canonicalRetailerName(deal.retailer, storeNames)
+    if (!groups.has(canonical)) groups.set(canonical, [])
+    groups.get(canonical)!.push({ ...deal, retailer: canonical })
   }
   const groupEntries = Array.from(groups.entries())
 
@@ -219,6 +224,7 @@ export interface GenerateEmailOptions {
   totalDeals: number
   appUrl: string
   storeUrls?: Record<string, string>
+  storeNames?: Record<string, string>
 }
 
 export function generateEmailHTML(opts: GenerateEmailOptions): string {
@@ -230,6 +236,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
     totalDeals,
     appUrl,
     storeUrls = {},
+    storeNames = {},
   } = opts
 
   const weekOf = parseISO(edition.week_of)
@@ -410,7 +417,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
     </tr>
 
     <!-- ── DEALS BY CATEGORY ── -->
-    ${orderedCategories.map((cat) => categorySection(cat, byCategory[cat]!, storeUrls)).join('')}
+    ${orderedCategories.map((cat) => categorySection(cat, byCategory[cat]!, storeUrls, storeNames)).join('')}
 
     <!-- ── UPGRADE BLOCK (free tier only, only if deals locked) ── -->
     ${

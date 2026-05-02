@@ -9,7 +9,7 @@ export const metadata = {
 const SECTIONS = [
   {
     title: 'Information We Collect',
-    body: 'We collect your email address when you subscribe. When you configure your account we also collect your delivery preferences (send day, minimum discount threshold), content filters (deal categories, deal types, gender, spend tier), and — for subscribers who choose retailer mode — a list of individual retailers you have selected. Zip code is collected optionally and is not required to use the service.',
+    body: 'We collect your email address when you subscribe. When you configure your account we also collect your delivery preferences (send day, minimum discount threshold), content filters (deal categories, deal types, gender, spend tier), and, for subscribers who choose retailer mode, a list of individual retailers you have selected.',
   },
   {
     title: 'How We Use Your Information',

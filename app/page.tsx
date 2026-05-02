@@ -84,13 +84,13 @@ const FAQ_ITEMS: { q: string; a: ReactNode }[] = [
       <>
         <p>A few factors work together to decide what shows up first.</p>
         <p>
-          The biggest driver is savings — a 60% off deal ranks above a 20% off deal, every time. Beyond
+          The biggest driver is savings. A 60% off deal ranks above a 20% off deal, every time. Beyond
           that, we factor in store tier. A sale at a higher-end retailer gets a meaningful boost over the
           same discount at a store that’s always running promotions. The logic is simple: a rare sale at a
           premium brand is more noteworthy than a perpetual 30% off at a store where 30% off is basically
           the regular price.
         </p>
-        <p>Free shipping deals are always shown last — they’re nice, but they’re not the reason you’re here.</p>
+        <p>Free shipping deals are always shown last, they’re nice, but they’re not the reason you’re here.</p>
       </>
     ),
   },
@@ -410,7 +410,7 @@ export default function LandingPage() {
                   }}
                 >
                   The job is discernment. A 10% discount with a $200 minimum is not a win. “Store cash”
-                  is not savings. And 47 emails a week is not a strategy — it’s a system designed to wear
+                  is not savings. And 47 emails a week is not a strategy, it’s a system designed to wear
                   you down until you click something, anything, just to feel like you didn’t miss out.
                 </p>
               </Reveal>

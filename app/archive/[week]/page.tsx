@@ -6,8 +6,9 @@ import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import { Reveal } from '@/components/Reveal'
 import { FlapNumber } from '@/components/FlapNumber'
-import { ALL_CATEGORIES, CATEGORY_LABELS } from '@/types'
-import { rankDeals, getDealLink, formatExpiryDate, formatSavings } from '@/lib/deals'
+import { ALL_CATEGORIES, CATEGORY_LABELS, FREE_CATEGORIES } from '@/types'
+import { rankDeals, getDealLink, formatExpiryDate, formatSavings, isJunkDeal } from '@/lib/deals'
+import { canonicalRetailerName, fetchStoreData } from '@/lib/stores'
 import type { Deal, Category } from '@/types'
 
 export const dynamic = 'force-dynamic'
@@ -33,13 +34,42 @@ export default async function ArchiveWeekPage({ params }: Props) {
     .select('*')
     .eq('week_of', week)
 
-  const allDeals = (dealsData || []) as Deal[]
+  // Public archive shows only what the FREE tier sees: junk filtered out
+  // (welcome / loyalty / FTD / store cash etc.), only FREE_CATEGORIES, and
+  // only deals with at least 40% off (or special-type deals — bogo / free-
+  // item / free-shipping which are inherently meaningful regardless of pct).
+  const FREE_TIER_PASSTHROUGH_TYPES = new Set([
+    'bogo-free',
+    'bogo-half',
+    'free-item',
+    'free-shipping',
+  ])
+
+  const allDeals = ((dealsData || []) as Deal[])
+    .filter((d) => !isJunkDeal(d))
+    .filter((d) =>
+      d.categories.some((c) => FREE_CATEGORIES.includes(c as Category))
+    )
+    .filter((d) => {
+      if (FREE_TIER_PASSTHROUGH_TYPES.has(d.deal_type)) return true
+      return (d.percent_off ?? 0) >= 40
+    })
+
+  // Apply canonical retailer names (fixes "carter's" → "Carter's" etc.)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dealdossier.io'
+  const { storeNames } = await fetchStoreData(appUrl)
+  const normalizedDeals = allDeals.map((d) => ({
+    ...d,
+    retailer: canonicalRetailerName(d.retailer, storeNames),
+  }))
+
   const weekDate = parseISO(edition.week_of)
 
-  // Group deals by category, dedupe by id within each category
+  // Group deals by FREE category, dedupe by id within each category
   const byCategory: Partial<Record<Category, Deal[]>> = {}
-  for (const deal of allDeals) {
+  for (const deal of normalizedDeals) {
     for (const cat of deal.categories) {
+      if (!FREE_CATEGORIES.includes(cat as Category)) continue
       if (!byCategory[cat as Category]) byCategory[cat as Category] = []
       byCategory[cat as Category]!.push(deal)
     }
