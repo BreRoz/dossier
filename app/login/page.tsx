@@ -1,7 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Nav } from '@/components/Nav'
+import { Footer } from '@/components/Footer'
+import { Reveal } from '@/components/Reveal'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,158 +53,151 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f7f6f3' }}>
+    <>
       <Nav />
 
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '60px 40px',
-      }}>
-        <div style={{ width: '100%', maxWidth: 480 }}>
-          {sent ? (
-            <div>
-              <p style={{
-                fontFamily: 'var(--font-condensed)',
-                fontSize: 13,
-                fontWeight: 600,
-                letterSpacing: '0.28em',
-                textTransform: 'uppercase',
-                color: 'var(--accent)',
-                marginBottom: 16,
-              }}>
-                Check your inbox
-              </p>
-              <h1 style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 42,
-                fontWeight: 300,
-                letterSpacing: '-0.01em',
-                lineHeight: 1.1,
-                marginBottom: 20,
-                color: '#0a0a0a',
-              }}>
-                Magic link sent.
-              </h1>
-              <p style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: 16,
-                color: 'rgba(10,10,10,0.65)',
-                lineHeight: 1.65,
-              }}>
-                We sent a sign-in link to{' '}
-                <strong style={{ color: '#0a0a0a' }}>{email}</strong>.
-                Click the link to access your account and set preferences.
-              </p>
-              <p style={{
-                fontFamily: 'var(--font-condensed)',
-                fontSize: 13,
-                letterSpacing: '0.15em',
-                textTransform: 'uppercase',
-                color: 'rgba(10,10,10,0.4)',
-                marginTop: 24,
-              }}>
-                Link expires in 24 hours · Check your spam folder
-              </p>
-            </div>
+      <section
+        style={{
+          minHeight: '70vh',
+          display: 'flex',
+          alignItems: 'center',
+          padding: 'clamp(80px, 10vw, 140px) 0',
+        }}
+      >
+        <div className="wrap" style={{ maxWidth: 720 }}>
+          {!sent ? (
+            <>
+              <Reveal>
+                <div className="t-eyebrow">Sign In</div>
+              </Reveal>
+              <Reveal delay={100}>
+                <h1
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 300,
+                    fontSize: 'clamp(48px, 7vw, 96px)',
+                    marginTop: 20,
+                    lineHeight: 1,
+                    letterSpacing: '-0.03em',
+                  }}
+                >
+                  Welcome back to{' '}
+                  <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>
+                    Deal Dossier.
+                  </em>
+                </h1>
+              </Reveal>
+              <Reveal delay={220}>
+                <p
+                  style={{
+                    marginTop: 32,
+                    color: 'var(--ink-70)',
+                    fontSize: 17,
+                    lineHeight: 1.55,
+                    maxWidth: '40ch',
+                  }}
+                >
+                  Enter your email and we&rsquo;ll send you a magic link. No
+                  passwords, ever.
+                </p>
+              </Reveal>
+              <Reveal delay={340}>
+                <form
+                  onSubmit={handleSubmit}
+                  style={{ marginTop: 56, maxWidth: 520 }}
+                >
+                  <div className="t-meta" style={{ marginBottom: 12 }}>
+                    Email Address
+                  </div>
+                  <div className="field">
+                    <input
+                      type="email"
+                      required
+                      placeholder="your@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                  {error && (
+                    <p
+                      className="t-meta"
+                      style={{ marginTop: 16, color: 'oklch(50% 0.2 20)' }}
+                    >
+                      {error}
+                    </p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="btn-primary"
+                    style={{ marginTop: 32 }}
+                  >
+                    {submitting ? 'Sending…' : (
+                      <>
+                        Send Magic Link <span className="arr">→</span>
+                      </>
+                    )}
+                  </button>
+                  <div
+                    className="t-meta"
+                    style={{ marginTop: 24, color: 'var(--ink-40)' }}
+                  >
+                    No password required · Free · No paywall
+                  </div>
+                </form>
+              </Reveal>
+            </>
           ) : (
             <>
-              <p style={{
-                fontFamily: 'var(--font-condensed)',
-                fontSize: 13,
-                fontWeight: 600,
-                letterSpacing: '0.28em',
-                textTransform: 'uppercase',
-                color: 'var(--accent)',
-                marginBottom: 16,
-              }}>
-                Sign In
-              </p>
-              <h1 style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 42,
-                fontWeight: 300,
-                letterSpacing: '-0.01em',
-                lineHeight: 1.1,
-                marginBottom: 16,
-                color: '#0a0a0a',
-              }}>
-                Welcome to Deal Dossier.
-              </h1>
-              <p style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: 16,
-                color: 'rgba(10,10,10,0.65)',
-                lineHeight: 1.65,
-                marginBottom: 40,
-              }}>
-                Enter your email address and we&rsquo;ll send you a magic link to sign in.
-                No password required.
-              </p>
-
-              <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: 12 }}>
-                  <label style={{
-                    fontFamily: 'var(--font-condensed)',
-                    fontSize: 13,
-                    letterSpacing: '0.2em',
-                    textTransform: 'uppercase',
-                    color: 'rgba(10,10,10,0.4)',
-                    display: 'block',
-                    marginBottom: 8,
-                  }}>
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="field-input"
-                  />
+              <Reveal>
+                <div className="t-eyebrow" style={{ color: 'var(--olive-deep)' }}>
+                  ✓ Check your inbox
                 </div>
-
-                {error && (
-                  <p style={{
-                    fontFamily: 'var(--font-condensed)',
-                    fontSize: 13,
-                    letterSpacing: '0.15em',
-                    textTransform: 'uppercase',
-                    color: 'oklch(50% 0.2 20)',
-                    marginBottom: 16,
-                  }}>
-                    {error}
-                  </p>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="btn-primary"
-                  style={{ width: '100%', textAlign: 'center', marginTop: 8 }}
+              </Reveal>
+              <Reveal delay={100}>
+                <h1
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 300,
+                    fontSize: 'clamp(48px, 7vw, 96px)',
+                    marginTop: 20,
+                    lineHeight: 1,
+                    letterSpacing: '-0.03em',
+                  }}
                 >
-                  {submitting ? 'Sending...' : 'Send Magic Link'}
-                </button>
-
-                <p style={{
-                  fontFamily: 'var(--font-condensed)',
-                  fontSize: 13,
-                  letterSpacing: '0.15em',
-                  textTransform: 'uppercase',
-                  color: 'rgba(10,10,10,0.4)',
-                  marginTop: 16,
-                  textAlign: 'center',
-                }}>
-                  No password required · Free. No paywall.
+                  Magic link{' '}
+                  <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>
+                    sent.
+                  </em>
+                </h1>
+              </Reveal>
+              <Reveal delay={200}>
+                <p
+                  style={{
+                    marginTop: 32,
+                    color: 'var(--ink-70)',
+                    fontSize: 17,
+                    lineHeight: 1.55,
+                    maxWidth: '46ch',
+                  }}
+                >
+                  We sent a sign-in link to{' '}
+                  <strong style={{ color: 'var(--ink)' }}>{email}</strong>.
+                  Click it to access your account and set preferences.
                 </p>
-              </form>
+              </Reveal>
+              <div
+                className="t-meta"
+                style={{ marginTop: 32, color: 'var(--ink-40)' }}
+              >
+                Link expires in 24 hours · Check your spam folder
+              </div>
             </>
           )}
         </div>
-      </div>
-    </div>
+      </section>
+
+      <Footer />
+    </>
   )
 }

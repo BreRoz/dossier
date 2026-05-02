@@ -6,6 +6,8 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
+import { Reveal } from '@/components/Reveal'
+import { FlapNumber } from '@/components/FlapNumber'
 import { CategoryIcon } from '@/components/CategoryIcon'
 import { createClient } from '@/lib/supabase/client'
 import type { Category, SpendTier } from '@/types'
@@ -19,48 +21,15 @@ interface Stats {
 }
 
 const ALL_SPEND_TIERS: SpendTier[] = ['$', '$$', '$$$', '$$$$']
-
 const SPEND_TIER_LABELS: Record<SpendTier, string> = {
-  '$':    'Budget',
-  '$$':   'Mid-Range',
-  '$$$':  'Premium',
+  '$': 'Budget',
+  '$$': 'Mid-Range',
+  '$$$': 'Premium',
   '$$$$': 'Luxury',
 }
+const AGE_GROUPS = ['', 'Kids', 'Teens', "20's", "30's", "40's", '50+'] as const
 
-function fmt(n: number): string {
-  return n.toLocaleString('en-US')
-}
-
-function StatCard({ value, label, sub }: { value: number; label: string; sub?: string }) {
-  return (
-    <div className="stores-stat-card">
-      <div className="stores-stat-num">{fmt(value)}</div>
-      <div style={{
-        fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 600,
-        letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
-      }}>
-        {label}
-      </div>
-      {sub && (
-        <div style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)', lineHeight: 1.4 }}>
-          {sub}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// Month name from MM-DD-YYYY
-function monthAdded(dateStr: string): string {
-  if (!dateStr) return ''
-  const parts = dateStr.split('-')
-  if (parts.length !== 3) return ''
-  const month = parseInt(parts[0], 10) - 1
-  const year  = parseInt(parts[2], 10)
-  return new Date(year, month, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
-}
-
-// Simple toggle switch component
+// ── Architectural square toggle with lock-icon for free users ──────────
 function ToggleSwitch({
   enabled,
   locked,
@@ -72,27 +41,19 @@ function ToggleSwitch({
 }) {
   return (
     <button
+      type="button"
       onClick={() => !locked && onChange?.(!enabled)}
-      title={locked ? 'Upgrade to paid to control individual stores' : enabled ? 'Receiving deals — click to mute' : 'Muted — click to unmute'}
-      style={{
-        width: 36, height: 20, borderRadius: 10, border: 'none', padding: 0,
-        background: locked ? 'rgba(10,10,10,0.12)' : enabled ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-        cursor: locked ? 'not-allowed' : 'pointer',
-        position: 'relative', flexShrink: 0, transition: 'background 0.2s',
-        opacity: locked ? 0.5 : 1,
-      }}
+      title={
+        locked
+          ? 'Upgrade to paid to control individual stores'
+          : enabled
+          ? 'Receiving deals — click to mute'
+          : 'Muted — click to unmute'
+      }
+      className={`dd-toggle ${enabled && !locked ? 'on' : ''} ${locked ? 'locked' : ''}`}
+      aria-label={enabled ? 'Mute store' : 'Unmute store'}
     >
-      <span style={{
-        position: 'absolute', top: 2,
-        left: enabled && !locked ? 18 : 2,
-        width: 16, height: 16, borderRadius: '50%',
-        background: '#f7f6f3',
-        transition: 'left 0.2s',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 11,
-      }}>
-        {locked ? '🔒' : ''}
-      </span>
+      <span className="thumb">{locked ? '🔒' : ''}</span>
     </button>
   )
 }
@@ -101,27 +62,27 @@ export default function StoresPage() {
   const catDropRef = useRef<HTMLDivElement>(null)
   const ageDropRef = useRef<HTMLDivElement>(null)
 
-  const [stats, setStats]               = useState<Stats | null>(null)
-  const [stores, setStores]             = useState<StoreRow[]>([])
-  const [spendFilter, setSpendFilter]   = useState<SpendTier[]>(['$', '$$', '$$$', '$$$$'])
-  const [loading, setLoading]           = useState(true)
-  const [search, setSearch]             = useState('')
-  const [catDropOpen, setCatDropOpen]   = useState(false)
-  const [ageDropOpen, setAgeDropOpen]   = useState(false)
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [stores, setStores] = useState<StoreRow[]>([])
+  const [spendFilter, setSpendFilter] = useState<SpendTier[]>(['$', '$$', '$$$', '$$$$'])
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [catDropOpen, setCatDropOpen] = useState(false)
+  const [ageDropOpen, setAgeDropOpen] = useState(false)
   const [selectedCats, setSelectedCats] = useState<string[]>([])
-  const [selectedAge, setSelectedAge]   = useState<string>('')
-  const [dealCounts, setDealCounts]     = useState<Record<string, number>>({})
-  const [isPaid, setIsPaid]             = useState(false)
-  const [storePrefs, setStorePrefs]     = useState<Record<string, boolean>>({})
+  const [selectedAge, setSelectedAge] = useState<string>('')
+  const [dealCounts, setDealCounts] = useState<Record<string, number>>({})
+  const [isPaid, setIsPaid] = useState(false)
+  const [storePrefs, setStorePrefs] = useState<Record<string, boolean>>({})
   const [togglingStore, setTogglingStore] = useState<string | null>(null)
-  const [suggestName, setSuggestName]     = useState('')
-  const [suggestSite, setSuggestSite]     = useState('')
-  const [suggestNotes, setSuggestNotes]   = useState('')
-  const [suggesting, setSuggesting]       = useState(false)
-  const [suggestDone, setSuggestDone]     = useState(false)
-  const [suggestError, setSuggestError]   = useState('')
+  const [suggestName, setSuggestName] = useState('')
+  const [suggestSite, setSuggestSite] = useState('')
+  const [suggestNotes, setSuggestNotes] = useState('')
+  const [suggesting, setSuggesting] = useState(false)
+  const [suggestDone, setSuggestDone] = useState(false)
+  const [suggestError, setSuggestError] = useState('')
 
-  // Close dropdowns on outside click
+  // Outside-click closes both dropdowns
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (catDropRef.current && !catDropRef.current.contains(e.target as Node)) {
@@ -135,11 +96,17 @@ export default function StoresPage() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
+  // Load auth, prefs, stats, stores, deal counts
   useEffect(() => {
     async function load() {
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { window.location.href = '/login'; return }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        window.location.href = '/login'
+        return
+      }
 
       const [statsRes, storesRes, prefsRes] = await Promise.all([
         fetch('/api/stats'),
@@ -147,7 +114,7 @@ export default function StoresPage() {
         fetch('/api/preferences'),
       ])
 
-      if (statsRes.ok)  setStats(await statsRes.json())
+      if (statsRes.ok) setStats(await statsRes.json())
 
       if (storesRes.ok) {
         const data = await storesRes.json()
@@ -160,7 +127,7 @@ export default function StoresPage() {
         if (prefs.spend_tier_filter?.length) setSpendFilter(prefs.spend_tier_filter)
       }
 
-      // Subscriber tier + store preferences
+      // Subscriber tier + per-store preferences (paid only)
       const { data: sub } = await supabase
         .from('subscribers')
         .select('tier, id')
@@ -183,10 +150,8 @@ export default function StoresPage() {
         }
       }
 
-      // Deal counts per retailer (all time)
-      const { data: deals } = await supabase
-        .from('deals')
-        .select('retailer')
+      // All-time deal counts per retailer (lowercased)
+      const { data: deals } = await supabase.from('deals').select('retailer')
 
       const counts: Record<string, number> = {}
       for (const row of deals || []) {
@@ -202,33 +167,33 @@ export default function StoresPage() {
     load()
   }, [])
 
-  const handleToggle = useCallback(async (retailer: string, enabled: boolean) => {
-    if (!isPaid) return
-    setTogglingStore(retailer)
-    setStorePrefs((prev) => ({ ...prev, [retailer]: enabled }))
+  const handleToggle = useCallback(
+    async (retailer: string, enabled: boolean) => {
+      if (!isPaid) return
+      setTogglingStore(retailer)
+      setStorePrefs((prev) => ({ ...prev, [retailer]: enabled }))
 
-    try {
-      await fetch('/api/stores/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ retailer, enabled }),
-      })
-    } catch {
-      // revert on error
-      setStorePrefs((prev) => ({ ...prev, [retailer]: !enabled }))
-    } finally {
-      setTogglingStore(null)
-    }
-  }, [isPaid])
+      try {
+        await fetch('/api/stores/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ retailer, enabled }),
+        })
+      } catch {
+        setStorePrefs((prev) => ({ ...prev, [retailer]: !enabled }))
+      } finally {
+        setTogglingStore(null)
+      }
+    },
+    [isPaid]
+  )
 
-  // Unique app categories present in the store list
   const availableCategories = useMemo(() => {
     const seen = new Set<string>()
     for (const s of stores) if (s.appCategory) seen.add(s.appCategory)
     return Array.from(seen).sort()
   }, [stores])
 
-  // Unique age groups present in the store list
   const availableAgeGroups = useMemo(() => {
     const seen = new Set<string>()
     for (const s of stores) if (s.ageGroup) seen.add(s.ageGroup)
@@ -261,357 +226,528 @@ export default function StoresPage() {
     })
   }
 
+  const catLabel =
+    selectedCats.length === 0
+      ? 'All Categories'
+      : selectedCats.length === 1
+      ? CATEGORY_LABELS[selectedCats[0] as Category] ?? selectedCats[0]
+      : `${selectedCats.length} Categories`
+
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f7f6f3' }}>
-        <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)' }}>Loading...</p>
-      </div>
+      <>
+        <Nav />
+        <div
+          style={{
+            minHeight: '60vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <p className="t-meta" style={{ color: 'var(--ink-40)' }}>
+            Loading…
+          </p>
+        </div>
+      </>
     )
   }
 
+  const confirmedCount = stores.filter((s) => s.status === 'Confirmed').length
+
   return (
-    <div style={{ minHeight: '100vh', background: '#f7f6f3' }}>
-      <style>{`
-        .stores-h1 { font-family: var(--font-serif); font-size: 48px; font-weight: 300; letter-spacing: -0.02em; margin-bottom: 12px; }
-        .stores-stat-card { padding: 32px 40px; background: rgba(10,10,10,0.04); display: flex; flex-direction: column; gap: 8px; flex: 1; }
-        .stores-stat-num  { font-family: var(--font-serif); font-size: 52px; font-weight: 300; letter-spacing: -0.02em; line-height: 1; color: #0a0a0a; }
-        .stores-filter-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
-        .stores-count { margin-left: auto; text-align: right; }
-        .stores-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        @media (max-width: 768px) {
-          .stores-h1 { font-size: 32px; }
-          .stores-stat-card { padding: 20px 24px; }
-          .stores-stat-num  { font-size: 36px; }
-          .stores-filter-row { gap: 10px; }
-          .stores-count { margin-left: 0; text-align: left; width: 100%; }
-        }
-      `}</style>
+    <>
       <Nav />
 
-      <div className="wrap" style={{ paddingTop: 64, paddingBottom: 120 }}>
-
-        {/* Header */}
-        <div style={{ marginBottom: 48, borderBottom: '1px solid rgba(10,10,10,0.12)', paddingBottom: 40 }}>
-          <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', marginBottom: 12 }}>Your Account</p>
-          <h1 className="stores-h1">
-            Subscribed Stores
-          </h1>
-          <p style={{
-            fontFamily: 'var(--font-sans)', fontSize: 15, color: 'rgba(10,10,10,0.4)',
-            maxWidth: 520, lineHeight: 1.55,
-          }}>
-            Every retail email we catch so you don&rsquo;t have to sort through them yourself.
-          </p>
-          <p style={{ marginTop: 12 }}>
+      {/* ── HERO ─────────────────────────────────────────────────────────── */}
+      <section style={{ padding: 'clamp(56px, 8vw, 96px) 0 clamp(40px, 5vw, 64px)' }}>
+        <div className="wrap">
+          <Reveal>
+            <div className="t-eyebrow">Your Account</div>
+          </Reveal>
+          <Reveal delay={100}>
+            <h1
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 300,
+                fontSize: 'clamp(48px, 7vw, 96px)',
+                marginTop: 20,
+                lineHeight: 1,
+                letterSpacing: '-0.03em',
+                maxWidth: '14ch',
+              }}
+            >
+              Subscribed{' '}
+              <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>Stores</em>
+            </h1>
+          </Reveal>
+          <Reveal delay={200}>
+            <p
+              style={{
+                marginTop: 32,
+                color: 'var(--ink-70)',
+                fontSize: 17,
+                lineHeight: 1.55,
+                maxWidth: '52ch',
+              }}
+            >
+              Every retail email we catch so you don&rsquo;t have to sort through them yourself.
+            </p>
+          </Reveal>
+          <Reveal delay={300}>
             <a
               href="#suggest"
+              className="t-meta"
               style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.18em',
-                textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', textDecoration: 'none',
+                marginTop: 16,
+                display: 'inline-block',
+                color: 'var(--ink-40)',
+                textDecoration: 'none',
+                borderBottom: '1px solid var(--ink-15)',
+                paddingBottom: 2,
               }}
             >
-              Don&rsquo;t see a store you want? Request it here →
+              Don&rsquo;t see a store you want? Request it →
             </a>
-          </p>
+          </Reveal>
         </div>
+      </section>
 
-        {/* Stats Cards */}
-        <div className="rstat-row" style={{ display: 'flex', gap: 2, marginBottom: 56 }}>
-          <StatCard
-            value={stats?.emails_caught ?? 0}
-            label="Retail Emails Caught"
-            sub="Total promotional emails ingested from subscribed retailers"
-          />
-          <StatCard
-            value={stats?.editions_sent ?? 0}
-            label="Dossier Editions Sent"
-            sub="Curated briefs delivered to subscribers"
-          />
-          <StatCard
-            value={stats?.emails_saved ?? 0}
-            label="Emails You Didn't Have to Sort Through"
-            sub="Retail emails caught minus editions sent"
-          />
-        </div>
-
-        {/* Filters row */}
-        <div className="stores-filter-row">
-          {/* Search */}
-          <input
-            type="text"
-            placeholder="Search stores..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="field-input"
-            style={{ maxWidth: 220, padding: '8px 14px' }}
-          />
-
-          {/* Spend tier pills */}
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <span style={{
-              fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.18em',
-              textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
-            }}>
-              Spend
-            </span>
-            {ALL_SPEND_TIERS.map((tier) => {
-              const active = spendFilter.includes(tier)
-              return (
-                <button key={tier} onClick={() => toggleSpend(tier)} title={SPEND_TIER_LABELS[tier]} style={{
-                  fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-                  letterSpacing: '0.08em', padding: '5px 12px', border: '1.5px solid',
-                  borderColor: active ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                  background: active ? '#0a0a0a' : 'transparent',
-                  color: active ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
-                  cursor: 'pointer',
-                }}>
-                  {tier}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Category multi-select dropdown */}
-          <div ref={catDropRef} style={{ position: 'relative' }}>
-            <button
-              onClick={() => setCatDropOpen((o) => !o)}
-              style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 500,
-                letterSpacing: '0.15em', textTransform: 'uppercase',
-                padding: '7px 14px', border: '1.5px solid',
-                borderColor: selectedCats.length > 0 ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                background: selectedCats.length > 0 ? '#0a0a0a' : 'transparent',
-                color: selectedCats.length > 0 ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {selectedCats.length === 0
-                ? 'All Categories'
-                : selectedCats.length === 1
-                  ? CATEGORY_LABELS[selectedCats[0] as Category] ?? selectedCats[0]
-                  : `${selectedCats.length} Categories`}
-              <span style={{ fontSize: 13, opacity: 0.6 }}>{catDropOpen ? '▲' : '▼'}</span>
-            </button>
-
-            {catDropOpen && (
-              <div style={{
-                position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
-                background: '#f7f6f3', border: '1.5px solid rgba(10,10,10,0.12)',
-                minWidth: 220, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-              }}>
-                {selectedCats.length > 0 && (
-                  <button
-                    onClick={() => setSelectedCats([])}
+      {/* ── STATS ────────────────────────────────────────────────────────── */}
+      <section style={{ paddingBottom: 'clamp(48px, 6vw, 80px)' }}>
+        <div className="wrap">
+          <div
+            className="grid-3"
+            style={{ gap: 1, background: 'var(--ink-15)' }}
+          >
+            {[
+              [stats?.emails_caught ?? 0, 'Retail Emails Caught', 'Total promotional emails ingested'],
+              [stats?.editions_sent ?? 0, 'Dossier Editions Sent', 'Curated briefs delivered'],
+              [
+                stats?.emails_saved ?? 0,
+                "Emails You Didn't Sort",
+                'Caught minus delivered — your inbox time saved',
+              ],
+            ].map(([n, label, sub], i) => (
+              <Reveal key={String(label)} delay={i * 80}>
+                <div style={{ background: 'var(--paper)', padding: 32, height: '100%' }}>
+                  <div
                     style={{
-                      width: '100%', textAlign: 'left', padding: '10px 14px',
-                      fontFamily: 'var(--font-condensed)', fontSize: 13,
-                      letterSpacing: '0.18em', textTransform: 'uppercase',
-                      color: 'rgba(10,10,10,0.4)', background: 'none', border: 'none',
-                      borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer',
+                      fontFamily: 'var(--font-serif)',
+                      fontSize: 64,
+                      lineHeight: 1,
+                      fontStyle: 'italic',
+                      fontWeight: 300,
+                      letterSpacing: '-0.02em',
                     }}
                   >
-                    Clear filter
-                  </button>
-                )}
-                {availableCategories.map((cat) => {
-                  const active = selectedCats.includes(cat)
-                  return (
-                    <button
-                      key={cat}
-                      onClick={() => toggleCat(cat)}
-                      style={{
-                        width: '100%', textAlign: 'left', padding: '10px 14px',
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: active ? 600 : 400,
-                        color: '#0a0a0a', background: active ? 'rgba(10,10,10,0.04)' : 'none',
-                        border: 'none', borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer',
-                      }}
-                    >
-                      <CategoryIcon category={cat as Category} size={16} />
-                      <span>{CATEGORY_LABELS[cat as Category] ?? cat}</span>
-                      {active && (
-                        <span style={{ marginLeft: 'auto', fontSize: 10, color: 'rgba(10,10,10,0.4)' }}>✓</span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
+                    <FlapNumber value={String(n)} />
+                  </div>
+                  <div className="t-meta" style={{ marginTop: 16, color: 'var(--ink-55)' }}>
+                    {label}
+                  </div>
+                  <div style={{ marginTop: 8, fontSize: 13, color: 'var(--ink-55)', lineHeight: 1.5 }}>
+                    {sub}
+                  </div>
+                </div>
+              </Reveal>
+            ))}
           </div>
+        </div>
+      </section>
 
-          {/* Age dropdown — only shown if Sheet has age group data */}
-          {availableAgeGroups.length > 0 && (
-            <div ref={ageDropRef} style={{ position: 'relative' }}>
+      {/* ── FILTERS + TABLE ──────────────────────────────────────────────── */}
+      <section style={{ paddingBottom: 'clamp(56px, 8vw, 96px)' }}>
+        <div className="wrap">
+          {/* Filter row */}
+          <div
+            className="rfilter"
+            style={{
+              display: 'flex',
+              gap: 16,
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              marginBottom: 32,
+            }}
+          >
+            <div className="field" style={{ flex: 1, minWidth: 240, maxWidth: 320 }}>
+              <input
+                type="text"
+                placeholder="Search stores..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            {/* Spend pills */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                Spend
+              </span>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {ALL_SPEND_TIERS.map((tier) => (
+                  <button
+                    key={tier}
+                    type="button"
+                    onClick={() => toggleSpend(tier)}
+                    title={SPEND_TIER_LABELS[tier]}
+                    className={`pill ${spendFilter.includes(tier) ? 'on' : ''}`}
+                  >
+                    {tier}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Category multi-select */}
+            <div ref={catDropRef} style={{ position: 'relative' }}>
               <button
-                onClick={() => setAgeDropOpen((o) => !o)}
-                style={{
-                  fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 500,
-                  letterSpacing: '0.15em', textTransform: 'uppercase',
-                  padding: '7px 14px', border: '1.5px solid',
-                  borderColor: selectedAge ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-                  background: selectedAge ? '#0a0a0a' : 'transparent',
-                  color: selectedAge ? '#f7f6f3' : 'rgba(10,10,10,0.4)',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-                  whiteSpace: 'nowrap',
+                type="button"
+                className="filter-btn"
+                onClick={() => {
+                  setCatDropOpen((o) => !o)
+                  setAgeDropOpen(false)
                 }}
               >
-                {selectedAge ? `Age: ${selectedAge}` : 'All Ages'}
-                <span style={{ fontSize: 13, opacity: 0.6 }}>{ageDropOpen ? '▲' : '▼'}</span>
+                {catLabel}
+                <span style={{ marginLeft: 8, opacity: 0.5 }}>▾</span>
               </button>
-              {ageDropOpen && (
-                <div style={{
-                  position: 'absolute', top: 'calc(100% + 4px)', left: 0, zIndex: 50,
-                  background: '#f7f6f3', border: '1.5px solid rgba(10,10,10,0.12)',
-                  minWidth: 160, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
-                }}>
-                  {(['', 'Kids', 'Teens', "20's", "30's", "40's", '50+'] as const).map((age) => {
-                    const active = selectedAge === age
-                    return (
-                      <button
-                        key={age || 'all'}
-                        onClick={() => { setSelectedAge(age); setAgeDropOpen(false) }}
-                        style={{
-                          width: '100%', textAlign: 'left', padding: '10px 14px',
-                          fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: active ? 600 : 400,
-                          letterSpacing: '0.12em', textTransform: 'uppercase',
-                          color: active ? '#0a0a0a' : 'rgba(10,10,10,0.4)',
-                          background: active ? 'rgba(10,10,10,0.04)' : 'none',
-                          border: 'none', borderBottom: '1px solid rgba(10,10,10,0.04)', cursor: 'pointer',
-                        }}
-                      >
-                        {age || 'All Ages'}
-                      </button>
-                    )
-                  })}
+              {catDropOpen && (
+                <div className="filter-menu">
+                  {selectedCats.length > 0 && (
+                    <button
+                      type="button"
+                      className="filter-clear"
+                      onClick={() => setSelectedCats([])}
+                    >
+                      Clear filter
+                    </button>
+                  )}
+                  {availableCategories.map((cat) => (
+                    <label key={cat} className="filter-row">
+                      <input
+                        type="checkbox"
+                        checked={selectedCats.includes(cat)}
+                        onChange={() => toggleCat(cat)}
+                      />
+                      <CategoryIcon category={cat as Category} size={14} />
+                      <span>{CATEGORY_LABELS[cat as Category] ?? cat}</span>
+                    </label>
+                  ))}
                 </div>
               )}
             </div>
-          )}
 
-          {/* Store counts */}
-          <div className="stores-count">
-            <div style={{
-              fontFamily: 'var(--font-condensed)', fontSize: 12, letterSpacing: '0.15em',
-              textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', lineHeight: 1.6,
-            }}>
-              {stores.length} store emails requested
+            {/* Age single-select (only shown if data has age groups) */}
+            {availableAgeGroups.length > 0 && (
+              <div ref={ageDropRef} style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  className="filter-btn"
+                  onClick={() => {
+                    setAgeDropOpen((o) => !o)
+                    setCatDropOpen(false)
+                  }}
+                >
+                  {selectedAge || 'All Ages'}
+                  <span style={{ marginLeft: 8, opacity: 0.5 }}>▾</span>
+                </button>
+                {ageDropOpen && (
+                  <div className="filter-menu">
+                    {AGE_GROUPS.map((age) => {
+                      const active = selectedAge === age
+                      return (
+                        <button
+                          key={age || 'all'}
+                          type="button"
+                          className={`filter-row btn-row ${active ? 'active' : ''}`}
+                          onClick={() => {
+                            setSelectedAge(age)
+                            setAgeDropOpen(false)
+                          }}
+                        >
+                          <span>{age || 'All Ages'}</span>
+                          {active && <span style={{ color: 'var(--olive-deep)' }}>●</span>}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <span
+              className="t-meta"
+              style={{ color: 'var(--ink-40)', marginLeft: 'auto' }}
+            >
+              {visibleStores.length} of {stores.length} · {confirmedCount} confirmed
+            </span>
+          </div>
+
+          {/* Table */}
+          <div className="rtable" style={{ borderTop: '1px solid var(--ink)' }}>
+            <div
+              className="stores-header"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '2fr 1fr 0.7fr 0.7fr 1fr 0.6fr',
+                gap: 16,
+                padding: '16px 0',
+                borderBottom: '1px solid var(--ink-15)',
+                minWidth: 540,
+              }}
+            >
+              {['Store', 'Category', 'Spend', 'Deals', 'Status', isPaid ? 'Active' : '🔒'].map((h) => (
+                <div key={h} className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                  {h}
+                </div>
+              ))}
             </div>
-            <div style={{
-              fontFamily: 'var(--font-condensed)', fontSize: 12, letterSpacing: '0.15em',
-              textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)', lineHeight: 1.6,
-            }}>
-              {stores.filter(s => s.status === 'Confirmed').length} store emails confirmed
-            </div>
+
+            {visibleStores.length === 0 ? (
+              <div
+                style={{
+                  padding: '64px 0',
+                  textAlign: 'center',
+                  color: 'var(--ink-40)',
+                  fontFamily: 'var(--font-condensed)',
+                  fontSize: 12,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {search ? 'No stores match your search' : 'No stores match your current filters'}
+              </div>
+            ) : (
+              visibleStores.map((store, i) => {
+                const dealCount = dealCounts[store.name.toLowerCase()] ?? 0
+                const storeEnabled = storePrefs[store.name] ?? true
+                return (
+                  <Reveal key={`${store.name}-${i}`} delay={Math.min(i, 12) * 30}>
+                    <div
+                      className="store-row"
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '2fr 1fr 0.7fr 0.7fr 1fr 0.6fr',
+                        gap: 16,
+                        padding: '20px 0',
+                        borderBottom: '1px solid var(--ink-08)',
+                        alignItems: 'center',
+                        opacity: isPaid && !storeEnabled ? 0.5 : 1,
+                        transition: 'opacity 0.2s, background .3s var(--easing)',
+                        minWidth: 540,
+                      }}
+                    >
+                      {/* Name + NEW badge */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          minWidth: 0,
+                        }}
+                      >
+                        {store.website ? (
+                          <a
+                            href={store.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 20,
+                              fontWeight: 350,
+                              letterSpacing: '-0.01em',
+                              color: 'var(--ink)',
+                              textDecoration: 'none',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {store.name}
+                          </a>
+                        ) : (
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-serif)',
+                              fontSize: 20,
+                              fontWeight: 350,
+                              letterSpacing: '-0.01em',
+                              color: 'var(--ink)',
+                            }}
+                          >
+                            {store.name}
+                          </span>
+                        )}
+                        {store.isNew && (
+                          <span
+                            className="t-meta"
+                            style={{ color: 'var(--olive-deep)', fontSize: 9 }}
+                          >
+                            New
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Category */}
+                      <div
+                        style={{
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: 14,
+                          color: 'var(--ink-70)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                        }}
+                      >
+                        <CategoryIcon category={store.appCategory as Category} size={14} />
+                        <span>
+                          {CATEGORY_LABELS[store.appCategory as Category] ?? store.category}
+                        </span>
+                      </div>
+
+                      {/* Spend tier */}
+                      <div className="t-mono" style={{ color: 'var(--ink-55)' }}>
+                        {store.spendTier}
+                      </div>
+
+                      {/* Deal count */}
+                      <div
+                        className="t-mono"
+                        title={
+                          dealCount > 0
+                            ? `${dealCount} deal${dealCount !== 1 ? 's' : ''} shared`
+                            : 'No deals yet'
+                        }
+                        style={{
+                          color: dealCount > 0 ? 'var(--ink)' : 'var(--ink-25)',
+                          fontWeight: dealCount > 0 ? 600 : 400,
+                        }}
+                      >
+                        {dealCount > 0 ? dealCount : '—'}
+                      </div>
+
+                      {/* Status */}
+                      <div
+                        className="t-meta"
+                        style={{
+                          color:
+                            store.status === 'Confirmed'
+                              ? 'var(--olive-deep)'
+                              : 'var(--ink-40)',
+                        }}
+                      >
+                        {store.status === 'Confirmed' ? '● ' : ''}
+                        {store.status || '—'}
+                      </div>
+
+                      {/* Toggle */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                          opacity: togglingStore === store.name ? 0.5 : 1,
+                          transition: 'opacity 0.2s',
+                        }}
+                      >
+                        <ToggleSwitch
+                          enabled={storeEnabled}
+                          locked={!isPaid}
+                          onChange={(val) => handleToggle(store.name, val)}
+                        />
+                      </div>
+                    </div>
+                  </Reveal>
+                )
+              })
+            )}
           </div>
         </div>
+      </section>
 
-        {/* Column headers */}
-        <div className="stores-table-wrap rtable">
-          <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 40px 56px 72px 80px 48px',
-            gap: 16, padding: '10px 16px', borderBottom: '1px solid rgba(10,10,10,0.12)',
-            minWidth: 500,
-          }}>
-            {['Store', 'Cat.', 'Spend', 'Deals', 'Status', isPaid ? 'Active' : '🔒'].map((h) => (
-              <span key={h} style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600,
-                letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
-              }}>
-                {h}
-              </span>
-            ))}
-          </div>
-
-          {/* Rows */}
-          {visibleStores.length === 0 ? (
-            <div style={{
-              padding: '48px 16px', textAlign: 'center',
-              fontFamily: 'var(--font-condensed)', fontSize: 11,
-              letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(10,10,10,0.4)',
-            }}>
-              {search ? 'No stores match your search' : 'No stores match your current filters'}
-            </div>
-          ) : (
-            visibleStores.map((store, i) => {
-              const dealCount = dealCounts[store.name.toLowerCase()] ?? 0
-              const storeEnabled = storePrefs[store.name] ?? true
-              return (
-                <StoreRowItem
-                  key={`${store.name}-${i}`}
-                  store={store}
-                  isEven={i % 2 === 0}
-                  dealCount={dealCount}
-                  isPaid={isPaid}
-                  storeEnabled={storeEnabled}
-                  isToggling={togglingStore === store.name}
-                  onToggle={handleToggle}
-                />
-              )
-            })
-          )}
-        </div>{/* end .rtable */}
-
-        {/* Suggest a store */}
-        <div id="suggest" style={{ marginTop: 64, paddingTop: 48, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
-          <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', marginBottom: 12 }}>Suggest a Store</p>
-          <h2 style={{
-            fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 300,
-            letterSpacing: '-0.02em', marginBottom: 12,
-          }}>
-            Know a brand we should watch?
-          </h2>
-          <p style={{
-            fontFamily: 'var(--font-sans)', fontSize: 14, color: 'rgba(10,10,10,0.4)',
-            lineHeight: 1.6, maxWidth: 480, marginBottom: 32,
-          }}>
-            We'll subscribe to their emails and start pulling deals automatically.
-          </p>
+      {/* ── SUGGEST A STORE ──────────────────────────────────────────────── */}
+      <section
+        id="suggest"
+        style={{
+          paddingTop: 'clamp(48px, 6vw, 80px)',
+          paddingBottom: 'clamp(56px, 8vw, 96px)',
+          borderTop: '1px solid var(--ink-15)',
+        }}
+      >
+        <div className="wrap">
+          <Reveal>
+            <div className="t-eyebrow">Suggest a Store</div>
+            <h2
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontSize: 'clamp(36px, 4.5vw, 56px)',
+                fontWeight: 300,
+                letterSpacing: '-0.02em',
+                lineHeight: 1.05,
+                marginTop: 16,
+                maxWidth: '18ch',
+              }}
+            >
+              Know a brand we should{' '}
+              <em style={{ color: 'var(--olive-deep)' }}>watch?</em>
+            </h2>
+            <p
+              style={{
+                marginTop: 20,
+                color: 'var(--ink-70)',
+                maxWidth: '46ch',
+                fontSize: 16,
+                lineHeight: 1.6,
+              }}
+            >
+              We&rsquo;ll subscribe to their emails and start pulling deals automatically.
+            </p>
+          </Reveal>
 
           {!isPaid ? (
-            <div style={{
-              padding: '24px 28px', background: 'rgba(10,10,10,0.04)',
-              display: 'flex', alignItems: 'center', gap: 16, maxWidth: 480,
-            }}>
-              <span style={{ fontSize: 20 }}>🔒</span>
-              <div>
-                <p style={{
-                  fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
-                  color: '#0a0a0a', marginBottom: 4,
-                }}>
-                  Paid feature
-                </p>
-                <p style={{
-                  fontFamily: 'var(--font-sans)', fontSize: 13, color: 'rgba(10,10,10,0.4)',
-                  lineHeight: 1.5,
-                }}>
-                  Upgrade to suggest stores for us to track.{' '}
-                  <Link href="/upgrade" style={{ color: '#0a0a0a', textDecoration: 'underline' }}>
-                    See what's included →
-                  </Link>
-                </p>
+            <div className="card" style={{ marginTop: 32, maxWidth: 560 }}>
+              <div className="t-meta" style={{ color: 'var(--olive-deep)' }}>
+                🔒 Paid Feature
               </div>
+              <p style={{ marginTop: 16, fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.6 }}>
+                Upgrade to suggest stores for us to track.{' '}
+                <Link
+                  href="/upgrade"
+                  style={{
+                    color: 'var(--ink)',
+                    borderBottom: '1px solid currentColor',
+                    textDecoration: 'none',
+                  }}
+                >
+                  See what&rsquo;s included →
+                </Link>
+              </p>
             </div>
           ) : suggestDone ? (
-            <div style={{
-              padding: '24px 28px', background: 'rgba(10,10,10,0.04)', maxWidth: 480,
-            }}>
-              <p style={{
-                fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
-                color: 'rgba(10,10,10,0.4)', marginBottom: 4,
-              }}>Suggestion received!</p>
-              <p style={{
-                fontFamily: 'var(--font-sans)', fontSize: 13, color: 'rgba(10,10,10,0.4)',
-              }}>
-                We'll review it and add them to the watchlist if they run regular sales.
+            <div className="card" style={{ marginTop: 32, maxWidth: 560 }}>
+              <div className="t-meta" style={{ color: 'var(--olive-deep)' }}>
+                ✓ Suggestion received
+              </div>
+              <p style={{ marginTop: 16, fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.6 }}>
+                We&rsquo;ll review it and add them to the watchlist if they run regular sales.
               </p>
               <button
-                onClick={() => { setSuggestDone(false); setSuggestName(''); setSuggestSite(''); setSuggestNotes('') }}
+                type="button"
+                onClick={() => {
+                  setSuggestDone(false)
+                  setSuggestName('')
+                  setSuggestSite('')
+                  setSuggestNotes('')
+                }}
+                className="t-meta"
                 style={{
-                  marginTop: 16, fontFamily: 'var(--font-condensed)', fontSize: 10,
-                  letterSpacing: '0.15em', textTransform: 'uppercase',
-                  background: 'none', border: 'none', color: 'rgba(10,10,10,0.4)',
-                  cursor: 'pointer', textDecoration: 'underline', padding: 0,
+                  marginTop: 16,
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--ink-40)',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  padding: 0,
                 }}
               >
                 Suggest another
@@ -628,7 +764,11 @@ export default function StoresPage() {
                   const res = await fetch('/api/stores/suggest', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ store_name: suggestName, website: suggestSite, notes: suggestNotes }),
+                    body: JSON.stringify({
+                      store_name: suggestName,
+                      website: suggestSite,
+                      notes: suggestNotes,
+                    }),
                   })
                   if (res.ok) {
                     setSuggestDone(true)
@@ -642,10 +782,18 @@ export default function StoresPage() {
                   setSuggesting(false)
                 }
               }}
-              style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 480 }}
+              style={{
+                marginTop: 32,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 16,
+                maxWidth: 560,
+              }}
             >
-              <div>
-                <label style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 6 }}>Store Name *</label>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <span className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                  Store Name *
+                </span>
                 <input
                   type="text"
                   required
@@ -654,32 +802,36 @@ export default function StoresPage() {
                   onChange={(e) => setSuggestName(e.target.value)}
                   className="field-input"
                 />
-              </div>
-              <div>
-                <label style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 6 }}>Website (optional)</label>
+              </label>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <span className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                  Website (optional)
+                </span>
                 <input
                   type="text"
-                  placeholder="e.g. reformation.com"
+                  placeholder="reformation.com"
                   value={suggestSite}
                   onChange={(e) => setSuggestSite(e.target.value)}
                   className="field-input"
                 />
-              </div>
-              <div>
-                <label style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 500, letterSpacing: '0.18em', textTransform: 'uppercase' as const, color: 'rgba(10,10,10,0.4)', display: 'block', marginBottom: 6 }}>Why should we add them? (optional)</label>
+              </label>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <span className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                  Why should we add them? (optional)
+                </span>
                 <input
                   type="text"
-                  placeholder="e.g. Great sales on basics, ships fast"
+                  placeholder="Great sales on basics, ships fast"
                   value={suggestNotes}
                   onChange={(e) => setSuggestNotes(e.target.value)}
                   className="field-input"
                 />
-              </div>
+              </label>
               {suggestError && (
-                <p style={{
-                  fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em',
-                  textTransform: 'uppercase', color: 'oklch(50% 0.2 20)',
-                }}>
+                <p
+                  className="t-meta"
+                  style={{ color: 'oklch(50% 0.2 20)' }}
+                >
                   {suggestError}
                 </p>
               )}
@@ -687,133 +839,41 @@ export default function StoresPage() {
                 type="submit"
                 disabled={suggesting}
                 className="btn-primary"
-                style={{ alignSelf: 'flex-start', padding: '10px 28px' }}
+                style={{ alignSelf: 'flex-start' }}
               >
-                {suggesting ? 'Submitting...' : 'Submit Suggestion'}
+                {suggesting ? 'Submitting…' : (
+                  <>
+                    Submit Suggestion <span className="arr">→</span>
+                  </>
+                )}
               </button>
             </form>
           )}
-        </div>
 
-        {/* Footer link */}
-        <div style={{ marginTop: 48, paddingTop: 40, borderTop: '1px solid rgba(10,10,10,0.12)' }}>
-          <Link href="/preferences" style={{
-            fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.2em',
-            textTransform: 'uppercase', color: '#0a0a0a', textDecoration: 'underline',
-          }}>
-            Adjust your subscription settings
-          </Link>
-        </div>
-      </div>
-      <Footer />
-    </div>
-  )
-}
-
-function StoreRowItem({
-  store,
-  isEven,
-  dealCount,
-  isPaid,
-  storeEnabled,
-  isToggling,
-  onToggle,
-}: {
-  store: StoreRow
-  isEven: boolean
-  dealCount: number
-  isPaid: boolean
-  storeEnabled: boolean
-  isToggling: boolean
-  onToggle: (retailer: string, enabled: boolean) => void
-}) {
-  return (
-    <div style={{
-      display: 'grid', gridTemplateColumns: '1fr 40px 56px 72px 80px 48px',
-      gap: 16, padding: '14px 16px',
-      background: isEven ? 'transparent' : 'rgba(10,10,10,0.04)',
-      alignItems: 'center',
-      borderBottom: '1px solid rgba(10,10,10,0.04)',
-      minWidth: 500,
-      opacity: isPaid && !storeEnabled ? 0.5 : 1,
-      transition: 'opacity 0.2s',
-    }}>
-      {/* Name + NEW badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-        {store.website ? (
-          <a
-            href={store.website}
-            target="_blank"
-            rel="noopener noreferrer"
+          <div
             style={{
-              fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600,
-              color: '#0a0a0a', textDecoration: 'none',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              marginTop: 64,
+              paddingTop: 32,
+              borderTop: '1px solid var(--ink-15)',
             }}
           >
-            {store.name}
-          </a>
-        ) : (
-          <span style={{
-            fontFamily: 'var(--font-sans)', fontSize: 14, fontWeight: 600, color: '#0a0a0a',
-          }}>
-            {store.name}
-          </span>
-        )}
-        {store.isNew && (
-          <span style={{
-            fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 700,
-            letterSpacing: '0.18em', textTransform: 'uppercase',
-            background: 'var(--accent)', color: '#f7f6f3',
-            padding: '2px 6px', flexShrink: 0,
-          }}>
-            New
-          </span>
-        )}
-      </div>
+            <Link
+              href="/preferences"
+              className="t-meta"
+              style={{
+                color: 'var(--ink)',
+                textDecoration: 'none',
+                borderBottom: '1px solid var(--ink-15)',
+                paddingBottom: 2,
+              }}
+            >
+              Adjust your subscription settings →
+            </Link>
+          </div>
+        </div>
+      </section>
 
-      {/* Category icon */}
-      <span title={CATEGORY_LABELS[store.appCategory as Category] ?? store.category}>
-        <CategoryIcon category={store.appCategory as Category} size={16} />
-      </span>
-
-      {/* Spend tier */}
-      <span style={{
-        fontFamily: 'var(--font-condensed)', fontSize: 13, fontWeight: 600,
-        letterSpacing: '0.06em', color: '#0a0a0a',
-      }}>
-        {store.spendTier}
-      </span>
-
-      {/* Deal count */}
-      <span
-        title={dealCount > 0 ? `${dealCount} deal${dealCount !== 1 ? 's' : ''} shared` : 'No deals yet'}
-        style={{
-          fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.08em',
-          color: dealCount > 0 ? '#0a0a0a' : 'rgba(10,10,10,0.12)',
-          fontWeight: dealCount > 0 ? 600 : 400,
-        }}
-      >
-        {dealCount > 0 ? `${dealCount}` : '—'}
-      </span>
-
-      {/* Status */}
-      <span style={{
-        fontFamily: 'var(--font-condensed)', fontSize: 11, letterSpacing: '0.15em',
-        textTransform: 'uppercase',
-        color: store.status === 'Confirmed' ? 'var(--accent)' : 'rgba(10,10,10,0.4)',
-      }}>
-        {store.status || '—'}
-      </span>
-
-      {/* Toggle */}
-      <div style={{ opacity: isToggling ? 0.5 : 1, transition: 'opacity 0.2s' }}>
-        <ToggleSwitch
-          enabled={storeEnabled}
-          locked={!isPaid}
-          onChange={(val) => onToggle(store.name, val)}
-        />
-      </div>
-    </div>
+      <Footer />
+    </>
   )
 }

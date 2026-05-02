@@ -1,18 +1,21 @@
 import type { Metadata, Viewport } from 'next'
-import { Cormorant_Garamond, Barlow, Barlow_Condensed } from 'next/font/google'
+import { Fraunces, Inter, Barlow_Condensed, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
-const cormorant = Cormorant_Garamond({
+// Load Fraunces as a true variable font — the SOFT axis (and auto-loaded
+// optical-size axis) lets .t-display use 'SOFT' 30 (roman) / 'SOFT' 50
+// (italic) for the prototype's softer editorial character.
+const fraunces = Fraunces({
   subsets: ['latin'],
-  weight: ['300', '400', '600'],
+  axes: ['SOFT'],
   style: ['normal', 'italic'],
   variable: '--font-serif',
   display: 'swap',
 })
 
-const barlow = Barlow({
+const inter = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '600'],
+  weight: ['300', '400', '500', '600'],
   variable: '--font-sans',
   display: 'swap',
 })
@@ -21,6 +24,13 @@ const barlowCondensed = Barlow_Condensed({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-condensed',
+  display: 'swap',
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-mono',
   display: 'swap',
 })
 
@@ -62,9 +72,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${cormorant.variable} ${barlow.variable} ${barlowCondensed.variable}`}
+      className={`${fraunces.variable} ${inter.variable} ${barlowCondensed.variable} ${jetbrainsMono.variable}`}
     >
-      <body>{children}</body>
+      <body className="grain">
+        {children}
+        <div className="grain-layer" aria-hidden="true" />
+      </body>
     </html>
   )
 }

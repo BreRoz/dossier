@@ -2,13 +2,13 @@ import { createServiceClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { notFound } from 'next/navigation'
-import { DossierLogo } from '@/components/DossierLogo'
 import { Nav } from '@/components/Nav'
-import { CategoryIcon } from '@/components/CategoryIcon'
-import { DealCard } from '@/components/DealCard'
-import { ALL_CATEGORIES, CATEGORY_LABELS, FREE_CATEGORIES } from '@/types'
-import { rankDeals } from '@/lib/deals'
-import type { Deal, Edition, Category } from '@/types'
+import { Footer } from '@/components/Footer'
+import { Reveal } from '@/components/Reveal'
+import { FlapNumber } from '@/components/FlapNumber'
+import { ALL_CATEGORIES, CATEGORY_LABELS } from '@/types'
+import { rankDeals, getDealLink, formatExpiryDate, formatSavings } from '@/lib/deals'
+import type { Deal, Category } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,7 +36,7 @@ export default async function ArchiveWeekPage({ params }: Props) {
   const allDeals = (dealsData || []) as Deal[]
   const weekDate = parseISO(edition.week_of)
 
-  // Group by category
+  // Group deals by category, dedupe by id within each category
   const byCategory: Partial<Record<Category, Deal[]>> = {}
   for (const deal of allDeals) {
     for (const cat of deal.categories) {
@@ -44,8 +44,6 @@ export default async function ArchiveWeekPage({ params }: Props) {
       byCategory[cat as Category]!.push(deal)
     }
   }
-
-  // Dedupe
   for (const cat of Object.keys(byCategory) as Category[]) {
     const seen = new Set<string>()
     byCategory[cat] = byCategory[cat]!.filter((d) => {
@@ -59,126 +57,383 @@ export default async function ArchiveWeekPage({ params }: Props) {
     (c) => byCategory[c] && byCategory[c]!.length > 0
   )
 
-  const accent = getSeasonalAccent()
-
   return (
-    <div style={{ minHeight: '100vh', background: 'oklch(88% 0.006 280)' }}>
+    <>
       <Nav />
 
-      {/* Email render */}
-      <div className="remail-wrap" style={{ padding: '40px 20px 80px', display: 'flex', justifyContent: 'center' }}>
-        <div style={{ width: '100%', maxWidth: 680 }}>
-          <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'oklch(55% 0.01 280)', marginBottom: 12, textAlign: 'center' }}>
-            Email Layout 680px · {edition.issue_number ? `Issue No. ${edition.issue_number}` : 'Weekly Brief'}
-          </p>
+      {/* ── Top issue strip ───────────────────────────────────────────── */}
+      <section
+        style={{
+          background: 'var(--ink)',
+          color: 'var(--paper)',
+          padding: '24px 0',
+          borderBottom: '1px solid var(--paper-on-ink-15)',
+        }}
+      >
+        <div
+          className="wrap"
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 16,
+          }}
+        >
+          <span className="t-meta" style={{ color: 'var(--paper-on-ink-55)' }}>
+            This Week&rsquo;s Brief
+          </span>
+          <span className="t-meta">
+            Week of {format(weekDate, 'MMMM d, yyyy')}
+          </span>
+          <span className="t-meta" style={{ color: 'var(--paper-on-ink-55)' }}>
+            {edition.issue_number ? `Issue No. ${edition.issue_number}` : 'Weekly Brief'}
+          </span>
+        </div>
+      </section>
 
-          <div style={{ background: 'oklch(98% 0.004 90)' }}>
-            {/* Header */}
-            <div style={{ padding: '32px 48px 24px', borderBottom: '1px solid oklch(85% 0.008 280)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <DossierLogo size={28} wordmarkSize={22} />
-              <div style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'oklch(62% 0.010 280)', textAlign: 'right', lineHeight: 1.7 }}>
-                {edition.issue_number ? `Issue No. ${edition.issue_number}` : 'Weekly Brief'}<br />
-                Week of {format(weekDate, 'MMMM d, yyyy')}
-              </div>
+      {/* ── Dark hero ────────────────────────────────────────────────── */}
+      <section
+        style={{
+          background: 'var(--ink)',
+          color: 'var(--paper)',
+          padding: 'clamp(64px, 8vw, 100px) 0 clamp(80px, 9vw, 120px)',
+        }}
+      >
+        <div className="wrap">
+          <Reveal>
+            <div className="t-eyebrow" style={{ color: 'var(--olive)' }}>
+              {edition.issue_number ? `Issue No. ${edition.issue_number}` : 'Weekly Brief'}
             </div>
+          </Reveal>
+          <Reveal delay={100}>
+            <h1
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 300,
+                fontSize: 'clamp(56px, 8vw, 120px)',
+                marginTop: 24,
+                lineHeight: 1,
+                letterSpacing: '-0.03em',
+                color: 'var(--paper)',
+              }}
+            >
+              The{' '}
+              <em style={{ color: 'var(--olive)', fontWeight: 300 }}>finest</em>
+              <br />
+              deals, curated.
+            </h1>
+          </Reveal>
+          <Reveal delay={250}>
+            <p
+              style={{
+                marginTop: 40,
+                color: 'var(--paper-on-ink)',
+                fontSize: 19,
+                lineHeight: 1.55,
+                maxWidth: '46ch',
+              }}
+            >
+              {allDeals.length} deals across {orderedCategories.length}{' '}
+              {orderedCategories.length === 1 ? 'category' : 'categories'}. Curated
+              from {edition.emails_scanned ?? 0} promotional emails.
+            </p>
+          </Reveal>
 
-            {/* Hero */}
-            <div style={{ background: 'oklch(9% 0.010 280)', padding: '48px 48px 40px' }}>
-              <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase', color: accent, marginBottom: 16 }}>
-                This Week's Brief
-              </p>
-              <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 52, fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 0.95, color: 'oklch(98% 0.004 90)', marginBottom: 24 }}>
-                The <em style={{ fontStyle: 'italic' }}>finest</em><br />deals, curated.
-              </h1>
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: 14, color: 'oklch(72% 0.005 280)', lineHeight: 1.6, maxWidth: 440 }}>
-                {allDeals.length} deals across {orderedCategories.length} categories. Curated from {edition.emails_scanned} promotional emails.
-              </p>
-            </div>
-
-            {/* Stats */}
-            <div style={{ borderBottom: '1px solid oklch(85% 0.008 280)', display: 'flex' }}>
-              {[
-                [edition.emails_scanned, 'Emails Scanned'],
-                [edition.deals_found, 'Deals Found'],
-                [edition.retailers_count, 'Retailers'],
-                [allDeals.length, 'In This Issue'],
-              ].map(([n, l]) => (
-                <div key={l} style={{ flex: 1, padding: '24px 32px', borderRight: '1px solid oklch(85% 0.008 280)', textAlign: 'center' }}>
-                  <div style={{ fontFamily: 'var(--font-serif)', fontSize: 32, fontWeight: 300, lineHeight: 1, letterSpacing: '-0.02em', color: 'oklch(9% 0.010 280)' }}>{n}</div>
-                  <div style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'oklch(62% 0.010 280)', marginTop: 4 }}>{l}</div>
+          {/* Stats grid */}
+          <div
+            style={{
+              marginTop: 80,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              borderTop: '1px solid var(--paper-on-ink-15)',
+            }}
+            className="grid-4"
+          >
+            {[
+              [edition.emails_scanned ?? 0, 'Scanned'],
+              [edition.deals_found ?? 0, 'Deals Found'],
+              [edition.retailers_count ?? 0, 'Retailers'],
+              [allDeals.length, 'In This Issue'],
+            ].map(([n, l]) => (
+              <div
+                key={l}
+                style={{
+                  padding: '32px 0',
+                  borderRight: '1px solid var(--paper-on-ink-15)',
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontSize: 56,
+                    fontStyle: 'italic',
+                    fontWeight: 300,
+                    letterSpacing: '-0.02em',
+                    lineHeight: 1,
+                    color: 'var(--paper)',
+                  }}
+                >
+                  <FlapNumber value={String(n)} />
                 </div>
-              ))}
-            </div>
-
-            {/* Categories + deals */}
-            {orderedCategories.map((cat) => {
-              const deals = rankDeals(byCategory[cat]!)
-              return (
-                <div key={cat}>
-                  <div style={{ height: 40 }} />
-                  {/* Category header */}
-                  <div style={{ padding: '0 48px', display: 'flex', alignItems: 'center', gap: 16, marginBottom: 0 }}>
-                    <CategoryIcon category={cat} size={18} />
-                    <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase', color: accent }}>
-                      {CATEGORY_LABELS[cat]}
-                    </span>
-                    <div style={{ flex: 1, height: 1, background: 'oklch(85% 0.008 280)' }} />
-                    <span style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'oklch(62% 0.010 280)' }}>
-                      {deals.length} Deal{deals.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                  {/* Deals */}
-                  <div style={{ padding: '0 48px' }}>
-                    {deals.map((deal) => (
-                      <DealCard key={deal.id} deal={deal} />
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
-
-            <div style={{ height: 40 }} />
-
-            {/* Upgrade CTA (archive view) */}
-            <div style={{ padding: '0 48px 48px' }}>
-              <div style={{ background: 'oklch(94% 0.005 280)', padding: 32 }}>
-                <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 11, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase', color: accent, marginBottom: 8 }}>
-                  Get This Weekly
-                </p>
-                <p style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 300, letterSpacing: '-0.01em', color: 'oklch(9% 0.010 280)', marginBottom: 12 }}>
-                  Subscribe to Deal Dossier. Free. No paywall.
-                </p>
-                <Link href="/login" style={{ fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', background: 'oklch(9% 0.010 280)', color: 'oklch(98% 0.004 90)', textDecoration: 'none', padding: '14px 32px', display: 'inline-block' }}>
-                  Subscribe Free
-                </Link>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div style={{ background: 'oklch(9% 0.010 280)', padding: '32px 48px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid oklch(25% 0.01 280)' }}>
-                <DossierLogo size={20} dark wordmarkSize={18} />
-                <div style={{ display: 'flex', gap: 20 }}>
-                  {['Archive', 'Preferences', 'Unsubscribe'].map((l) => (
-                    <Link key={l} href={l === 'Archive' ? '/archive' : l === 'Preferences' ? '/preferences' : '/unsubscribe'} style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'oklch(55% 0.01 280)', textDecoration: 'none' }}>{l}</Link>
-                  ))}
+                <div
+                  className="t-meta"
+                  style={{ color: 'var(--paper-on-ink-55)', marginTop: 8 }}
+                >
+                  {l}
                 </div>
               </div>
-              <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.12em', color: 'oklch(45% 0.01 280)', lineHeight: 1.7 }}>
-                You are receiving this because you subscribed to Deal Dossier Weekly. Deals are curated editorially and may include affiliate relationships. Pricing and availability subject to change without notice.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
-      </div>
-    </div>
-  )
-}
+      </section>
 
-function getSeasonalAccent(): string {
-  const m = new Date().getMonth() + 1
-  if (m >= 3 && m <= 5) return 'oklch(64% 0.160 22)'
-  if (m >= 6 && m <= 8) return 'oklch(56% 0.160 248)'
-  if (m >= 9 && m <= 11) return 'oklch(62% 0.155 48)'
-  return 'oklch(42% 0.120 168)'
+      {/* ── Deals by category ────────────────────────────────────────── */}
+      <section style={{ padding: 'clamp(64px, 8vw, 100px) 0' }}>
+        <div className="wrap">
+          {orderedCategories.length === 0 ? (
+            <div style={{ padding: '80px 0', textAlign: 'center' }}>
+              <p className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                No deals in this edition
+              </p>
+            </div>
+          ) : (
+            orderedCategories.map((cat, ci) => {
+              const deals = rankDeals(byCategory[cat]!)
+              return (
+                <div key={cat} style={{ marginBottom: 96 }}>
+                  <Reveal>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'baseline',
+                        gap: 24,
+                        paddingBottom: 16,
+                        borderBottom: '1px solid var(--ink)',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <span
+                        className="t-mono"
+                        style={{ color: 'var(--olive-deep)' }}
+                      >
+                        {String(ci + 1).padStart(2, '0')}
+                      </span>
+                      <h2
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 'clamp(36px, 4vw, 56px)',
+                          fontStyle: 'italic',
+                          fontWeight: 300,
+                          letterSpacing: '-0.02em',
+                          lineHeight: 1,
+                        }}
+                      >
+                        {CATEGORY_LABELS[cat]}
+                      </h2>
+                      <span
+                        className="t-meta"
+                        style={{ marginLeft: 'auto', color: 'var(--ink-40)' }}
+                      >
+                        {deals.length} deal{deals.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  </Reveal>
+
+                  {deals.map((deal, i) => {
+                    const link = getDealLink(deal)
+                    const expiry = formatExpiryDate(deal.expiration_date)
+                    const savings = formatSavings(deal)
+                    return (
+                      <Reveal key={deal.id} delay={Math.min(i, 6) * 60}>
+                        <div
+                          className="deal-row"
+                          style={{
+                            padding: '32px 0',
+                            borderBottom: '1px solid var(--ink-08)',
+                            display: 'grid',
+                            gridTemplateColumns: '1fr auto',
+                            gap: 32,
+                            alignItems: 'center',
+                          }}
+                        >
+                          <div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 16,
+                                marginBottom: 12,
+                                flexWrap: 'wrap',
+                              }}
+                            >
+                              <a
+                                href={link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  fontFamily: 'var(--font-serif)',
+                                  fontSize: 22,
+                                  fontStyle: 'italic',
+                                  fontWeight: 350,
+                                  letterSpacing: '-0.01em',
+                                  color: 'var(--ink)',
+                                  textDecoration: 'none',
+                                }}
+                              >
+                                {deal.retailer}
+                              </a>
+                              {deal.promo_code && (
+                                <span className="code-badge">{deal.promo_code}</span>
+                              )}
+                            </div>
+                            <p
+                              style={{
+                                fontSize: 17,
+                                color: 'var(--ink-70)',
+                                lineHeight: 1.6,
+                                maxWidth: '60ch',
+                              }}
+                            >
+                              {deal.description}
+                            </p>
+                            <div
+                              style={{
+                                marginTop: 12,
+                                display: 'flex',
+                                gap: 24,
+                                fontSize: 11,
+                                letterSpacing: '0.18em',
+                                textTransform: 'uppercase',
+                                color: 'var(--ink-40)',
+                                fontWeight: 500,
+                                fontFamily: 'var(--font-condensed)',
+                                flexWrap: 'wrap',
+                              }}
+                            >
+                              {expiry && <span>Ends {expiry}</span>}
+                              <a
+                                href={link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  color: 'var(--ink-40)',
+                                  textDecoration: 'none',
+                                  borderBottom: '1px solid currentColor',
+                                }}
+                              >
+                                View original →
+                              </a>
+                            </div>
+                          </div>
+
+                          {/* Savings — large olive number */}
+                          <div style={{ textAlign: 'right' }}>
+                            {deal.percent_off ? (
+                              <>
+                                <div
+                                  style={{
+                                    fontFamily: 'var(--font-serif)',
+                                    fontSize: 'clamp(56px, 7vw, 96px)',
+                                    fontWeight: 300,
+                                    lineHeight: 1,
+                                    letterSpacing: '-0.03em',
+                                    color: 'var(--olive-deep)',
+                                  }}
+                                >
+                                  {deal.percent_off}
+                                  <span style={{ fontSize: '0.5em' }}>%</span>
+                                </div>
+                                <div
+                                  className="t-meta"
+                                  style={{ color: 'var(--ink-40)' }}
+                                >
+                                  Off
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div
+                                  style={{
+                                    fontFamily: 'var(--font-serif)',
+                                    fontSize: 'clamp(28px, 3.4vw, 44px)',
+                                    fontStyle: 'italic',
+                                    fontWeight: 300,
+                                    lineHeight: 1,
+                                    letterSpacing: '-0.02em',
+                                    color: 'var(--olive-deep)',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  {savings}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </Reveal>
+                    )
+                  })}
+                </div>
+              )
+            })
+          )}
+
+          {/* Subscribe CTA */}
+          <Reveal>
+            <div
+              className="card card-dark"
+              style={{
+                padding: 'clamp(40px, 5vw, 64px)',
+                marginTop: 64,
+                textAlign: 'center',
+              }}
+            >
+              <div className="t-eyebrow" style={{ color: 'var(--olive)' }}>
+                Get This Weekly
+              </div>
+              <h3
+                style={{
+                  fontFamily: 'var(--font-serif)',
+                  fontWeight: 300,
+                  fontSize: 'clamp(32px, 3.5vw, 44px)',
+                  marginTop: 16,
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.02em',
+                  color: 'var(--paper)',
+                }}
+              >
+                Subscribe to Deal Dossier.{' '}
+                <em style={{ color: 'var(--olive)', fontWeight: 300 }}>
+                  Free. No paywall.
+                </em>
+              </h3>
+              <Link
+                href="/login"
+                style={{
+                  marginTop: 32,
+                  fontFamily: 'var(--font-condensed)',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  letterSpacing: '0.18em',
+                  textTransform: 'uppercase',
+                  background: 'var(--paper)',
+                  color: 'var(--ink)',
+                  border: '1.5px solid var(--paper)',
+                  padding: '14px 32px',
+                  textDecoration: 'none',
+                  display: 'inline-block',
+                  transition: 'background 0.15s, color 0.15s',
+                }}
+              >
+                Subscribe Free <span className="arr">→</span>
+              </Link>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <Footer />
+    </>
+  )
 }

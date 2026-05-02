@@ -3,7 +3,9 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { format, parseISO, subDays } from 'date-fns'
 import { Nav } from '@/components/Nav'
-import { CategoryIcon } from '@/components/CategoryIcon'
+import { Footer } from '@/components/Footer'
+import { Reveal } from '@/components/Reveal'
+import { FlapNumber } from '@/components/FlapNumber'
 import { SuggestionActions } from '@/components/SuggestionActions'
 import { RunIngestButton } from '@/components/RunIngestButton'
 import { RunSendButton } from '@/components/RunSendButton'
@@ -13,92 +15,67 @@ import type { Category } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
-
-function Stat({ value, label, sub }: { value: string | number; label: string; sub?: string }) {
+// ── Numbered editorial section header ──────────────────────────────────
+function SectionLabel({ n, children }: { n: string; children: React.ReactNode }) {
   return (
-    <div style={{
-      flex: 1, padding: '32px 28px',
-      borderRight: '1px solid var(--ink-06)',
-    }}>
-      <div style={{
-        fontFamily: 'var(--font-serif)',
-        fontSize: 44,
-        fontWeight: 300,
-        letterSpacing: '-0.03em',
-        lineHeight: 1,
-        color: 'var(--ink)',
-        marginBottom: 6,
-      }}>
-        {value}
-      </div>
-      <div style={{
-        fontFamily: 'var(--font-condensed)',
-        fontSize: 10,
-        letterSpacing: '0.18em',
-        textTransform: 'uppercase',
-        color: 'var(--ink-40)',
-      }}>
-        {label}
-      </div>
-      {sub && (
-        <div style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: 11,
-          color: 'var(--ink-40)',
-          marginTop: 4,
-        }}>
-          {sub}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function SectionHeader({ children }: { children: React.ReactNode }) {
-  return (
-    <p style={{
-      fontFamily: 'var(--font-condensed)',
-      fontSize: 10,
-      fontWeight: 600,
-      letterSpacing: '0.22em',
-      textTransform: 'uppercase',
-      color: 'var(--ink-40)',
-      marginBottom: 20,
-      paddingBottom: 12,
-      borderBottom: 'var(--rule)',
-    }}>
+    <div className="t-meta" style={{ color: 'var(--olive-deep)' }}>
+      <span style={{ color: 'var(--ink-25)', marginRight: 10 }}>{n}</span>
       {children}
-    </p>
-  )
-}
-
-function Bar({ pct, accent = false }: { pct: number; accent?: boolean }) {
-  return (
-    <div style={{
-      height: 4,
-      background: 'var(--ink-06)',
-      borderRadius: 2,
-      overflow: 'hidden',
-      flex: 1,
-    }}>
-      <div style={{
-        height: '100%',
-        width: `${Math.max(pct, 2)}%`,
-        background: accent ? 'var(--accent)' : 'var(--ink)',
-        borderRadius: 2,
-        transition: 'width 0.3s ease',
-      }} />
     </div>
   )
 }
 
-// ─── page ─────────────────────────────────────────────────────────────────────
+// ── Ranked list row (rank + label + count) ─────────────────────────────
+function ListRow({
+  rank,
+  label,
+  count,
+  countAccent = false,
+  labelMono = false,
+}: {
+  rank: number
+  label: React.ReactNode
+  count: React.ReactNode
+  countAccent?: boolean
+  labelMono?: boolean
+}) {
+  return (
+    <div className="admin-list-row">
+      <span
+        className="t-mono"
+        style={{ color: 'var(--ink-40)', minWidth: 22 }}
+      >
+        {String(rank).padStart(2, '0')}
+      </span>
+      <span
+        style={{
+          flex: 1,
+          fontSize: labelMono ? 12 : 14,
+          fontFamily: labelMono ? 'var(--font-mono)' : 'var(--font-sans)',
+          color: labelMono ? 'var(--ink-70)' : 'var(--ink)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {label}
+      </span>
+      <span
+        className="t-mono"
+        style={{ color: countAccent ? 'var(--olive-deep)' : 'var(--ink-55)' }}
+      >
+        {count}
+      </span>
+    </div>
+  )
+}
 
 export default async function AdminPage() {
-  // Auth check
+  // ── Auth ──────────────────────────────────────────────────────────────
   const authClient = await createClient()
-  const { data: { user } } = await authClient.auth.getUser()
+  const {
+    data: { user },
+  } = await authClient.auth.getUser()
 
   const adminEmail = process.env.ADMIN_EMAIL
   if (!user || !adminEmail || user.email !== adminEmail) {
@@ -110,7 +87,7 @@ export default async function AdminPage() {
   const sevenDaysAgo = format(subDays(now, 7), 'yyyy-MM-dd')
   const thirtyDaysAgo = format(subDays(now, 30), 'yyyy-MM-dd')
 
-  // ─── parallel data fetch ───────────────────────────────────────────────────
+  // ── Parallel data fetch ───────────────────────────────────────────────
   const [
     { count: totalSubscribers },
     { count: activeSubscribers },
@@ -121,7 +98,6 @@ export default async function AdminPage() {
     { data: recentSubscribers },
     { data: editions },
     { count: totalEmailsSent },
-    { count: sentThisMonth },
     { count: sentThisWeek },
     { data: topRetailers },
     { count: totalEmailsScannedCount },
@@ -139,7 +115,6 @@ export default async function AdminPage() {
     db.from('subscribers').select('email, tier, created_at').order('created_at', { ascending: false }).limit(12),
     db.from('editions').select('*').order('week_of', { ascending: false }).limit(8),
     db.from('sent_emails').select('*', { count: 'exact', head: true }),
-    db.from('sent_emails').select('*', { count: 'exact', head: true }).gte('created_at', thirtyDaysAgo),
     db.from('sent_emails').select('*', { count: 'exact', head: true }).gte('created_at', sevenDaysAgo),
     db.from('deals').select('retailer').gte('created_at', thirtyDaysAgo),
     db.from('processed_emails').select('*', { count: 'exact', head: true }),
@@ -149,20 +124,18 @@ export default async function AdminPage() {
     db.from('store_suggestions').select('id, store_name, website, notes, status, created_at').order('created_at', { ascending: false }).limit(50),
   ])
 
-  // ─── derived stats ─────────────────────────────────────────────────────────
-
+  // ── Derived stats ─────────────────────────────────────────────────────
   const freeCount = (tierData || []).filter((r) => r.tier === 'free').length
   const paidCount = (tierData || []).filter((r) => r.tier === 'paid').length
 
   // Category popularity
   const catCounts: Record<string, number> = {}
-  for (const row of (categoryData || [])) {
+  for (const row of categoryData || []) {
     catCounts[row.category] = (catCounts[row.category] || 0) + 1
   }
   const sortedCats = ALL_CATEGORIES
     .map((c) => ({ cat: c, count: catCounts[c] || 0 }))
     .sort((a, b) => b.count - a.count)
-  const maxCatCount = Math.max(...sortedCats.map((c) => c.count), 1)
 
   // Send day distribution
   const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
@@ -171,38 +144,37 @@ export default async function AdminPage() {
     thursday: 'Thu', friday: 'Fri', saturday: 'Sat', sunday: 'Sun',
   }
   const dayCounts: Record<string, number> = {}
-  for (const row of (sendDayData || [])) {
+  for (const row of sendDayData || []) {
     dayCounts[row.send_day] = (dayCounts[row.send_day] || 0) + 1
   }
-  const maxDayCount = Math.max(...dayOrder.map((d) => dayCounts[d] || 0), 1)
 
   // Top retailers (last 30 days)
   const retailerCounts: Record<string, number> = {}
-  for (const row of (topRetailers || [])) {
+  for (const row of topRetailers || []) {
     if (row.retailer) retailerCounts[row.retailer] = (retailerCounts[row.retailer] || 0) + 1
   }
   const topRetailerList = Object.entries(retailerCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
-  const maxRetailerCount = Math.max(...topRetailerList.map((r) => r[1]), 1)
 
-  // Pipeline totals — pulled from actual source tables, not editions metadata
   const totalEmailsScanned = totalEmailsScannedCount ?? 0
   const totalDealsFound = totalDealsFoundCount ?? 0
 
   // Top toggled-on stores
   const toggledStoreCounts: Record<string, number> = {}
-  for (const row of (toggledStores || [])) {
+  for (const row of toggledStores || []) {
     if (row.retailer) toggledStoreCounts[row.retailer] = (toggledStoreCounts[row.retailer] || 0) + 1
   }
   const topToggledStores = Object.entries(toggledStoreCounts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
-  const maxToggleCount = Math.max(...topToggledStores.map((r) => r[1]), 1)
 
-  // Newsletter performance: aggregate by retailer across all weeks, then split
-  const retailerAggMap = new Map<string, { retailer: string; sender_email: string; emails_processed: number; deals_extracted: number }>()
-  for (const row of (retailerScanLog || [])) {
+  // Newsletter performance — aggregate by retailer
+  const retailerAggMap = new Map<
+    string,
+    { retailer: string; sender_email: string; emails_processed: number; deals_extracted: number }
+  >()
+  for (const row of retailerScanLog || []) {
     const key = row.retailer
     const existing = retailerAggMap.get(key)
     if (existing) {
@@ -213,481 +185,461 @@ export default async function AdminPage() {
     }
   }
   const aggregatedScanLog = Array.from(retailerAggMap.values())
-
-  const dealProducers = aggregatedScanLog.filter((r) => r.deals_extracted > 0)
+  const dealProducers = aggregatedScanLog
+    .filter((r) => r.deals_extracted > 0)
     .sort((a, b) => b.deals_extracted - a.deals_extracted)
-  const zeroDealSenders = aggregatedScanLog.filter((r) => r.deals_extracted === 0)
+    .slice(0, 15)
+  const zeroDealSenders = aggregatedScanLog
+    .filter((r) => r.deals_extracted === 0)
     .sort((a, b) => b.emails_processed - a.emails_processed)
-  const maxEmailsProcessed = Math.max(...aggregatedScanLog.map((r) => r.emails_processed), 1)
+    .slice(0, 15)
 
-  // ─── render ────────────────────────────────────────────────────────────────
-
+  // ── Render ────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--paper)' }}>
-
+    <div className="admin-route">
       <Nav />
 
-      <div className="wrap" style={{ paddingTop: 64, paddingBottom: 120 }}>
-
-        {/* Header */}
-        <div style={{ marginBottom: 56, borderBottom: 'var(--rule)', paddingBottom: 48 }}>
-          <p className="t-section" style={{ marginBottom: 12 }}>Dashboard</p>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
-            <h1 style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 'clamp(40px, 5vw, 72px)',
-              fontWeight: 300,
-              letterSpacing: '-0.03em',
-              lineHeight: 0.95,
-            }}>
-              Admin Overview
-            </h1>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+      <section style={{ padding: 'clamp(56px, 7vw, 96px) 0 clamp(56px, 7vw, 96px)' }}>
+        <div className="wrap">
+          {/* Header */}
+          <div className="admin-header">
+            <div>
+              <Reveal>
+                <div className="t-eyebrow">Dashboard</div>
+              </Reveal>
+              <Reveal delay={80}>
+                <h1
+                  style={{
+                    fontFamily: 'var(--font-serif)',
+                    fontWeight: 300,
+                    fontSize: 'clamp(40px, 5vw, 72px)',
+                    marginTop: 16,
+                    lineHeight: 1,
+                    letterSpacing: '-0.025em',
+                  }}
+                >
+                  Admin{' '}
+                  <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>Overview</em>
+                </h1>
+              </Reveal>
+              <Reveal delay={160}>
+                <p className="t-meta" style={{ marginTop: 16, color: 'var(--ink-40)' }}>
+                  Internal Operations · Cron + Pipeline + Subscribers
+                </p>
+              </Reveal>
+            </div>
+            <div className="admin-actions">
               <RunIngestButton />
               <RunSendButton />
               <SendPreviewButton />
             </div>
           </div>
-        </div>
 
-        {/* Top stat row */}
-        <div className="radmin-stat" style={{
-          display: 'flex',
-          borderTop: 'var(--rule)',
-          borderLeft: '1px solid var(--ink-06)',
-          marginBottom: 64,
-        }}>
-          <Stat value={totalSubscribers ?? 0} label="Total Subscribers" />
-          <Stat value={activeSubscribers ?? 0} label="Active" sub={`${totalSubscribers ? Math.round(((activeSubscribers ?? 0) / totalSubscribers) * 100) : 0}% of total`} />
-          <Stat value={freeCount} label="Free Tier" />
-          <Stat value={paidCount} label="Paid Tier" />
-          <Stat value={`+${newThisWeek ?? 0}`} label="New This Week" />
-        </div>
-
-        {/* Pipeline totals */}
-        <div style={{ marginBottom: 64 }}>
-          <SectionHeader>Pipeline Totals</SectionHeader>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, background: 'var(--ink-06)' }}>
-            {[
-              { value: totalEmailsScanned.toLocaleString(), label: 'Emails Scanned' },
-              { value: totalDealsFound.toLocaleString(), label: 'Deals Extracted' },
-              { value: (totalEmailsSent ?? 0).toLocaleString(), label: 'Emails Delivered' },
-              { value: (sentThisWeek ?? 0).toLocaleString(), label: 'Emails Delivered This Week' },
-            ].map(({ value, label }) => (
-              <div key={label} style={{
-                background: 'var(--paper)',
-                padding: '20px 24px',
-              }}>
-                <div style={{
-                  fontFamily: 'var(--font-serif)',
-                  fontSize: 28,
-                  fontWeight: 300,
-                  letterSpacing: '-0.02em',
-                  color: 'var(--ink)',
-                  lineHeight: 1,
-                  marginBottom: 4,
-                }}>
-                  {value}
+          {/* 01 Subscribers */}
+          <Reveal delay={120}>
+            <div className="admin-section-label" style={{ marginTop: 64 }}>
+              <SectionLabel n="01">Subscribers</SectionLabel>
+            </div>
+            <div className="admin-stat-row">
+              {[
+                {
+                  n: totalSubscribers ?? 0,
+                  l: 'Total Subscribers',
+                  sub: null,
+                  accent: false,
+                },
+                {
+                  n: activeSubscribers ?? 0,
+                  l: 'Active',
+                  sub:
+                    totalSubscribers && totalSubscribers > 0
+                      ? `${Math.round(((activeSubscribers ?? 0) / totalSubscribers) * 100)}% of total`
+                      : null,
+                  accent: false,
+                },
+                { n: freeCount, l: 'Free Tier', sub: null, accent: false },
+                { n: paidCount, l: 'Paid Tier', sub: null, accent: false },
+                {
+                  n: newThisWeek ?? 0,
+                  l: 'New This Week',
+                  sub: '+ trending',
+                  accent: true,
+                },
+              ].map(({ n, l, sub, accent }) => (
+                <div
+                  key={l}
+                  className={`admin-stat ${accent ? 'admin-stat-accent' : ''}`}
+                >
+                  <div className="admin-stat-num">
+                    <FlapNumber value={String(n)} />
+                  </div>
+                  <div className="t-meta admin-stat-label">{l}</div>
+                  {sub && <div className="admin-stat-sub">{sub}</div>}
                 </div>
-                <div style={{
-                  fontFamily: 'var(--font-condensed)',
-                  fontSize: 9,
-                  letterSpacing: '0.18em',
-                  textTransform: 'uppercase',
-                  color: 'var(--ink-40)',
-                }}>
-                  {label}
+              ))}
+            </div>
+          </Reveal>
+
+          {/* 02 Pipeline Totals */}
+          <Reveal delay={160}>
+            <div className="admin-section-label" style={{ marginTop: 64 }}>
+              <SectionLabel n="02">Pipeline Totals</SectionLabel>
+            </div>
+            <div className="admin-stat-row admin-stat-row-4">
+              {[
+                { n: totalEmailsScanned, l: 'Emails Scanned' },
+                { n: totalDealsFound, l: 'Deals Extracted' },
+                { n: totalEmailsSent ?? 0, l: 'Emails Delivered' },
+                { n: sentThisWeek ?? 0, l: 'Delivered This Week' },
+              ].map(({ n, l }) => (
+                <div key={l} className="admin-stat">
+                  <div className="admin-stat-num">
+                    <FlapNumber value={String(n)} />
+                  </div>
+                  <div className="t-meta admin-stat-label">{l}</div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+
+          {/* 03 / 04 / 05 — Category · Send Day · Most-Wanted */}
+          <div className="admin-3col" style={{ marginTop: 80 }}>
+            <Reveal>
+              <div className="admin-card admin-card-tight">
+                <SectionLabel n="03">Category Popularity</SectionLabel>
+                <div className="admin-list" style={{ marginTop: 20 }}>
+                  {sortedCats.map((c, i) => (
+                    <ListRow
+                      key={c.cat}
+                      rank={i + 1}
+                      label={CATEGORY_LABELS[c.cat as Category] ?? c.cat}
+                      count={c.count.toLocaleString()}
+                    />
+                  ))}
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </Reveal>
 
-        {/* Two-column layout */}
-        <div className="r2grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, marginBottom: 64 }}>
+            <Reveal delay={120}>
+              <div className="admin-card admin-card-tight">
+                <SectionLabel n="04">Send Day Distribution</SectionLabel>
+                <div className="admin-list" style={{ marginTop: 20 }}>
+                  {dayOrder.map((day, i) => (
+                    <ListRow
+                      key={day}
+                      rank={i + 1}
+                      label={dayLabels[day]}
+                      count={(dayCounts[day] || 0).toLocaleString()}
+                      countAccent
+                    />
+                  ))}
+                </div>
+              </div>
+            </Reveal>
 
-          {/* Category popularity */}
-          <div>
-            <SectionHeader>Category Popularity</SectionHeader>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {sortedCats.map(({ cat, count }) => (
-                <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <CategoryIcon category={cat as Category} size={14} />
-                  <span style={{
-                    fontFamily: 'var(--font-sans)',
+            <Reveal delay={200}>
+              <div className="admin-card admin-card-tight">
+                <SectionLabel n="05">Most-Wanted Stores</SectionLabel>
+                <p
+                  style={{
                     fontSize: 12,
-                    fontWeight: 600,
-                    width: 96,
-                    flexShrink: 0,
-                    color: 'var(--ink)',
-                  }}>
-                    {CATEGORY_LABELS[cat as Category]}
-                  </span>
-                  <Bar pct={(count / maxCatCount) * 100} />
-                  <span style={{
-                    fontFamily: 'var(--font-condensed)',
-                    fontSize: 11,
-                    letterSpacing: '0.05em',
-                    color: 'var(--ink-40)',
-                    width: 28,
-                    textAlign: 'right',
-                    flexShrink: 0,
-                  }}>
-                    {count}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Send day distribution + top retailers */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 48 }}>
-
-            {/* Send day */}
-            <div>
-              <SectionHeader>Send Day Distribution</SectionHeader>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {dayOrder.map((day) => {
-                  const count = dayCounts[day] || 0
-                  return (
-                    <div key={day} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <span style={{
-                        fontFamily: 'var(--font-condensed)',
-                        fontSize: 11,
-                        letterSpacing: '0.1em',
-                        textTransform: 'uppercase',
-                        color: 'var(--ink-40)',
-                        width: 32,
-                        flexShrink: 0,
-                      }}>
-                        {dayLabels[day]}
-                      </span>
-                      <Bar pct={(count / maxDayCount) * 100} accent />
-                      <span style={{
-                        fontFamily: 'var(--font-condensed)',
-                        fontSize: 11,
-                        letterSpacing: '0.05em',
-                        color: 'var(--ink-40)',
-                        width: 24,
-                        textAlign: 'right',
-                        flexShrink: 0,
-                      }}>
-                        {count}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Top toggled-on stores */}
-        {topToggledStores.length > 0 && (
-          <div style={{ marginBottom: 64 }}>
-            <SectionHeader>Most-Wanted Stores (Paid Users Toggled On)</SectionHeader>
-            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)', marginBottom: 20, lineHeight: 1.5 }}>
-              Stores paid subscribers have explicitly kept active — a signal of demand for similar retailers.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {topToggledStores.map(([retailer, count], i) => (
-                <div key={retailer} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <span style={{
-                    fontFamily: 'var(--font-condensed)', fontSize: 10,
-                    color: 'var(--ink-40)', width: 20, textAlign: 'right', flexShrink: 0,
-                  }}>
-                    {i + 1}
-                  </span>
-                  <span style={{
-                    fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600,
-                    width: 180, flexShrink: 0, color: 'var(--ink)',
-                  }}>
-                    {retailer}
-                  </span>
-                  <Bar pct={(count / maxToggleCount) * 100} accent />
-                  <span style={{
-                    fontFamily: 'var(--font-condensed)', fontSize: 11,
-                    color: 'var(--ink-40)', width: 64, textAlign: 'right', flexShrink: 0,
-                  }}>
-                    {count} user{count !== 1 ? 's' : ''}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Retailer + newsletter performance — 3-column row */}
-        {(topRetailerList.length > 0 || (retailerScanLog || []).length > 0) && (
-          <div className="r3grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 48, marginBottom: 64 }}>
-
-            {/* Top retailers (last 30 days) */}
-            {topRetailerList.length > 0 && (
-              <div>
-                <SectionHeader>Top Retailers by Deals (Last 30 Days)</SectionHeader>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {topRetailerList.map(([retailer, count], i) => (
-                    <div key={retailer} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <span style={{
-                        fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.1em',
-                        color: 'var(--ink-40)', width: 18, textAlign: 'right', flexShrink: 0,
-                      }}>
-                        {i + 1}
-                      </span>
-                      <span style={{
-                        fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 600,
-                        flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        color: 'var(--ink)',
-                      }}>
-                        {retailer}
-                      </span>
-                      <Bar pct={(count / maxRetailerCount) * 100} />
-                      <span style={{
-                        fontFamily: 'var(--font-condensed)', fontSize: 10, color: 'var(--ink-40)',
-                        width: 56, textAlign: 'right', flexShrink: 0,
-                      }}>
-                        {count} deal{count !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                  ))}
+                    color: 'var(--ink-55)',
+                    marginTop: 8,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Stores paid users have explicitly kept active.
+                </p>
+                <div className="admin-list" style={{ marginTop: 20 }}>
+                  {topToggledStores.length === 0 ? (
+                    <p className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                      No data yet
+                    </p>
+                  ) : (
+                    topToggledStores.map(([retailer, count], i) => (
+                      <ListRow
+                        key={retailer}
+                        rank={i + 1}
+                        label={retailer}
+                        count={`${count} user${count !== 1 ? 's' : ''}`}
+                      />
+                    ))
+                  )}
                 </div>
               </div>
-            )}
+            </Reveal>
+          </div>
 
-            {/* Deal producers */}
-            {(retailerScanLog || []).length > 0 && (
-              <div>
-                <SectionHeader>Deal-Producing Newsletters</SectionHeader>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {dealProducers.slice(0, 15).map((r) => (
-                    <div key={r.retailer} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <span style={{
-                        fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 600,
-                        flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                        color: 'var(--ink)',
-                      }}>
-                        {r.retailer}
-                      </span>
-                      <Bar pct={(r.deals_extracted / Math.max(...dealProducers.map(d => d.deals_extracted), 1)) * 100} accent />
-                      <span style={{
-                        fontFamily: 'var(--font-condensed)', fontSize: 10, color: 'var(--ink-40)',
-                        width: 56, textAlign: 'right', flexShrink: 0,
-                      }}>
-                        {r.deals_extracted} deal{r.deals_extracted !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                  ))}
+          {/* 06 / 07 / 08 — Top Retailers · Deal Producers · Zero-Deal */}
+          <div className="admin-3col" style={{ marginTop: 32 }}>
+            <Reveal>
+              <div className="admin-card admin-card-tight">
+                <SectionLabel n="06">Top Retailers · 30 Days</SectionLabel>
+                <div className="admin-list" style={{ marginTop: 20 }}>
+                  {topRetailerList.length === 0 ? (
+                    <p className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                      No deals in the last 30 days
+                    </p>
+                  ) : (
+                    topRetailerList.map(([retailer, count], i) => (
+                      <ListRow
+                        key={retailer}
+                        rank={i + 1}
+                        label={retailer}
+                        count={`${count} deal${count !== 1 ? 's' : ''}`}
+                      />
+                    ))
+                  )}
                 </div>
               </div>
-            )}
+            </Reveal>
 
-            {/* Zero-deal senders */}
-            {(retailerScanLog || []).length > 0 && (
-              <div>
-                <SectionHeader>Zero-Deal Senders (Consider Unsubscribing)</SectionHeader>
+            <Reveal delay={80}>
+              <div className="admin-card admin-card-tight">
+                <SectionLabel n="07">Deal-Producing Newsletters</SectionLabel>
+                <div className="admin-list" style={{ marginTop: 20 }}>
+                  {dealProducers.length === 0 ? (
+                    <p className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                      No data yet
+                    </p>
+                  ) : (
+                    dealProducers.map((r, i) => (
+                      <ListRow
+                        key={r.retailer}
+                        rank={i + 1}
+                        label={r.retailer}
+                        count={r.deals_extracted}
+                        countAccent
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal delay={160}>
+              <div className="admin-card admin-card-tight">
+                <SectionLabel n="08">Zero-Deal · Consider Unsub</SectionLabel>
                 {zeroDealSenders.length === 0 ? (
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)' }}>
+                  <p
+                    style={{ marginTop: 20, fontSize: 13, color: 'var(--ink-55)' }}
+                  >
                     All scanned senders have produced at least one deal.
                   </p>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {zeroDealSenders.slice(0, 15).map((r) => (
-                      <div key={r.retailer} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{
-                          fontFamily: 'var(--font-sans)', fontSize: 12, fontWeight: 600,
-                          flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                          color: 'var(--ink-40)',
-                        }}>
-                          {r.retailer}
-                        </span>
-                        <Bar pct={(r.emails_processed / maxEmailsProcessed) * 100} />
-                        <span style={{
-                          fontFamily: 'var(--font-condensed)', fontSize: 10, color: 'var(--ink-40)',
-                          width: 64, textAlign: 'right', flexShrink: 0,
-                        }}>
-                          {r.emails_processed} email{r.emails_processed !== 1 ? 's' : ''}
-                        </span>
-                      </div>
+                  <div className="admin-list" style={{ marginTop: 20 }}>
+                    {zeroDealSenders.map((r, i) => (
+                      <ListRow
+                        key={r.retailer}
+                        rank={i + 1}
+                        label={r.retailer}
+                        count={`${r.emails_processed}`}
+                        labelMono={false}
+                      />
                     ))}
                   </div>
                 )}
               </div>
-            )}
-
+            </Reveal>
           </div>
-        )}
 
-        {/* Store suggestions */}
-        {(storeSuggestions || []).length > 0 && (
-          <div style={{ marginBottom: 64 }}>
-            <SectionHeader>Store Suggestions from Paid Users</SectionHeader>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  {['Store', 'Website', 'Notes', 'Status', 'Date'].map((h) => (
-                    <th key={h} style={{
-                      fontFamily: 'var(--font-condensed)', fontSize: 9, letterSpacing: '0.18em',
-                      textTransform: 'uppercase', color: 'var(--ink-40)', textAlign: 'left',
-                      paddingBottom: 10, paddingRight: 16, borderBottom: 'var(--rule)', fontWeight: 500,
-                    }}>{h}</th>
+          {/* 09 Store Suggestions */}
+          {(storeSuggestions || []).length > 0 && (
+            <Reveal delay={80}>
+              <div className="admin-card" style={{ marginTop: 32 }}>
+                <SectionLabel n="09">Store Suggestions · From Paid Users</SectionLabel>
+                <div className="admin-table" style={{ marginTop: 24 }}>
+                  <div className="admin-table-head">
+                    <div>Store</div>
+                    <div>Website</div>
+                    <div>Notes</div>
+                    <div>Status</div>
+                    <div>Date</div>
+                    <div></div>
+                  </div>
+                  {(storeSuggestions || []).map((s) => (
+                    <div key={s.id} className="admin-table-row">
+                      <div
+                        style={{
+                          fontFamily: 'var(--font-serif)',
+                          fontSize: 18,
+                          fontWeight: 350,
+                          letterSpacing: '-0.01em',
+                        }}
+                      >
+                        {s.store_name}
+                      </div>
+                      <div
+                        className="t-mono"
+                        style={{ fontSize: 12, color: 'var(--ink-55)' }}
+                      >
+                        {s.website || '—'}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 13,
+                          color: 'var(--ink-70)',
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {s.notes || (
+                          <span style={{ color: 'var(--ink-25)' }}>—</span>
+                        )}
+                      </div>
+                      <div>
+                        {s.status === 'pending' ? (
+                          <span className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                            ○ Pending
+                          </span>
+                        ) : (
+                          <span
+                            className="t-meta"
+                            style={{ color: 'var(--olive-deep)' }}
+                          >
+                            ●{' '}
+                            {s.status === 'added'
+                              ? 'Added'
+                              : s.status.charAt(0).toUpperCase() + s.status.slice(1)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                        {format(new Date(s.created_at), 'MMM d')}
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <SuggestionActions
+                          suggestionId={s.id}
+                          storeName={s.store_name}
+                          initialStatus={s.status}
+                        />
+                      </div>
+                    </div>
                   ))}
-                </tr>
-              </thead>
-              <tbody>
-                {(storeSuggestions || []).map((s, i) => (
-                  <tr key={i}>
-                    <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 600, color: 'var(--ink)' }}>
-                      {s.store_name}
-                    </td>
-                    <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-40)' }}>
-                      {s.website || '—'}
-                    </td>
-                    <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-70)', maxWidth: 240 }}>
-                      {s.notes || '—'}
-                    </td>
-                    <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)', position: 'relative' }}>
-                      <SuggestionActions
-                        suggestionId={s.id}
-                        storeName={s.store_name}
-                        initialStatus={s.status}
-                      />
-                    </td>
-                    <td style={{ padding: '10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-condensed)', fontSize: 11, color: 'var(--ink-40)', whiteSpace: 'nowrap' }}>
-                      {format(new Date(s.created_at), 'MMM d, yyyy')}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </div>
+              </div>
+            </Reveal>
+          )}
 
-        {/* Two-column bottom: editions + recent signups */}
-        <div className="r2grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64 }}>
-
-          {/* Recent editions */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, paddingBottom: 12, borderBottom: 'var(--rule)' }}>
-              <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--ink-40)', margin: 0 }}>
-                Recent Editions
-              </p>
-            </div>
-            {!editions || editions.length === 0 ? (
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)' }}>No editions yet.</p>
-            ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    {['Week Of', 'Issue', 'Scanned', 'Deals', 'Retailers'].map((h) => (
-                      <th key={h} style={{
-                        fontFamily: 'var(--font-condensed)',
-                        fontSize: 9,
-                        letterSpacing: '0.18em',
-                        textTransform: 'uppercase',
-                        color: 'var(--ink-40)',
-                        textAlign: 'left',
-                        paddingBottom: 10,
-                        paddingRight: 16,
-                        borderBottom: 'var(--rule)',
-                        fontWeight: 500,
-                      }}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {editions.map((ed) => (
-                    <tr key={ed.id}>
-                      <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)' }}>
-                        <Link href={`/archive/${ed.week_of}`} style={{
-                          fontFamily: 'var(--font-sans)',
-                          fontSize: 12,
-                          fontWeight: 600,
-                          color: 'var(--ink)',
-                          textDecoration: 'none',
-                        }}>
+          {/* 10 / 11 — Recent Editions · Recent Signups */}
+          <div className="admin-2col" style={{ marginTop: 32 }}>
+            <Reveal>
+              <div className="admin-card">
+                <SectionLabel n="10">Recent Editions</SectionLabel>
+                <div className="admin-table" style={{ marginTop: 20 }}>
+                  <div
+                    className="admin-table-head"
+                    style={{ gridTemplateColumns: '1.5fr 0.5fr 0.7fr 0.7fr 0.8fr' }}
+                  >
+                    <div>Week Of</div>
+                    <div>Issue</div>
+                    <div>Scanned</div>
+                    <div>Deals</div>
+                    <div>Retailers</div>
+                  </div>
+                  {!editions || editions.length === 0 ? (
+                    <p
+                      style={{
+                        marginTop: 20,
+                        fontSize: 13,
+                        color: 'var(--ink-55)',
+                      }}
+                    >
+                      No editions yet.
+                    </p>
+                  ) : (
+                    editions.map((ed) => (
+                      <Link
+                        key={ed.id}
+                        href={`/archive/${ed.week_of}`}
+                        className="admin-table-row admin-table-link"
+                        style={{ gridTemplateColumns: '1.5fr 0.5fr 0.7fr 0.7fr 0.8fr' }}
+                      >
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 16,
+                            fontWeight: 350,
+                            letterSpacing: '-0.01em',
+                          }}
+                        >
                           {format(parseISO(ed.week_of), 'MMM d, yyyy')}
-                        </Link>
-                      </td>
-                      <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-condensed)', fontSize: 11, color: 'var(--ink-40)', letterSpacing: '0.05em' }}>
-                        {ed.issue_number ? `#${ed.issue_number}` : '-'}
-                      </td>
-                      <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-70)' }}>
-                        {ed.emails_scanned}
-                      </td>
-                      <td style={{ padding: '10px 16px 10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-70)' }}>
-                        {ed.deals_found}
-                      </td>
-                      <td style={{ padding: '10px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink-70)' }}>
-                        {ed.retailers_count}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+                        </div>
+                        <div className="t-mono">
+                          {ed.issue_number ? `No. ${ed.issue_number}` : '—'}
+                        </div>
+                        <div className="t-mono" style={{ color: 'var(--ink-55)' }}>
+                          {ed.emails_scanned ?? '—'}
+                        </div>
+                        <div className="t-mono" style={{ color: 'var(--olive-deep)' }}>
+                          {ed.deals_found ?? '—'}
+                        </div>
+                        <div className="t-mono" style={{ color: 'var(--ink-55)' }}>
+                          {ed.retailers_count ?? '—'}
+                        </div>
+                      </Link>
+                    ))
+                  )}
+                </div>
+              </div>
+            </Reveal>
 
-          {/* Recent signups */}
-          <div>
-            <SectionHeader>Recent Signups</SectionHeader>
-            {!recentSubscribers || recentSubscribers.length === 0 ? (
-              <p style={{ fontFamily: 'var(--font-sans)', fontSize: 13, color: 'var(--ink-40)' }}>No subscribers yet.</p>
-            ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr>
-                    {['Email', 'Tier', 'Joined'].map((h) => (
-                      <th key={h} style={{
-                        fontFamily: 'var(--font-condensed)',
-                        fontSize: 9,
-                        letterSpacing: '0.18em',
-                        textTransform: 'uppercase',
-                        color: 'var(--ink-40)',
-                        textAlign: 'left',
-                        paddingBottom: 10,
-                        paddingRight: 16,
-                        borderBottom: 'var(--rule)',
-                        fontWeight: 500,
-                      }}>
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentSubscribers.map((sub, i) => (
-                    <tr key={i}>
-                      <td style={{ padding: '9px 16px 9px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-sans)', fontSize: 12, color: 'var(--ink)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {sub.email}
-                      </td>
-                      <td style={{ padding: '9px 16px 9px 0', borderBottom: '1px solid var(--ink-06)' }}>
-                        <span style={{
-                          fontFamily: 'var(--font-condensed)',
-                          fontSize: 9,
-                          letterSpacing: '0.15em',
-                          textTransform: 'uppercase',
-                          color: sub.tier === 'paid' ? 'var(--accent)' : 'var(--ink-40)',
-                          border: `1px solid ${sub.tier === 'paid' ? 'var(--accent)' : 'var(--ink-15)'}`,
-                          padding: '2px 6px',
-                        }}>
-                          {sub.tier}
-                        </span>
-                      </td>
-                      <td style={{ padding: '9px 0', borderBottom: '1px solid var(--ink-06)', fontFamily: 'var(--font-condensed)', fontSize: 11, color: 'var(--ink-40)', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
-                        {format(new Date(sub.created_at), 'MMM d, yyyy')}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+            <Reveal delay={80}>
+              <div className="admin-card">
+                <SectionLabel n="11">Recent Signups</SectionLabel>
+                <div className="admin-table" style={{ marginTop: 20 }}>
+                  <div
+                    className="admin-table-head"
+                    style={{ gridTemplateColumns: '2fr 0.7fr 0.8fr' }}
+                  >
+                    <div>Email</div>
+                    <div>Tier</div>
+                    <div>Joined</div>
+                  </div>
+                  {!recentSubscribers || recentSubscribers.length === 0 ? (
+                    <p
+                      style={{
+                        marginTop: 20,
+                        fontSize: 13,
+                        color: 'var(--ink-55)',
+                      }}
+                    >
+                      No subscribers yet.
+                    </p>
+                  ) : (
+                    recentSubscribers.map((sub, i) => (
+                      <div
+                        key={i}
+                        className="admin-table-row"
+                        style={{ gridTemplateColumns: '2fr 0.7fr 0.8fr' }}
+                      >
+                        <div
+                          className="t-mono"
+                          style={{
+                            fontSize: 12,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {sub.email}
+                        </div>
+                        <div>
+                          <span className={`tier-badge ${sub.tier}`}>{sub.tier}</span>
+                        </div>
+                        <div className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                          {format(new Date(sub.created_at), 'MMM d')}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </Reveal>
           </div>
-
         </div>
-      </div>
+      </section>
+
+      <Footer />
     </div>
   )
 }

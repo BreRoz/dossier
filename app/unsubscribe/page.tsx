@@ -4,6 +4,8 @@ import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Nav } from '@/components/Nav'
+import { Footer } from '@/components/Footer'
+import { Reveal } from '@/components/Reveal'
 
 function UnsubscribeForm() {
   const searchParams = useSearchParams()
@@ -38,77 +40,158 @@ function UnsubscribeForm() {
     }
   }
 
-  return (
-    <div style={{ width: '100%', maxWidth: 480 }}>
-      {done ? (
-        <div>
-          <p className="t-section" style={{ marginBottom: 16 }}>Unsubscribed</p>
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 40, fontWeight: 300, letterSpacing: '-0.01em', lineHeight: 1.1, marginBottom: 20 }}>
-            You've been removed.
+  if (done) {
+    return (
+      <>
+        <Reveal>
+          <div className="t-eyebrow" style={{ color: 'var(--olive-deep)' }}>
+            ✓ Unsubscribed
+          </div>
+        </Reveal>
+        <Reveal delay={100}>
+          <h1
+            style={{
+              fontFamily: 'var(--font-serif)',
+              fontWeight: 300,
+              fontSize: 'clamp(40px, 6vw, 72px)',
+              marginTop: 20,
+              lineHeight: 1,
+              letterSpacing: '-0.025em',
+            }}
+          >
+            You&rsquo;ve been{' '}
+            <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>
+              removed.
+            </em>
           </h1>
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.65, marginBottom: 32 }}>
-            <strong style={{ color: 'var(--ink)' }}>{email}</strong> will no longer receive Dossier emails. We're sorry to see you go.
+        </Reveal>
+        <Reveal delay={200}>
+          <p
+            style={{
+              marginTop: 28,
+              color: 'var(--ink-70)',
+              fontSize: 16,
+              lineHeight: 1.65,
+            }}
+          >
+            <strong style={{ color: 'var(--ink)' }}>{email}</strong> will no
+            longer receive Deal Dossier emails. We&rsquo;re sorry to see you go.
           </p>
-          <Link href="/" style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-40)', textDecoration: 'none' }}>
-            ← Back to Deal Dossier
-          </Link>
-        </div>
-      ) : (
-        <>
-          <p className="t-section" style={{ marginBottom: 16 }}>Unsubscribe</p>
-          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 40, fontWeight: 300, letterSpacing: '-0.01em', lineHeight: 1.1, marginBottom: 20 }}>
-            Leave Deal Dossier?
-          </h1>
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.65, marginBottom: 8 }}>
-            You can also <Link href="/preferences" style={{ color: 'var(--ink)' }}>adjust your preferences</Link> to receive fewer emails or change your categories instead.
-          </p>
-          <p style={{ fontFamily: 'var(--font-sans)', fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.65, marginBottom: 40 }}>
-            Confirm your email to unsubscribe permanently.
-          </p>
+        </Reveal>
+        <Link href="/" className="btn-ghost" style={{ marginTop: 40 }}>
+          ← Back to Deal Dossier
+        </Link>
+      </>
+    )
+  }
 
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: 16 }}>
-              <label className="t-meta" style={{ display: 'block', marginBottom: 8 }}>Email Address</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="field-input"
-              />
-            </div>
-            {error && (
-              <p style={{ fontFamily: 'var(--font-condensed)', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'oklch(50% 0.2 20)', marginBottom: 16 }}>{error}</p>
-            )}
-            <button
-              type="submit"
-              disabled={submitting}
-              style={{
-                fontFamily: 'var(--font-condensed)', fontSize: 12, fontWeight: 600,
-                letterSpacing: '0.18em', textTransform: 'uppercase',
-                background: 'transparent', color: 'var(--ink)',
-                border: '1.5px solid var(--ink-15)', padding: '14px 32px',
-                cursor: submitting ? 'default' : 'pointer', width: '100%',
-              }}
+  return (
+    <>
+      <Reveal>
+        <div className="t-eyebrow">Unsubscribe</div>
+      </Reveal>
+      <Reveal delay={100}>
+        <h1
+          style={{
+            fontFamily: 'var(--font-serif)',
+            fontWeight: 300,
+            fontSize: 'clamp(40px, 6vw, 72px)',
+            marginTop: 20,
+            lineHeight: 1,
+            letterSpacing: '-0.025em',
+          }}
+        >
+          Leave{' '}
+          <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>
+            Deal Dossier?
+          </em>
+        </h1>
+      </Reveal>
+      <Reveal delay={200}>
+        <p
+          style={{
+            marginTop: 28,
+            color: 'var(--ink-70)',
+            fontSize: 16,
+            lineHeight: 1.65,
+          }}
+        >
+          You can also{' '}
+          <Link
+            href="/preferences"
+            style={{ borderBottom: '1px solid currentColor' }}
+          >
+            adjust your preferences
+          </Link>{' '}
+          to receive fewer emails or change your categories instead. Confirm your
+          email to unsubscribe permanently.
+        </p>
+      </Reveal>
+      <Reveal delay={300}>
+        <form onSubmit={handleSubmit} style={{ marginTop: 48 }}>
+          <div className="t-meta" style={{ marginBottom: 12 }}>
+            Email Address
+          </div>
+          <div className="field">
+            <input
+              type="email"
+              required
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          {error && (
+            <p
+              className="t-meta"
+              style={{ marginTop: 16, color: 'oklch(50% 0.2 20)' }}
             >
-              {submitting ? 'Processing...' : 'Confirm Unsubscribe'}
-            </button>
-          </form>
-        </>
-      )}
-    </div>
+              {error}
+            </p>
+          )}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn-ghost"
+            style={{
+              marginTop: 32,
+              width: '100%',
+              textAlign: 'center',
+            }}
+          >
+            {submitting ? 'Processing…' : 'Confirm Unsubscribe'}
+          </button>
+        </form>
+      </Reveal>
+    </>
   )
 }
 
 export default function UnsubscribePage() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--paper)' }}>
+    <>
       <Nav />
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
-        <Suspense fallback={<p className="t-meta">Loading...</p>}>
-          <UnsubscribeForm />
-        </Suspense>
-      </div>
-    </div>
+      <section
+        style={{
+          minHeight: '70vh',
+          display: 'flex',
+          alignItems: 'center',
+          padding: 'clamp(80px, 10vw, 140px) 0',
+        }}
+      >
+        <div className="wrap" style={{ maxWidth: 640 }}>
+          <Suspense
+            fallback={
+              <p className="t-meta" style={{ color: 'var(--ink-40)' }}>
+                Loading…
+              </p>
+            }
+          >
+            <UnsubscribeForm />
+          </Suspense>
+        </div>
+      </section>
+      <Footer />
+    </>
   )
 }
