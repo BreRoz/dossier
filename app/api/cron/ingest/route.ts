@@ -3,7 +3,7 @@ import { createServiceClient } from '@/lib/supabase/server'
 import { fetchPromotionalEmails } from '@/lib/gmail'
 import { extractDealsFromEmail } from '@/lib/openai'
 import { getCurrentWeekOf, makeDealKey, isJunkDeal } from '@/lib/deals'
-import { fetchStoreData, canonicalRetailerName } from '@/lib/stores'
+import { fixRetailerCase } from '@/lib/stores'
 import { sendAdminAlert } from '@/lib/resend'
 import { addDays, format } from 'date-fns'
 import type { Category } from '@/types'
@@ -46,11 +46,6 @@ export async function GET(request: NextRequest) {
   // Scan from the Sunday before the edition Thursday so we catch weekly-ad
   // emails (e.g. H-E-B) that arrive mid-week before the Thursday anchor
   const since = addDays(weekOf, -4)
-
-  // Pull canonical retailer names from the Google Sheet so we can override
-  // whatever the LLM returned (e.g. "carter's" → "Carter's").
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dealdossier.io'
-  const { storeNames } = await fetchStoreData(appUrl)
 
   try {
     const emails = await fetchPromotionalEmails(since)
@@ -112,8 +107,9 @@ export async function GET(request: NextRequest) {
         // Skip deals with no real value
         if (!deal.description || !deal.retailer) continue
 
-        // Apply canonical retailer name from the sheet (or title-case fallback)
-        const retailer = canonicalRetailerName(deal.retailer, storeNames)
+        // Title-case all-lowercase LLM output ("carter's" → "Carter's")
+        // without overriding mixed-case extractions
+        const retailer = fixRetailerCase(deal.retailer)
         const normalizedDeal = { ...deal, retailer }
 
         if (isJunkDeal(normalizedDeal)) {

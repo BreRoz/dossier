@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
   // Parallelise independent queries: email count, store data, already-sent list
   const [
     { count: emailsScannedCount },
-    { storeUrls, storeTiers, storeNames },
+    { storeUrls, storeTiers },
     { data: alreadySent },
   ] = await Promise.all([
     supabase.from('processed_emails').select('*', { count: 'exact', head: true }).eq('week_of', weekOfStr),
@@ -193,7 +193,6 @@ export async function GET(request: NextRequest) {
             totalDeals: deals.length,
             appUrl,
             storeUrls,
-            storeNames,
           })
 
           const result = await sendEmail({

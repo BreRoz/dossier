@@ -8,7 +8,7 @@ import { Reveal } from '@/components/Reveal'
 import { FlapNumber } from '@/components/FlapNumber'
 import { ALL_CATEGORIES, CATEGORY_LABELS, FREE_CATEGORIES } from '@/types'
 import { rankDeals, getDealLink, formatExpiryDate, formatSavings, isJunkDeal } from '@/lib/deals'
-import { canonicalRetailerName, fetchStoreData } from '@/lib/stores'
+import { fixRetailerCase } from '@/lib/stores'
 import type { Deal, Category } from '@/types'
 
 export const dynamic = 'force-dynamic'
@@ -55,12 +55,10 @@ export default async function ArchiveWeekPage({ params }: Props) {
       return (d.percent_off ?? 0) >= 40
     })
 
-  // Apply canonical retailer names (fixes "carter's" → "Carter's" etc.)
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dealdossier.io'
-  const { storeNames } = await fetchStoreData(appUrl)
+  // Title-case all-lowercase legacy retailer names ("carter's" → "Carter's")
   const normalizedDeals = allDeals.map((d) => ({
     ...d,
-    retailer: canonicalRetailerName(d.retailer, storeNames),
+    retailer: fixRetailerCase(d.retailer),
   }))
 
   const weekDate = parseISO(edition.week_of)

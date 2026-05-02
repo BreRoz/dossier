@@ -13,9 +13,8 @@ export function normalizeStoreName(name: string): string {
 }
 
 /** Title-case a string by capitalizing the first letter of each space-delimited
- *  word, preserving the rest as-is so existing all-caps acronyms (H-E-B, COS,
- *  CB2) survive untouched. Used as a fallback when a retailer isn't in the
- *  Google Sheet — the LLM extractor sometimes returns lower-cased names. */
+ *  word, preserving the rest as-is. Existing acronyms / mixed-case names
+ *  (H-E-B, COS, CB2) survive untouched. */
 export function titleCaseRetailer(name: string): string {
   return name
     .split(' ')
@@ -23,37 +22,30 @@ export function titleCaseRetailer(name: string): string {
     .join(' ')
 }
 
-/** Map a raw retailer name (as extracted by the LLM) to its canonical display
- *  name. Lookup order:
- *    1. Exact lowercase match against storeNames
- *    2. Normalised match (strips accents/punctuation)
- *    3. Title-cased version of the raw name (handles "carter's" → "Carter's")
- *  Returns the original string only if every fallback fails. */
-export function canonicalRetailerName(
-  raw: string,
-  storeNames: Record<string, string>
-): string {
-  if (!raw) return raw
-  const lc = raw.toLowerCase()
-  if (storeNames[lc]) return storeNames[lc]
-  const norm = normalizeStoreName(raw)
-  if (storeNames[norm]) return storeNames[norm]
-  // Last resort — fix obvious lowercase-first-letter issues
-  return titleCaseRetailer(raw)
+/** Fix retailer name casing without overriding the LLM's extraction.
+ *  - If the name already contains any uppercase letter, trust it as-is
+ *    (so "H-E-B", "Apple Store", "Carter's Childrenswear" all pass through)
+ *  - If the name is entirely lowercase ("carter's"), title-case it so the
+ *    first letter of each word becomes uppercase ("Carter's")
+ *  Source emails / their LLM output remain authoritative for what the
+ *  retailer is actually called — this is purely a cosmetic correction
+ *  for the all-lowercase failure mode. */
+export function fixRetailerCase(name: string): string {
+  if (!name) return name
+  if (/[A-Z]/.test(name)) return name
+  return titleCaseRetailer(name)
 }
 
 export async function fetchStoreData(appUrl: string): Promise<{
   storeUrls: Record<string, string>
   storeTiers: Record<string, number>
-  storeNames: Record<string, string>
 }> {
   try {
     const res = await fetch(`${appUrl}/api/stores`, { next: { revalidate: 3600 } })
-    if (!res.ok) return { storeUrls: {}, storeTiers: {}, storeNames: {} }
+    if (!res.ok) return { storeUrls: {}, storeTiers: {} }
     const { stores } = await res.json()
     const storeUrls: Record<string, string> = {}
     const storeTiers: Record<string, number> = {}
-    const storeNames: Record<string, string> = {}
     for (const store of stores ?? []) {
       if (!store.name) continue
       const normKey = normalizeStoreName(store.name)
@@ -66,12 +58,9 @@ export async function fetchStoreData(appUrl: string): Promise<{
       const boost = TIER_BOOST[store.spendTier?.trim()] ?? 0
       storeTiers[normKey] = boost
       storeTiers[lcKey] = boost
-      // Canonical display name from the sheet — preserves user's intended casing
-      storeNames[lcKey] = store.name
-      storeNames[normKey] = store.name
     }
-    return { storeUrls, storeTiers, storeNames }
+    return { storeUrls, storeTiers }
   } catch {
-    return { storeUrls: {}, storeTiers: {}, storeNames: {} }
+    return { storeUrls: {}, storeTiers: {} }
   }
 }

@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
     { genderFilter, subscriptionMode, selectedRetailers, excludeFreeShipping }
   )
 
-  const { storeUrls, storeTiers, storeNames } = await fetchStoreData(appUrl)
+  const { storeUrls, storeTiers } = await fetchStoreData(appUrl)
   const rankedDeals = rankDeals(subscriberDeals, storeTiers)
 
   const html = generateEmailHTML({
@@ -110,7 +110,6 @@ export async function POST(req: NextRequest) {
     totalDeals: allDeals.length,
     appUrl,
     storeUrls,
-    storeNames,
   })
 
   const weekLabel = format(weekOf, 'MMMM d')
