@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import type Stripe from 'stripe'
 import { z } from 'zod'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
-import { stripe, priceIdForPlan } from '@/lib/stripe'
+import { getStripe, priceIdForPlan } from '@/lib/stripe'
 
 const Body = z.object({
   plan: z.enum(['monthly', 'annual']),
@@ -42,6 +42,8 @@ export async function POST(request: NextRequest) {
       { status: 409 }
     )
   }
+
+  const stripe = getStripe()
 
   // Get or create Stripe Customer.
   let customerId = subscriber.stripe_customer_id as string | null

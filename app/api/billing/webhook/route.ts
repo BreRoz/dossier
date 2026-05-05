@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type Stripe from 'stripe'
-import { stripe } from '@/lib/stripe'
+import { getStripe } from '@/lib/stripe'
 import { createServiceClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   const payload = await request.text()
   let event: Stripe.Event
   try {
-    event = stripe.webhooks.constructEvent(payload, signature, secret)
+    event = getStripe().webhooks.constructEvent(payload, signature, secret)
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Invalid payload'
     console.error('[stripe webhook] signature verification failed:', msg)
