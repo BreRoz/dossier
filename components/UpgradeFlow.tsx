@@ -1,15 +1,13 @@
 'use client'
 
-import { useState } from 'react'
-import { loadStripe } from '@stripe/stripe-js'
+import { useMemo, useState } from 'react'
+import { loadStripe, type Stripe } from '@stripe/stripe-js'
 import {
   Elements,
   PaymentElement,
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js'
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
 type Plan = 'monthly' | 'annual'
 
@@ -23,6 +21,34 @@ export function UpgradeFlow() {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [starting, setStarting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Lazy-load Stripe.js only on the client; bail out cleanly if the key is missing.
+  const stripePromise = useMemo<Promise<Stripe | null> | null>(() => {
+    const key = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    if (!key) return null
+    return loadStripe(key)
+  }, [])
+
+  if (!stripePromise) {
+    return (
+      <div
+        style={{
+          border: '1.5px solid var(--ink-15)',
+          padding: 24,
+          background: 'var(--paper)',
+          color: 'var(--ink-70)',
+          fontSize: 14,
+          lineHeight: 1.55,
+        }}
+      >
+        Billing isn&rsquo;t configured for this environment. Set{' '}
+        <code style={{ fontFamily: 'monospace' }}>
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        </code>{' '}
+        and redeploy.
+      </div>
+    )
+  }
 
   const startCheckout = async () => {
     setStarting(true)
