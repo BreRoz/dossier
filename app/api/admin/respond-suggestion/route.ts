@@ -5,34 +5,46 @@ import { Resend } from 'resend'
 // Lazy init so Resend isn't instantiated at build time (no API key available)
 function getResend() { return new Resend(process.env.RESEND_API_KEY) }
 
+// Escape user-supplied strings before embedding them in outbound email HTML.
+// store_name (subscriber-provided) and note (admin-provided) both flow into
+// the body unsanitized otherwise, allowing HTML/link injection.
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 const RESPONSES = {
   added: {
     status: 'added',
     subject: 'Your store suggestion has been added to Deal Dossier',
     headline: 'Great news — we added them!',
     body: (store: string, note?: string) =>
-      `We just added <strong>${store}</strong> to our watchlist. We'll start scanning their promotional emails and you'll see their deals in upcoming editions.${note ? `<br><br>${note}` : ''}`,
+      `We just added <strong>${escapeHtml(store)}</strong> to our watchlist. We'll start scanning their promotional emails and you'll see their deals in upcoming editions.${note ? `<br><br>${escapeHtml(note)}` : ''}`,
   },
   not_us: {
     status: 'declined',
     subject: `We can't add that store to Deal Dossier`,
     headline: 'Thanks for the suggestion.',
     body: (store: string, note?: string) =>
-      `Unfortunately <strong>${store}</strong> doesn't ship to the US, so we're not able to add them right now. We'll keep them on our radar if that changes.${note ? `<br><br>${note}` : ''}`,
+      `Unfortunately <strong>${escapeHtml(store)}</strong> doesn't ship to the US, so we're not able to add them right now. We'll keep them on our radar if that changes.${note ? `<br><br>${escapeHtml(note)}` : ''}`,
   },
   no_online_store: {
     status: 'declined',
     subject: `We can't add that store to Deal Dossier`,
     headline: 'Thanks for the suggestion.',
     body: (store: string, note?: string) =>
-      `<strong>${store}</strong> doesn't appear to have an online store, so we're not able to track their deals at the moment.${note ? `<br><br>${note}` : ''}`,
+      `<strong>${escapeHtml(store)}</strong> doesn't appear to have an online store, so we're not able to track their deals at the moment.${note ? `<br><br>${escapeHtml(note)}` : ''}`,
   },
   no_deals: {
     status: 'declined',
     subject: `We can't add that store to Deal Dossier`,
     headline: 'Thanks for the suggestion.',
     body: (store: string, note?: string) =>
-      `We took a look at <strong>${store}</strong> but they don't regularly offer discounts or promotional deals, so they're not a great fit for Deal Dossier right now. We'll revisit if that changes.${note ? `<br><br>${note}` : ''}`,
+      `We took a look at <strong>${escapeHtml(store)}</strong> but they don't regularly offer discounts or promotional deals, so they're not a great fit for Deal Dossier right now. We'll revisit if that changes.${note ? `<br><br>${escapeHtml(note)}` : ''}`,
   },
 }
 
@@ -41,7 +53,7 @@ export async function POST(req: NextRequest) {
   const authClient = await createClient()
   const { data: { user } } = await authClient.auth.getUser()
   const adminEmail = process.env.ADMIN_EMAIL
-  if (!user || (adminEmail && user.email !== adminEmail)) {
+  if (!user || !adminEmail || user.email !== adminEmail) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

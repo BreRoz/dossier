@@ -29,9 +29,9 @@ function isTransactionalEmail(subject: string): boolean {
 const INGEST_BATCH_SIZE = 8
 
 function verifyCronSecret(request: NextRequest): boolean {
-  const authHeader = request.headers.get('authorization')
-  if (!process.env.CRON_SECRET) return true // Dev mode
-  return authHeader === `Bearer ${process.env.CRON_SECRET}`
+  const secret = process.env.CRON_SECRET
+  if (!secret) return false
+  return request.headers.get('authorization') === `Bearer ${secret}`
 }
 
 export async function GET(request: NextRequest) {

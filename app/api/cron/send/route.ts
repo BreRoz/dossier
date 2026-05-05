@@ -14,9 +14,9 @@ const DAYS_OF_WEEK: SendDay[] = ['sunday', 'monday', 'tuesday', 'wednesday', 'th
 
 
 function verifyCronSecret(request: NextRequest): boolean {
-  const authHeader = request.headers.get('authorization')
-  if (!process.env.CRON_SECRET) return true
-  return authHeader === `Bearer ${process.env.CRON_SECRET}`
+  const secret = process.env.CRON_SECRET
+  if (!secret) return false
+  return request.headers.get('authorization') === `Bearer ${secret}`
 }
 
 export async function GET(request: NextRequest) {
