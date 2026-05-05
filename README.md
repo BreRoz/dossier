@@ -47,6 +47,11 @@ The app runs at `http://localhost:3000`.
 | `CRON_SECRET` | — | Bearer token used to authenticate cron job requests — **required in production** |
 | `ADMIN_EMAIL` | — | Email address granted admin access; if unset `/admin` blocks everyone — **required in production** |
 | `STORES_SHEET_ID` | *(hardcoded fallback)* | Google Sheets ID for the stores directory CSV |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | — | Stripe publishable key (`pk_test_...` / `pk_live_...`) — **required for billing** |
+| `STRIPE_SECRET_KEY` | — | Stripe secret key (`sk_test_...` / `sk_live_...`) — **required for billing** |
+| `STRIPE_WEBHOOK_SECRET` | — | Stripe webhook signing secret (`whsec_...`) — **required for billing** |
+| `STRIPE_PRICE_MONTHLY` | — | Stripe Price ID for the $4.99/month plan — **required for billing** |
+| `STRIPE_PRICE_ANNUAL` | — | Stripe Price ID for the $45/year plan — **required for billing** |
 
 ---
 
@@ -94,7 +99,7 @@ Vercel calls each cron path with a signed `Authorization: Bearer <token>` header
 ### Database (Supabase / PostgreSQL)
 
 **`subscribers`** — Registered newsletter accounts  
-`id` UUID PK, `email` UNIQUE, `tier` (free|paid), `send_day` (mon–sun), `min_discount` (20|30|40|50), `subscription_mode` (category|retailer), `gender_filter` text[], `spend_tier_filter` text[], `zip_code`, `is_active`, `created_at`, `updated_at`
+`id` UUID PK, `email` UNIQUE, `tier` (free|paid), `send_day` (mon–sun), `min_discount` (20|30|40|50), `subscription_mode` (category|retailer), `gender_filter` text[], `spend_tier_filter` text[], `zip_code`, `is_active`, `stripe_customer_id`, `stripe_subscription_id`, `stripe_price_id`, `subscription_status`, `created_at`, `updated_at`
 
 **`subscriber_categories`** — Per-subscriber category opt-ins  
 `id` UUID PK, `subscriber_id → subscribers`, `category` text, `enabled` bool
@@ -142,6 +147,9 @@ Vercel calls each cron path with a signed `Authorization: Bearer <token>` header
 | POST | `/api/admin/respond-suggestion` | Admin | Send response to a store suggestion |
 | POST | `/api/unsubscribe` | None | Unsubscribe by email |
 | POST | `/api/support` | None | Submit support request |
+| POST | `/api/billing/create-subscription` | Session | Create a Stripe subscription and return its PaymentIntent client secret |
+| POST | `/api/billing/portal` | Session | Open a Stripe Customer Portal session for the logged-in subscriber |
+| POST | `/api/billing/webhook` | Stripe signature | Sync subscription state from Stripe events |
 | GET | `/api/cron/ingest` | Cron secret | Scan Gmail, extract deals, store edition |
 | GET | `/api/cron/send` | Cron secret | Send personalized newsletters for today's send day |
 

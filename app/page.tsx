@@ -590,22 +590,6 @@ export default function LandingPage() {
                   position: 'relative',
                 }}
               >
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 28,
-                    right: 28,
-                    border: '1px solid var(--paper-on-ink-25)',
-                    padding: '6px 12px',
-                    fontSize: 10,
-                    letterSpacing: '0.18em',
-                    textTransform: 'uppercase',
-                    fontWeight: 500,
-                    color: 'var(--paper)',
-                  }}
-                >
-                  Coming Soon
-                </div>
                 <div className="t-eyebrow" style={{ color: 'var(--olive)' }}>
                   Personal Shopper
                 </div>
@@ -667,7 +651,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Link
-                  href="/login"
+                  href="/pricing"
                   style={{
                     marginTop: 32,
                     alignSelf: 'flex-start',
@@ -685,7 +669,7 @@ export default function LandingPage() {
                     transition: 'background 0.15s, color 0.15s',
                   }}
                 >
-                  Get Started <span className="arr">→</span>
+                  Subscribe <span className="arr">→</span>
                 </Link>
               </div>
             </Reveal>
