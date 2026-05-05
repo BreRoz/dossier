@@ -95,12 +95,19 @@ const FAQ_ITEMS: { q: string; a: ReactNode }[] = [
     ),
   },
   {
-    q: 'When will paid tier launch?',
+    q: 'How does paid billing work?',
     a: (
-      <p>
-        We’re working on it. Join the free tier now and you’ll be first to know when paid launches. Your
-        preferences and history carry over automatically.
-      </p>
+      <>
+        <p>
+          Personal Shopper is $4.99/month or $45/year (a 25% saving over monthly). Billing is handled by
+          Stripe — your card details never touch our servers.
+        </p>
+        <p>
+          Cancel any time from your account settings. You keep access through the end of the period
+          you’ve already paid for, then drop back to the free tier — your preferences and history are
+          preserved.
+        </p>
+      </>
     ),
   },
 ]
