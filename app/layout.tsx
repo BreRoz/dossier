@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next'
 import { Fraunces, Inter, Barlow_Condensed, JetBrains_Mono } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
+
+const GA_MEASUREMENT_ID = 'G-8N54H781N4'
 
 // Load Fraunces as a true variable font — the SOFT axis (and auto-loaded
 // optical-size axis) lets .t-display use 'SOFT' 30 (roman) / 'SOFT' 50
@@ -77,6 +80,21 @@ export default function RootLayout({
       <body className="grain">
         {children}
         <div className="grain-layer" aria-hidden="true" />
+
+        {/* Google Analytics (gtag.js) — loaded after interactive so it
+            doesn't block first paint or font swap. */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_MEASUREMENT_ID}');
+          `}
+        </Script>
       </body>
     </html>
   )
