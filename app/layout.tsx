@@ -1,9 +1,30 @@
 import type { Metadata, Viewport } from 'next'
 import { Fraunces, Inter, Barlow_Condensed, JetBrains_Mono } from 'next/font/google'
 import Script from 'next/script'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import './globals.css'
 
 const GA_MEASUREMENT_ID = 'G-8N54H781N4'
+const ADSENSE_CLIENT_ID = 'ca-pub-7740708597836782'
+
+// AdSense is shown to anonymous visitors and free-tier subscribers; paid
+// subscribers are ad-free as part of the value proposition.
+async function viewerIsPaid(): Promise<boolean> {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user?.email) return false
+    const service = createServiceClient()
+    const { data: subscriber } = await service
+      .from('subscribers')
+      .select('tier')
+      .eq('email', user.email)
+      .single()
+    return subscriber?.tier === 'paid'
+  } catch {
+    return false
+  }
+}
 
 // Load Fraunces as a true variable font — the SOFT axis (and auto-loaded
 // optical-size axis) lets .t-display use 'SOFT' 30 (roman) / 'SOFT' 50
@@ -67,11 +88,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const isPaid = await viewerIsPaid()
+
   return (
     <html
       lang="en"
@@ -95,6 +118,16 @@ export default function RootLayout({
             gtag('config', '${GA_MEASUREMENT_ID}');
           `}
         </Script>
+
+        {/* Google AdSense — shown only to anonymous visitors and free-tier
+            subscribers. Paid subscribers are ad-free. */}
+        {!isPaid && (
+          <Script
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+          />
+        )}
       </body>
     </html>
   )
