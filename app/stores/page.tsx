@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
@@ -39,19 +40,20 @@ function ToggleSwitch({
   locked: boolean
   onChange?: (val: boolean) => void
 }) {
+  const router = useRouter()
   return (
     <button
       type="button"
-      onClick={() => !locked && onChange?.(!enabled)}
+      onClick={() => (locked ? router.push('/pricing') : onChange?.(!enabled))}
       title={
         locked
-          ? 'Upgrade to paid to control individual stores'
+          ? 'Paid only — click to subscribe'
           : enabled
           ? 'Receiving deals — click to mute'
           : 'Muted — click to unmute'
       }
       className={`dd-toggle ${enabled && !locked ? 'on' : ''} ${locked ? 'locked' : ''}`}
-      aria-label={enabled ? 'Mute store' : 'Unmute store'}
+      aria-label={locked ? 'Locked — click to upgrade' : enabled ? 'Mute store' : 'Unmute store'}
     >
       <span className="thumb">{locked ? '🔒' : ''}</span>
     </button>
@@ -712,7 +714,7 @@ export default function StoresPage() {
               <p style={{ marginTop: 16, fontSize: 15, color: 'var(--ink-70)', lineHeight: 1.6 }}>
                 Upgrade to suggest stores for us to track.{' '}
                 <Link
-                  href="/upgrade"
+                  href="/pricing"
                   style={{
                     color: 'var(--ink)',
                     borderBottom: '1px solid currentColor',

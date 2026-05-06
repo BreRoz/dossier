@@ -56,14 +56,14 @@ function Toggle({
   locked?: boolean
   lockedTitle?: string
 }) {
+  const router = useRouter()
   return (
     <button
       type="button"
-      onClick={() => !locked && onChange(!checked)}
-      title={locked ? lockedTitle : checked ? 'On — click to turn off' : 'Off — click to turn on'}
+      onClick={() => (locked ? router.push('/pricing') : onChange(!checked))}
+      title={locked ? `${lockedTitle} — click to subscribe` : checked ? 'On — click to turn off' : 'Off — click to turn on'}
       className={`dd-toggle ${checked && !locked ? 'on' : ''} ${locked ? 'locked' : ''}`}
-      disabled={locked}
-      aria-label={checked ? 'Turn off' : 'Turn on'}
+      aria-label={locked ? 'Locked — click to upgrade' : checked ? 'Turn off' : 'Turn on'}
     >
       <span className="thumb">{locked ? '🔒' : ''}</span>
     </button>
@@ -415,9 +415,17 @@ export default function PreferencesPage() {
                 {tier === 'paid' ? 'Paid Tier' : 'Free Tier'}
               </span>
               {tier === 'free' && (
-                <span className="t-meta" style={{ color: 'var(--ink-40)' }}>
-                  Paid tier coming soon
-                </span>
+                <Link
+                  href="/pricing"
+                  className="t-meta"
+                  style={{
+                    color: 'var(--olive-deep)',
+                    textDecoration: 'none',
+                    borderBottom: '1px solid currentColor',
+                  }}
+                >
+                  Upgrade to Personal Shopper →
+                </Link>
               )}
             </div>
           </Reveal>

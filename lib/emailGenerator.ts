@@ -438,7 +438,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
               <p style="font-family:${FONT_BODY};font-size:11px;font-weight:500;letter-spacing:0.28em;text-transform:uppercase;color:${C.oliveDeep};margin:0 0 12px;">Unlock More</p>
               <h3 style="font-family:${FONT_DISPLAY};font-size:28px;font-weight:300;font-style:italic;letter-spacing:-0.02em;line-height:1.1;color:${C.ink};margin:0 0 14px;">You're seeing ${dealsShown} deals. Unlock <span style="color:${C.oliveDeep};">${dealsLocked} more.</span></h3>
               <p style="font-family:${FONT_BODY};font-size:14px;color:${C.ink70};line-height:1.6;margin:0 0 22px;">Upgrade to access all 13 categories, custom discount thresholds, and flexible send days.</p>
-              <a href="${appUrl}/upgrade" style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;background:${C.ink};color:${C.bone};text-decoration:none;padding:14px 28px;display:inline-block;">Upgrade Now</a>
+              <a href="${appUrl}/pricing" style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;background:${C.ink};color:${C.bone};text-decoration:none;padding:14px 28px;display:inline-block;">Upgrade Now</a>
             </td>
           </tr>
         </table>
