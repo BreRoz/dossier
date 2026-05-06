@@ -66,7 +66,10 @@ export function Footer() {
           text-transform: uppercase;
           font-weight: 500;
           color: var(--ink-40);
+          text-decoration: none;
+          transition: color .3s var(--easing);
         }
+        .site-footer-copy:hover { color: var(--olive-deep); }
         @media (max-width: 900px) {
           .site-footer { padding: 32px 24px; }
           .site-footer-links { gap: 24px; }
@@ -90,7 +93,14 @@ export function Footer() {
           <Link href="/stores" className="site-footer-link">Stores</Link>
           <Link href="/privacy" className="site-footer-link">Privacy</Link>
         </div>
-        <span className="site-footer-copy">© 2026</span>
+        <a
+          href="https://www.hoursand.co/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="site-footer-copy"
+        >
+          Hours &amp; Co., LLC 2026
+        </a>
       </footer>
     </>
   )
