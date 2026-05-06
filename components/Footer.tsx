@@ -66,10 +66,14 @@ export function Footer() {
           text-transform: uppercase;
           font-weight: 500;
           color: var(--ink-40);
+        }
+        .site-footer-copy-link {
+          color: inherit;
           text-decoration: none;
+          border-bottom: 1px solid currentColor;
           transition: color .3s var(--easing);
         }
-        .site-footer-copy:hover { color: var(--olive-deep); }
+        .site-footer-copy-link:hover { color: var(--olive-deep); }
         @media (max-width: 900px) {
           .site-footer { padding: 32px 24px; }
           .site-footer-links { gap: 24px; }
@@ -93,14 +97,18 @@ export function Footer() {
           <Link href="/stores" className="site-footer-link">Stores</Link>
           <Link href="/privacy" className="site-footer-link">Privacy</Link>
         </div>
-        <a
-          href="https://www.hoursand.co/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="site-footer-copy"
-        >
-          Hours &amp; Co., LLC 2026
-        </a>
+        <span className="site-footer-copy">
+          An{' '}
+          <a
+            href="https://www.hoursand.co/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="site-footer-copy-link"
+          >
+            Hours &amp; Co.
+          </a>{' '}
+          publication · © 2026
+        </span>
       </footer>
     </>
   )
