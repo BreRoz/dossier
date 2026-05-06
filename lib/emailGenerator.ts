@@ -186,15 +186,19 @@ function categorySection(
   }
   const groupEntries = Array.from(groups.entries())
 
+  const body = groupEntries.length > 0
+    ? `<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+      ${groupEntries.map(([retailer, rDeals], i) => storeBlock(retailer, rDeals, storeUrls, i === groupEntries.length - 1)).join('')}
+    </table>`
+    : `<p style="font-family:${FONT_BODY};font-size:14px;font-style:italic;color:${C.ink55};margin:18px 0 0;line-height:1.55;">No deals available this week.</p>`
+
   return `
 <tr>
   <td style="padding:32px 32px 8px;">
     <div style="padding-bottom:14px;border-bottom:1px solid ${C.ink15};margin-bottom:4px;">
       <span style="font-family:${FONT_BODY};font-size:11px;font-weight:600;letter-spacing:0.28em;text-transform:uppercase;color:${C.oliveDeep};">${label}</span>
     </div>
-    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-      ${groupEntries.map(([retailer, rDeals], i) => storeBlock(retailer, rDeals, storeUrls, i === groupEntries.length - 1)).join('')}
-    </table>
+    ${body}
   </td>
 </tr>`
 }
@@ -286,8 +290,12 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
     }
   }
 
-  const orderedCategories = ALL_CATEGORIES.filter(
-    (c) => byCategory[c] && byCategory[c]!.length > 0
+  // Render every category the subscriber has enabled, in the canonical
+  // ALL_CATEGORIES order. Empty sections still get a header so a missing
+  // section doesn't look like a truncated email; categorySection() handles
+  // the empty-state copy.
+  const orderedCategories = ALL_CATEGORIES.filter((c) =>
+    enabledCategories.includes(c)
   )
 
   const dealsShown = deals.length
@@ -415,7 +423,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
     </tr>
 
     <!-- ── DEALS BY CATEGORY ── -->
-    ${orderedCategories.map((cat) => categorySection(cat, byCategory[cat]!, storeUrls)).join('')}
+    ${orderedCategories.map((cat) => categorySection(cat, byCategory[cat] ?? [], storeUrls)).join('')}
 
     <!-- ── UPGRADE BLOCK (free tier only, only if deals locked) ── -->
     ${
