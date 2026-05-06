@@ -127,11 +127,16 @@ export default async function RootLayout({
         </Script>
 
         {/* Google AdSense — shown only to anonymous visitors and free-tier
-            subscribers. Paid subscribers are ad-free. */}
+            subscribers. Paid subscribers are ad-free. Loaded via
+            beforeInteractive so the <script> tag appears as a real element
+            in the head of the server-rendered HTML — required for
+            AdSense's site-verification crawler, which regex-scans the
+            response and doesn't execute React hydration. */}
         {!isPaid && (
           <Script
+            id="adsense-loader"
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
-            strategy="afterInteractive"
+            strategy="beforeInteractive"
             crossOrigin="anonymous"
           />
         )}
