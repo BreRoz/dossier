@@ -86,6 +86,13 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://dealdossier.io',
   },
+  // AdSense verification — emits <meta name="google-adsense-account"> in
+  // <head>, which AdSense's crawler looks for as the official verification
+  // signal. Always present (independent of viewer tier) so verification
+  // succeeds even though we conditionally load the actual ads script.
+  other: {
+    'google-adsense-account': ADSENSE_CLIENT_ID,
+  },
 }
 
 export default async function RootLayout({
