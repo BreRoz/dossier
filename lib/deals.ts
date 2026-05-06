@@ -218,6 +218,16 @@ export function isJunkDeal(deal: Pick<Deal, 'deal_type' | 'description'> & { ret
   if (/\b(welcome\s+(code|offer|discount|deal)|code\s+welcome\b|first[\s-]?(order|purchase|time)\s+(discount|offer|code|deal|off)|new\s+customer\s+(offer|discount|code|deal)|first\s+\d+%\s*off|valid\s+(only\s+)?once\s+per\s+(person|customer|user|account|household))\b/i.test(desc))
     return true
 
+  // Personalized / one-time-use coupons — issued to a specific recipient with
+  // a per-account validity window or a unique code. Show up most often as
+  // birthday/anniversary/loyalty rewards or post-purchase thank-yous.
+  // Examples we want to catch:
+  //   "$10 off valid for 30 days from issuance"
+  //   "Single-use code expires 7 days after delivery"
+  //   "Your personal coupon — non-transferable"
+  if (/\b(valid\s+for\s+\d+\s+days?\s+from\s+(issuance|enrollment|delivery|receipt|sign[\s-]?up|registration|when\s+issued)|expires\s+\d+\s+days?\s+(after|from)\s+(issuance|enrollment|delivery|receipt|sign[\s-]?up|registration)|one[\s-]?time[\s-]?use\s+(code|coupon|promo|offer|discount)?|single[\s-]?use\s+(code|coupon|promo|offer|discount)|personal(?:ized)?\s+(coupon|code|promo|discount)|non[\s-]?transferable|unique\s+(promo\s+)?code\s+(just\s+)?for\s+you|good\s+for\s+one\s+use\s+only)\b/i.test(desc))
+    return true
+
   // Free returns / exchanges — a return policy, not a price discount
   if (/\bfree\s+(returns?|exchanges?)\b/i.test(desc) &&
     !/\d+%\s*off|\$\d+\s*(off|savings?)|save\s+\$\d+/i.test(desc))
