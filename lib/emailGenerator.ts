@@ -1,7 +1,7 @@
 import { format, parseISO } from 'date-fns'
 import type { Deal, Subscriber, Edition, Category } from '@/types'
 import { CATEGORY_LABELS, ALL_CATEGORIES } from '@/types'
-import { formatExpiryDate, rankDeals } from './deals'
+import { formatExpiryDate, rankDeals, overrideCategoriesForRetailer } from './deals'
 import { fixRetailerCase } from './stores'
 
 // ── Brand palette (literal hex / rgba — CSS vars don't work in mail) ──────
@@ -265,10 +265,14 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
     byRetailer.get(deal.retailer)!.push(deal)
   }
 
-  for (const [, retailerDeals] of byRetailer) {
+  for (const [retailerName, retailerDeals] of byRetailer) {
     const catCounts: Partial<Record<Category, number>> = {}
     for (const deal of retailerDeals) {
-      for (const cat of deal.categories) {
+      // Apply retailer-based category overrides at render time so existing DB
+      // rows (categorized before the override existed) route to the right
+      // section without a backfill.
+      const cats = overrideCategoriesForRetailer(retailerName, deal.categories)
+      for (const cat of cats) {
         if (enabledCategories.includes(cat as Category)) {
           catCounts[cat as Category] = (catCounts[cat as Category] ?? 0) + 1
         }

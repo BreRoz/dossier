@@ -1,5 +1,5 @@
 import { addDays, startOfDay, getDay, format, parseISO, isAfter, isBefore } from 'date-fns'
-import type { Deal, DealType, SendDay } from '@/types'
+import type { Category, Deal, DealType, SendDay } from '@/types'
 
 const SEND_DAY_TO_DOW: Record<SendDay, number> = {
   sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
@@ -182,6 +182,39 @@ export function formatExpiryDate(dateStr: string | null): string | null {
   } catch {
     return null
   }
+}
+
+// Pattern-based retailer category overrides. The LLM consistently misroutes
+// some retailer types into broader categories; pin them here so editorial
+// intent is the source of truth.
+//
+//   eyewear → accessories (not fashion). Glasses, sunglasses, contacts, and
+//   optical retailers belong with watches, jewelry, and bags rather than
+//   apparel — they're worn but not "clothing."
+const RETAILER_CATEGORY_OVERRIDES: { test: RegExp; remove: Category[]; add: Category[] }[] = [
+  {
+    // `glasses` (no trailing \b) catches both "Glasses USA" and "GlassesUSA".
+    // `glass\b` catches the singular without false-positiving on "Glassdoor".
+    test: /\b(glasses|glass\b|sunglass(es)?|eyewear|optical|optometr(y|ist)|lenscrafters|warby\s+parker|zenni|eyebuydirect|pearle|felix\s+gray|liingo|ray[\s-]?ban|persol|maui\s+jim|oakley|foster\s+grant|knockaround|sunglass\s+hut)/i,
+    remove: ['fashion'],
+    add: ['accessories'],
+  },
+]
+
+export function overrideCategoriesForRetailer(
+  retailer: string | null | undefined,
+  categories: Category[]
+): Category[] {
+  if (!retailer) return categories
+  let out = [...categories]
+  for (const rule of RETAILER_CATEGORY_OVERRIDES) {
+    if (!rule.test.test(retailer)) continue
+    out = out.filter((c) => !rule.remove.includes(c))
+    for (const cat of rule.add) {
+      if (!out.includes(cat)) out.push(cat)
+    }
+  }
+  return out
 }
 
 const JUNK_DEAL_TYPES = new Set(['free-shipping', 'bogo-free', 'bogo-half', 'free-item'])

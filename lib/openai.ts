@@ -1,6 +1,7 @@
 import OpenAI from 'openai'
 import { z } from 'zod'
 import type { Category, DealType } from '@/types'
+import { overrideCategoriesForRetailer } from '@/lib/deals'
 
 function getClient() {
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'placeholder' })
@@ -125,7 +126,12 @@ BODY: ${cleanBody}`
       return []
     }
 
-    return validated.data.deals
+    // Apply pattern-based category overrides (e.g. eyewear → accessories,
+    // not fashion). Source of truth for category routing lives in lib/deals.
+    return validated.data.deals.map((d) => ({
+      ...d,
+      categories: overrideCategoriesForRetailer(d.retailer, d.categories as Category[]),
+    }))
   } catch (err) {
     console.error('OpenAI extraction error:', err)
     return []
