@@ -9,11 +9,11 @@ export const metadata = {
 const SECTIONS = [
   {
     title: 'Information We Collect',
-    body: 'We collect your email address when you subscribe. When you configure your account we also collect your delivery preferences (send day, minimum discount threshold), content filters (deal categories, deal types, gender, spend tier), and, for subscribers who choose retailer mode, a list of individual retailers you have selected.',
+    body: 'We collect your email address when you subscribe. When you configure your account we also collect your delivery preferences (send day, minimum discount threshold), content filters (deal categories, deal types, gender, spend tier), and, for subscribers who choose retailer mode, a list of individual retailers you have selected. For paid subscribers, we also collect billing information through our payment processor (Stripe) — Hours & Co., LLC does not directly store credit card numbers.',
   },
   {
     title: 'How We Use Your Information',
-    body: 'Your email address is used solely to send you the weekly Deal Dossier briefing and transactional emails (sign-in links, preference confirmations). We do not sell, rent, or share your personal information with third parties for marketing purposes.',
+    body: 'Your email address is used solely to send you the weekly Deal Dossier briefing and transactional emails (sign-in links, preference confirmations, billing receipts). We do not sell, rent, or share your personal information with third parties for marketing purposes.',
   },
   {
     title: 'Affiliate Relationships',
@@ -21,19 +21,23 @@ const SECTIONS = [
   },
   {
     title: 'Data Retention',
-    body: 'Your account data is retained while your subscription is active. If you unsubscribe, we remove your email from active mailing lists within 24 hours. You may request complete deletion of your data using the unsubscribe link in any email we send.',
+    body: 'Your account data is retained while your subscription is active. If you unsubscribe, we remove your email from active mailing lists within 24 hours. You may request complete deletion of your data using the unsubscribe link in any email we send, or by emailing support@dealdossier.io.',
   },
   {
     title: 'Security',
-    body: 'We use industry-standard encryption (TLS) for data in transit and at rest. Authentication is handled via magic links — no passwords are ever created or stored. Our infrastructure runs on Supabase (database and auth), Vercel (hosting), and Resend (email delivery). All three operate enterprise-grade security practices. Your email address is shared with Resend solely for the purpose of delivering sign-in links and your weekly brief.',
+    body: 'We use industry-standard encryption (TLS) for data in transit and at rest. Authentication is handled via magic links — no passwords are ever created or stored. Hours & Co., LLC, as the data controller, operates Deal Dossier on infrastructure provided by Supabase (database and auth), Vercel (hosting), Resend (email delivery), and Stripe (billing for paid subscribers). All providers operate enterprise-grade security practices. Your email address is shared with Resend solely for the purpose of delivering sign-in links and your weekly brief.',
   },
   {
-    title: 'Cookies',
-    body: 'We use minimal session cookies required for authentication. We do not use tracking cookies or third-party analytics beyond what is necessary to operate the service.',
+    title: 'Cookies & Analytics',
+    body: 'We use session cookies required for authentication. We also use Google Analytics to understand aggregate site usage — it sets analytics cookies (such as _ga and _ga_*) that do not identify individual users. Free-tier and anonymous visitors see advertisements delivered by Google AdSense, which uses cookies to personalize ads and measure performance; paid subscribers do not see ads. You can opt out of personalized advertising at adssettings.google.com, or block third-party cookies in your browser settings.',
+  },
+  {
+    title: 'Your Rights',
+    body: 'You have the right to access, correct, or delete the personal information Hours & Co., LLC holds about you. To exercise these rights, email support@dealdossier.io. If you are located in the European Economic Area, the United Kingdom, or California, you may have additional rights under GDPR or the CCPA — including the right to opt out of the sale or sharing of your personal information. Hours & Co., LLC does not sell your personal information.',
   },
   {
     title: 'Contact',
-    body: 'For questions about this policy, use the unsubscribe link in any Deal Dossier email to reach your account settings, or reply directly to any email you receive from us.',
+    body: 'For general questions about this Privacy Policy or about Deal Dossier, email hello@dealdossier.io. For account, billing, or data-deletion requests, email support@dealdossier.io. Both reach Hours & Co., LLC, the operator of Deal Dossier. You can also use the unsubscribe link in any Deal Dossier email to reach your account settings.',
   },
 ]
 
@@ -69,11 +73,29 @@ export default function PrivacyPage() {
               className="t-meta"
               style={{ marginTop: 24, color: 'var(--ink-40)' }}
             >
-              Last Updated: April 2026
+              Last Updated: May 2026
             </div>
           </Reveal>
 
-          <div style={{ marginTop: 80 }}>
+          <Reveal delay={300}>
+            <p
+              style={{
+                marginTop: 40,
+                color: 'var(--ink-70)',
+                fontSize: 16,
+                lineHeight: 1.65,
+                maxWidth: '62ch',
+              }}
+            >
+              Deal Dossier is operated by Hours &amp; Co., LLC (&ldquo;we&rdquo;,
+              &ldquo;us&rdquo;, &ldquo;our&rdquo;). This Privacy Policy
+              describes how we collect, use, and protect your information when
+              you visit dealdossier.io or subscribe to the Deal Dossier weekly
+              briefing.
+            </p>
+          </Reveal>
+
+          <div style={{ marginTop: 64 }}>
             {SECTIONS.map(({ title, body }, i) => (
               <Reveal key={title} delay={i * 50}>
                 <div
