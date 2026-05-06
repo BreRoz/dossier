@@ -127,16 +127,18 @@ export default async function RootLayout({
         </Script>
 
         {/* Google AdSense — shown only to anonymous visitors and free-tier
-            subscribers. Paid subscribers are ad-free. Loaded via
-            beforeInteractive so the <script> tag appears as a real element
-            in the head of the server-rendered HTML — required for
-            AdSense's site-verification crawler, which regex-scans the
-            response and doesn't execute React hydration. */}
+            subscribers. Paid subscribers are ad-free.
+
+            Rendered as a plain <script> element (not next/script) so it
+            appears as a real <script async src="..."> tag in the
+            server-rendered HTML. App Router's <Script> component wraps
+            the URL in a __next_s.push() queue under every strategy,
+            which AdSense's verifier doesn't recognize. React 19 hoists
+            this <script> to <head> automatically. */}
         {!isPaid && (
-          <Script
-            id="adsense-loader"
+          <script
+            async
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
-            strategy="beforeInteractive"
             crossOrigin="anonymous"
           />
         )}
