@@ -141,11 +141,18 @@ export async function GET(request: NextRequest) {
           is_manual: email.isManual,
         }
 
-        const { error: upsertError } = await supabase
+        // Plain insert: the processed_emails table already prevents
+        // re-processing the same email, and the in-run seenDealKeys set
+        // catches duplicates within a single run. There's no unique
+        // constraint on (source_email_id, retailer) on the deals table,
+        // so an upsert with that onConflict spec fails with Postgres
+        // 42P10 — which silently dropped every deal extracted between
+        // 2026-04-30 and 2026-05-07.
+        const { error: insertError } = await supabase
           .from('deals')
-          .upsert(dealRow, { onConflict: 'source_email_id,retailer' })
-        if (upsertError) {
-          console.error('Deal upsert error:', JSON.stringify(upsertError))
+          .insert(dealRow)
+        if (insertError) {
+          console.error('Deal insert error:', JSON.stringify(insertError))
           continue
         }
         newDeals++
