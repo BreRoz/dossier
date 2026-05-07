@@ -25,9 +25,13 @@ export async function sendEmail({
       subject,
       html,
     })
-    if (error) return null
+    if (error) {
+      console.error(`[resend] send to ${to} failed:`, JSON.stringify(error))
+      return null
+    }
     return data
-  } catch {
+  } catch (err) {
+    console.error(`[resend] send to ${to} threw:`, err instanceof Error ? err.message : err)
     return null
   }
 }
