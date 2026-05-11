@@ -87,14 +87,7 @@ export async function POST(req: NextRequest) {
     <!-- Header -->
     <tr>
       <td class="hpad" style="padding:24px 40px;border-bottom:1px solid ${INK15};">
-        <table cellpadding="0" cellspacing="0" role="presentation">
-          <tr>
-            <td style="vertical-align:middle;padding-right:10px;">${mark}</td>
-            <td style="vertical-align:middle;">
-              <span style="font-family:${FONT_DISPLAY};font-size:22px;font-style:italic;font-weight:400;letter-spacing:-0.01em;color:${INK};">Deal Dossier</span>
-            </td>
-          </tr>
-        </table>
+        <img src="${appUrl}/dealdossier-logo.png" alt="Deal Dossier" width="160" height="32" style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />
       </td>
     </tr>
 

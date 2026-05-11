@@ -358,14 +358,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
           <tr>
             <td style="vertical-align:middle;">
-              <table cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="vertical-align:middle;padding-right:10px;">${brandMark(22, C.ink)}</td>
-                  <td style="vertical-align:middle;">
-                    <span style="font-family:${FONT_DISPLAY};font-size:22px;font-style:italic;font-weight:400;letter-spacing:-0.01em;color:${C.ink};">Deal Dossier</span>
-                  </td>
-                </tr>
-              </table>
+              <img src="${appUrl}/dealdossier-logo.png" alt="Deal Dossier" width="160" height="32" style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />
             </td>
             <td style="vertical-align:middle;text-align:right;">
               <div style="font-family:${FONT_BODY};font-size:10.5px;letter-spacing:0.18em;text-transform:uppercase;font-weight:500;color:${C.ink55};line-height:1.6;">
@@ -466,14 +459,7 @@ export function generateEmailHTML(opts: GenerateEmailOptions): string {
         <table width="100%" cellpadding="0" cellspacing="0" role="presentation" class="footrow">
           <tr>
             <td style="vertical-align:middle;">
-              <table cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="vertical-align:middle;padding-right:10px;">${brandMark(22, C.ink)}</td>
-                  <td style="vertical-align:middle;">
-                    <span style="font-family:${FONT_DISPLAY};font-size:22px;font-style:italic;font-weight:400;letter-spacing:-0.01em;color:${C.ink};">Deal Dossier</span>
-                  </td>
-                </tr>
-              </table>
+              <img src="${appUrl}/dealdossier-logo.png" alt="Deal Dossier" width="160" height="32" style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />
             </td>
             <td class="footlinks" style="vertical-align:middle;text-align:right;">
               <a href="${archiveUrl}" style="font-family:${FONT_BODY};font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;font-weight:500;color:${C.ink70};text-decoration:none;margin-left:24px;">Archive</a>

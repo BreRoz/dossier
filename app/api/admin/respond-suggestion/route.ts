@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
   }
 
   const response = RESPONSES[response_type as keyof typeof RESPONSES]
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://dealdossier.io'
 
   // Send email if we have their address
   if (subscriberEmail) {
@@ -102,7 +103,7 @@ export async function POST(req: NextRequest) {
               <table width="560" cellpadding="0" cellspacing="0" style="background:#faf9f6;max-width:560px;width:100%;">
                 <tr>
                   <td style="padding:32px 48px 24px;border-bottom:1px solid #e8e6e0;">
-                    <span style="font-size:18px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#0a0a0a;">Deal Dossier</span>
+                    <img src="${appUrl}/dealdossier-logo.png" alt="Deal Dossier" width="160" height="32" style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />
                   </td>
                 </tr>
                 <tr>
