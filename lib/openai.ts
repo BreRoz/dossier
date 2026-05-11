@@ -104,15 +104,36 @@ BODY: ${cleanBody}`
 
   try {
     const client = getClient()
-    const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: userPrompt },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0,
-    })
+
+    // Retry on 429 (TPM rate limit) up to 3 times with exponential backoff.
+    // Heavy ingest days repeatedly hit the 200K tokens-per-minute cap on
+    // gpt-4o-mini; without retry, every 429 dropped the email's deals on
+    // the floor.
+    let response: Awaited<ReturnType<typeof client.chat.completions.create>> | null = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        response = await client.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'user', content: userPrompt },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0,
+        })
+        break
+      } catch (err) {
+        const isRateLimit =
+          err instanceof Error &&
+          'status' in err &&
+          (err as { status?: number }).status === 429
+        if (!isRateLimit || attempt === 2) throw err
+        const waitMs = 1000 * Math.pow(2, attempt) + Math.random() * 250
+        console.warn(`[openai] 429 rate limit, retry ${attempt + 1}/3 in ${Math.round(waitMs)}ms`)
+        await new Promise((r) => setTimeout(r, waitMs))
+      }
+    }
+    if (!response) return []
 
     const content = response.choices[0]?.message?.content
     if (!content) return []

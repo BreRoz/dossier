@@ -25,8 +25,38 @@ function isTransactionalEmail(subject: string): boolean {
   return TRANSACTIONAL_SUBJECT_RE.test(subject)
 }
 
-// Process emails in parallel batches so the cron doesn't time out on large inboxes.
-const INGEST_BATCH_SIZE = 8
+// Process emails concurrently so the cron doesn't time out on large inboxes.
+// Tunable via INGEST_CONCURRENCY env var; default 5 keeps us comfortably under
+// OpenAI's 200K tokens-per-minute cap on gpt-4o-mini.
+const INGEST_CONCURRENCY = Math.max(
+  1,
+  Number(process.env.INGEST_CONCURRENCY) || 5
+)
+
+// Queue-based worker pool. Unlike batched Promise.all, a new task starts the
+// moment any worker frees up — no head-of-line blocking when one email's
+// OpenAI call is slow.
+async function runWithConcurrency<T>(
+  items: T[],
+  concurrency: number,
+  worker: (item: T) => Promise<void>
+): Promise<void> {
+  let index = 0
+  const next = async (): Promise<void> => {
+    while (true) {
+      const i = index++
+      if (i >= items.length) return
+      try {
+        await worker(items[i])
+      } catch (err) {
+        console.error(`[ingest] worker error on item ${i}:`, err)
+      }
+    }
+  }
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, items.length) }, () => next())
+  )
+}
 
 function verifyCronSecret(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET
@@ -194,18 +224,16 @@ export async function GET(request: NextRequest) {
       processedEmailIds.push(email.id)
     }
 
-    // Process emails in parallel batches — 8 concurrent OpenAI calls at a time.
-    // 200 emails / 8 = ~25 batches × ~4s each ≈ 100s total (well within 5-min limit).
-    for (let i = 0; i < newEmails.length; i += INGEST_BATCH_SIZE) {
-      const batch = newEmails.slice(i, i + INGEST_BATCH_SIZE)
-      await Promise.all(batch.map(async (email) => {
-        try {
-          await processEmail(email)
-        } catch (err) {
-          console.error(`Failed to process email ${email.id}:`, err)
-        }
-      }))
-    }
+    // Concurrency-limited worker pool — N workers run in parallel and pick
+    // up the next email as soon as their current one finishes, eliminating
+    // the head-of-line blocking of the previous batched approach.
+    await runWithConcurrency(newEmails, INGEST_CONCURRENCY, async (email) => {
+      try {
+        await processEmail(email)
+      } catch (err) {
+        console.error(`Failed to process email ${email.id}:`, err)
+      }
+    })
 
     // Upsert edition stats — always use actual table counts as source of truth
     const [
