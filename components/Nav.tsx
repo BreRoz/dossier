@@ -105,6 +105,12 @@ export function Nav() {
           white-space: nowrap;
         }
         .site-nav-logo svg { display: block; color: var(--ink); flex-shrink: 0; }
+        .site-nav-logo-img {
+          display: block;
+          height: 28px;
+          width: auto;
+          flex-shrink: 0;
+        }
 
         /* Desktop link list */
         .site-nav-links {
@@ -209,6 +215,7 @@ export function Nav() {
           .site-nav-inner { padding: 14px 22px; }
           .site-nav-logo { font-size: 18px; }
           .site-nav-logo svg { width: 19px; height: 19px; }
+          .site-nav-logo-img { height: 22px; }
           .site-nav-links { display: none; }
           .site-nav-toggle { display: block; }
           .site-nav-overlay { display: flex; }
@@ -217,9 +224,12 @@ export function Nav() {
 
       <nav className="site-nav">
         <div className="site-nav-inner">
-          <Link href="/" className="site-nav-logo">
-            <DossierMark size={22} />
-            <span>Deal Dossier</span>
+          <Link href="/" className="site-nav-logo" aria-label="Deal Dossier — home">
+            <img
+              src="/dealdossier-logo.svg"
+              alt="Deal Dossier"
+              className="site-nav-logo-img"
+            />
           </Link>
 
           <ul className="site-nav-links">
