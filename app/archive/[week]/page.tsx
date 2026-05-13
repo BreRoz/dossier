@@ -6,10 +6,9 @@ import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import { Reveal } from '@/components/Reveal'
 import { FlapNumber } from '@/components/FlapNumber'
-import { ALL_CATEGORIES, CATEGORY_LABELS, FREE_CATEGORIES } from '@/types'
 import { rankDeals, getDealLink, formatExpiryDate, formatSavings, isJunkDeal } from '@/lib/deals'
 import { fixRetailerCase } from '@/lib/stores'
-import type { Deal, Category } from '@/types'
+import type { Deal } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,15 +28,20 @@ export default async function ArchiveWeekPage({ params }: Props) {
 
   if (!edition) notFound()
 
-  const { data: dealsData } = await supabase
-    .from('deals')
-    .select('*')
-    .eq('week_of', week)
+  // Load category list (slug → label, ordered) at request time so the
+  // archive reflects whatever taxonomy is currently active.
+  const [{ data: dealsData }, { data: categoryRows }] = await Promise.all([
+    supabase.from('deals').select('*').eq('week_of', week),
+    supabase.from('categories').select('slug, label, sort_order').eq('is_active', true).order('sort_order'),
+  ])
 
-  // Public archive shows only what the FREE tier sees: junk filtered out
-  // (welcome / loyalty / FTD / store cash etc.), only FREE_CATEGORIES, and
-  // only deals with at least 40% off (or special-type deals — bogo / free-
-  // item / free-shipping which are inherently meaningful regardless of pct).
+  const categoryOrder: string[] = (categoryRows ?? []).map((c) => c.slug)
+  const categoryLabel: Record<string, string> = {}
+  for (const c of categoryRows ?? []) categoryLabel[c.slug] = c.label
+
+  // Public archive: junk filtered out (welcome / loyalty / FTD / store cash
+  // etc.) and only deals with at least 40% off (or special-type deals
+  // inherently meaningful regardless of pct).
   const FREE_TIER_PASSTHROUGH_TYPES = new Set([
     'bogo-free',
     'bogo-half',
@@ -47,9 +51,6 @@ export default async function ArchiveWeekPage({ params }: Props) {
 
   const allDeals = ((dealsData || []) as Deal[])
     .filter((d) => !isJunkDeal(d))
-    .filter((d) =>
-      d.categories.some((c) => FREE_CATEGORIES.includes(c as Category))
-    )
     .filter((d) => {
       if (FREE_TIER_PASSTHROUGH_TYPES.has(d.deal_type)) return true
       return (d.percent_off ?? 0) >= 40
@@ -63,26 +64,26 @@ export default async function ArchiveWeekPage({ params }: Props) {
 
   const weekDate = parseISO(edition.week_of)
 
-  // Group deals by FREE category, dedupe by id within each category
-  const byCategory: Partial<Record<Category, Deal[]>> = {}
+  // Group deals by category, dedupe by id within each category.
+  const byCategory: Record<string, Deal[]> = {}
   for (const deal of normalizedDeals) {
     for (const cat of deal.categories) {
-      if (!FREE_CATEGORIES.includes(cat as Category)) continue
-      if (!byCategory[cat as Category]) byCategory[cat as Category] = []
-      byCategory[cat as Category]!.push(deal)
+      if (!categoryLabel[cat]) continue
+      if (!byCategory[cat]) byCategory[cat] = []
+      byCategory[cat].push(deal)
     }
   }
-  for (const cat of Object.keys(byCategory) as Category[]) {
+  for (const cat of Object.keys(byCategory)) {
     const seen = new Set<string>()
-    byCategory[cat] = byCategory[cat]!.filter((d) => {
+    byCategory[cat] = byCategory[cat].filter((d) => {
       if (seen.has(d.id)) return false
       seen.add(d.id)
       return true
     })
   }
 
-  const orderedCategories = ALL_CATEGORIES.filter(
-    (c) => byCategory[c] && byCategory[c]!.length > 0
+  const orderedCategories = categoryOrder.filter(
+    (c) => byCategory[c] && byCategory[c].length > 0
   )
 
   return (
@@ -257,7 +258,7 @@ export default async function ArchiveWeekPage({ params }: Props) {
                           lineHeight: 1,
                         }}
                       >
-                        {CATEGORY_LABELS[cat]}
+                        {categoryLabel[cat] ?? cat}
                       </h2>
                       <span
                         className="t-meta"

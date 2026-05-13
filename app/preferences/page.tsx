@@ -54,14 +54,14 @@ export default function PreferencesPage() {
       setEmail(user.email)
 
       try {
-        const [watchesRes, catsRes, prefsRes] = await Promise.all([
+        const [watchesRes, catsRes, accountRes] = await Promise.all([
           fetch('/api/watches').then((r) => r.json()),
           fetch('/api/categories').then((r) => r.json()),
-          fetch('/api/preferences').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+          fetch('/api/account').then((r) => (r.ok ? r.json() : null)).catch(() => null),
         ])
         setWatches(watchesRes.watches ?? [])
         setCategories(catsRes.categories ?? [])
-        if (prefsRes?.tier) setTier(prefsRes.tier)
+        if (accountRes?.tier) setTier(accountRes.tier)
       } catch (err) {
         console.error(err)
         setError('Failed to load your watchlist. Try refreshing the page.')

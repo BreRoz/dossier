@@ -1,24 +1,10 @@
 export type Tier = 'free' | 'paid'
-export type SubscriptionMode = 'category' | 'retailer'
-export type GenderOption = 'men' | 'women' | 'unisex'
-export type SpendTier = '$' | '$$' | '$$$' | '$$$$'
 
-export type SendDay = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday'
-
-export type Category =
-  | 'accessories'
-  | 'beauty'
-  | 'baby'
-  | 'entertainment'
-  | 'fashion'
-  | 'grocery'
-  | 'home'
-  | 'kids'
-  | 'shoes'
-  | 'restaurants'
-  | 'tools'
-  | 'tech'
-  | 'pets'
+// `Category` is intentionally typed as `string` — categories now live in the
+// `categories` DB table (data, not code) and are referenced by slug. Keeping
+// a string alias rather than a hardcoded union lets us add categories from
+// the DB without a TypeScript redeploy.
+export type Category = string
 
 export type DealType =
   | 'percent-off'
@@ -36,11 +22,6 @@ export interface Subscriber {
   email: string
   zip_code: string | null
   tier: Tier
-  send_day: SendDay
-  min_discount: 20 | 30 | 40 | 50
-  subscription_mode: SubscriptionMode
-  gender_filter: GenderOption[]
-  spend_tier_filter: SpendTier[]
   is_active: boolean
   stripe_customer_id: string | null
   stripe_subscription_id: string | null
@@ -50,25 +31,15 @@ export interface Subscriber {
   updated_at: string
 }
 
-export interface SubscriberRetailer {
+export interface SubscriberWatch {
   id: string
   subscriber_id: string
-  retailer: string
-  enabled: boolean
-}
-
-export interface SubscriberCategory {
-  id: string
-  subscriber_id: string
-  category: Category
-  enabled: boolean
-}
-
-export interface SubscriberDealType {
-  id: string
-  subscriber_id: string
-  deal_type: DealType
-  enabled: boolean
+  category_slug: string
+  sub_type: string | null
+  gender: string | null
+  min_price_tier: string | null
+  last_email_sent_at: string | null
+  created_at: string
 }
 
 export interface Deal {
@@ -83,7 +54,6 @@ export interface Deal {
   affiliate_link: string | null
   categories: Category[]
   deal_subtype: string | null
-  gender: GenderOption[]
   week_of: string
   source_email_id: string | null
   source_email_link: string | null
@@ -100,52 +70,6 @@ export interface Edition {
   deals_found: number
   retailers_count: number
   created_at: string
-}
-
-export interface UserPreferences {
-  zip_code: string | null
-  send_day: SendDay
-  min_discount: 20 | 30 | 40 | 50
-  categories: Record<Category, boolean>
-  deal_types: Record<DealType, boolean>
-  subscription_mode: SubscriptionMode
-  gender_filter: GenderOption[]
-  spend_tier_filter: SpendTier[]
-  selected_retailers: string[]
-}
-
-export const FREE_CATEGORIES: Category[] = ['fashion', 'restaurants', 'grocery']
-
-export const ALL_CATEGORIES: Category[] = [
-  'accessories',
-  'beauty',
-  'baby',
-  'entertainment',
-  'fashion',
-  'grocery',
-  'home',
-  'kids',
-  'shoes',
-  'restaurants',
-  'tools',
-  'tech',
-  'pets',
-]
-
-export const CATEGORY_LABELS: Record<Category, string> = {
-  'accessories':   'Accessories',
-  'beauty':        'Beauty',
-  'baby':          'Baby',
-  'entertainment': 'Entertainment',
-  'fashion':       'Fashion',
-  'grocery':       'Grocery',
-  'home':          'Home',
-  'kids':          'Kids',
-  'shoes':         'Shoes',
-  'restaurants':   'Restaurants',
-  'tools':         'Tools',
-  'tech':          'Tech',
-  'pets':          'Pets',
 }
 
 export const DEAL_TYPE_LABELS: Record<DealType, string> = {

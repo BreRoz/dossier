@@ -7,14 +7,6 @@ function getClient() {
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'placeholder' })
 }
 
-// Legacy taxonomy — kept so the existing weekly digest send keeps working
-// during the rebuild. Will be removed in Phase 6 cleanup.
-const LEGACY_CATEGORIES = [
-  'accessories', 'beauty', 'baby', 'entertainment', 'fashion',
-  'grocery', 'home', 'kids', 'shoes', 'restaurants', 'tools',
-  'tech', 'pets',
-] as const
-
 const DealSchema = z.object({
   retailer: z.string(),
   description: z.string(),
@@ -42,7 +34,6 @@ export interface CategoryRow {
 }
 
 function buildSystemPrompt(newCategories: CategoryRow[]): string {
-  const legacyList = LEGACY_CATEGORIES.join(', ')
   const newList = newCategories
     .map((c) => `${c.slug} (${c.label})`)
     .join(', ')
@@ -59,9 +50,7 @@ For each deal:
 5. PROMO_CODE: The promotional code if present (null if none)
 6. EXPIRATION_DATE: The expiration date in YYYY-MM-DD format (null if unknown)
 7. LINK: The direct URL to the deal (null if not found)
-8. CATEGORIES: Array combining BOTH taxonomies — 1-2 from the legacy list AND 1-3 from the granular list.
-   - Legacy (for backwards-compat with current send pipeline): ${legacyList}
-   - Granular (for the new watchlist model): ${newList}
+8. CATEGORIES: Array of 1-3 category slugs from this list ONLY: ${newList}
    Tag the deal based on what THIS specific email is about, not what the retailer broadly sells. A Walmart grocery email gets ["grocery", "baby-foods"], NOT every category Walmart carries.
 9. DEAL_SUBTYPE: A single short fine-grained product type if the email is specifically about it (e.g. "jeans", "sneakers", "lipstick", "coffee maker", "yoga pants"). null for generic / site-wide / multi-product sales.
 
@@ -100,7 +89,7 @@ Return ONLY this exact JSON structure:
       "promo_code": "CODE123",
       "expiration_date": "2024-12-31",
       "link": "https://example.com",
-      "categories": ["fashion", "womens-clothes"],
+      "categories": ["womens-clothes"],
       "deal_subtype": "jeans"
     }
   ]

@@ -94,7 +94,6 @@ export function Footer() {
         </div>
         <div className="site-footer-links">
           <Link href="/archive" className="site-footer-link">Archive</Link>
-          <Link href="/stores" className="site-footer-link">Stores</Link>
           <Link href="/privacy" className="site-footer-link">Privacy</Link>
         </div>
         <span className="site-footer-copy">

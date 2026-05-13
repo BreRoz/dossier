@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = createServiceClient()
-  const weekOf = getCurrentWeekOf('thursday')
+  const weekOf = getCurrentWeekOf()
   const weekOfStr = format(weekOf, 'yyyy-MM-dd')
 
   // Scan from the Sunday before the edition Thursday so we catch weekly-ad

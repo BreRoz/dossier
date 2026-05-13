@@ -24,7 +24,6 @@ export function Nav() {
   const baseLinks = [
     { label: 'Home', href: '/' },
     { label: 'Archive', href: '/archive' },
-    { label: 'Stores', href: '/stores' },
     { label: 'Settings', href: '/preferences' },
   ]
   const adminLink = { label: 'Admin', href: '/admin' }

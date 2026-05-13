@@ -1,16 +1,13 @@
 import { addDays, startOfDay, getDay, format, parseISO, isAfter, isBefore } from 'date-fns'
-import type { Category, Deal, DealType, SendDay } from '@/types'
+import type { Category, Deal, DealType } from '@/types'
 
-const SEND_DAY_TO_DOW: Record<SendDay, number> = {
-  sunday: 0, monday: 1, tuesday: 2, wednesday: 3,
-  thursday: 4, friday: 5, saturday: 6,
-}
-
-export function getCurrentWeekOf(sendDay: SendDay = 'thursday'): Date {
+// Anchor week_of to the most recent past Thursday. Used by ingest (so all
+// deals scanned in a given Sun–Wed window share a week_of) and by the
+// archive page. The on-demand watchlist send does not depend on this.
+export function getCurrentWeekOf(): Date {
   const today = startOfDay(new Date())
-  const targetDow = SEND_DAY_TO_DOW[sendDay]
   const currentDow = getDay(today)
-
+  const targetDow = 4 // Thursday
   let daysBack = currentDow - targetDow
   if (daysBack < 0) daysBack += 7
   return addDays(today, -daysBack)

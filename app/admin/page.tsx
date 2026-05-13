@@ -8,10 +8,6 @@ import { Reveal } from '@/components/Reveal'
 import { FlapNumber } from '@/components/FlapNumber'
 import { SuggestionActions } from '@/components/SuggestionActions'
 import { RunIngestButton } from '@/components/RunIngestButton'
-import { RunSendButton } from '@/components/RunSendButton'
-import { SendPreviewButton } from '@/components/SendPreviewButton'
-import { ALL_CATEGORIES, CATEGORY_LABELS } from '@/types'
-import type { Category } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -93,8 +89,6 @@ export default async function AdminPage() {
     { count: activeSubscribers },
     { data: tierData },
     { count: newThisWeek },
-    { data: sendDayData },
-    { data: categoryData },
     { data: recentSubscribers },
     { data: editions },
     { count: totalEmailsSent },
@@ -103,15 +97,12 @@ export default async function AdminPage() {
     { count: totalEmailsScannedCount },
     { count: totalDealsFoundCount },
     { data: retailerScanLog },
-    { data: toggledStores },
     { data: storeSuggestions },
   ] = await Promise.all([
     db.from('subscribers').select('*', { count: 'exact', head: true }),
     db.from('subscribers').select('*', { count: 'exact', head: true }).eq('is_active', true),
     db.from('subscribers').select('tier').eq('is_active', true),
     db.from('subscribers').select('*', { count: 'exact', head: true }).gte('created_at', sevenDaysAgo),
-    db.from('subscribers').select('send_day').eq('is_active', true),
-    db.from('subscriber_categories').select('category').eq('enabled', true),
     db.from('subscribers').select('email, tier, created_at').order('created_at', { ascending: false }).limit(12),
     db.from('editions').select('*').order('week_of', { ascending: false }).limit(8),
     db.from('sent_emails').select('*', { count: 'exact', head: true }),
@@ -120,33 +111,12 @@ export default async function AdminPage() {
     db.from('processed_emails').select('*', { count: 'exact', head: true }),
     db.from('deals').select('*', { count: 'exact', head: true }),
     db.from('retailer_scan_log').select('retailer, sender_email, emails_processed, deals_extracted').order('emails_processed', { ascending: false }),
-    db.from('subscriber_store_preferences').select('retailer').eq('enabled', true),
     db.from('store_suggestions').select('id, store_name, website, notes, status, created_at').order('created_at', { ascending: false }).limit(50),
   ])
 
   // ── Derived stats ─────────────────────────────────────────────────────
   const freeCount = (tierData || []).filter((r) => r.tier === 'free').length
   const paidCount = (tierData || []).filter((r) => r.tier === 'paid').length
-
-  // Category popularity
-  const catCounts: Record<string, number> = {}
-  for (const row of categoryData || []) {
-    catCounts[row.category] = (catCounts[row.category] || 0) + 1
-  }
-  const sortedCats = ALL_CATEGORIES
-    .map((c) => ({ cat: c, count: catCounts[c] || 0 }))
-    .sort((a, b) => b.count - a.count)
-
-  // Send day distribution
-  const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-  const dayLabels: Record<string, string> = {
-    monday: 'Mon', tuesday: 'Tue', wednesday: 'Wed',
-    thursday: 'Thu', friday: 'Fri', saturday: 'Sat', sunday: 'Sun',
-  }
-  const dayCounts: Record<string, number> = {}
-  for (const row of sendDayData || []) {
-    dayCounts[row.send_day] = (dayCounts[row.send_day] || 0) + 1
-  }
 
   // Top retailers (last 30 days)
   const retailerCounts: Record<string, number> = {}
@@ -159,15 +129,6 @@ export default async function AdminPage() {
 
   const totalEmailsScanned = totalEmailsScannedCount ?? 0
   const totalDealsFound = totalDealsFoundCount ?? 0
-
-  // Top toggled-on stores
-  const toggledStoreCounts: Record<string, number> = {}
-  for (const row of toggledStores || []) {
-    if (row.retailer) toggledStoreCounts[row.retailer] = (toggledStoreCounts[row.retailer] || 0) + 1
-  }
-  const topToggledStores = Object.entries(toggledStoreCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
 
   // Newsletter performance — aggregate by retailer
   const retailerAggMap = new Map<
@@ -230,8 +191,6 @@ export default async function AdminPage() {
             </div>
             <div className="admin-actions">
               <RunIngestButton />
-              <RunSendButton />
-              <SendPreviewButton />
             </div>
           </div>
 
@@ -302,75 +261,7 @@ export default async function AdminPage() {
             </div>
           </Reveal>
 
-          {/* 03 / 04 / 05 — Category · Send Day · Most-Wanted */}
-          <div className="admin-3col" style={{ marginTop: 80 }}>
-            <Reveal>
-              <div className="admin-card admin-card-tight">
-                <SectionLabel n="03">Category Popularity</SectionLabel>
-                <div className="admin-list" style={{ marginTop: 20 }}>
-                  {sortedCats.map((c, i) => (
-                    <ListRow
-                      key={c.cat}
-                      rank={i + 1}
-                      label={CATEGORY_LABELS[c.cat as Category] ?? c.cat}
-                      count={c.count.toLocaleString()}
-                    />
-                  ))}
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal delay={120}>
-              <div className="admin-card admin-card-tight">
-                <SectionLabel n="04">Send Day Distribution</SectionLabel>
-                <div className="admin-list" style={{ marginTop: 20 }}>
-                  {dayOrder.map((day, i) => (
-                    <ListRow
-                      key={day}
-                      rank={i + 1}
-                      label={dayLabels[day]}
-                      count={(dayCounts[day] || 0).toLocaleString()}
-                      countAccent
-                    />
-                  ))}
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal delay={200}>
-              <div className="admin-card admin-card-tight">
-                <SectionLabel n="05">Most-Wanted Stores</SectionLabel>
-                <p
-                  style={{
-                    fontSize: 12,
-                    color: 'var(--ink-55)',
-                    marginTop: 8,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  Stores paid users have explicitly kept active.
-                </p>
-                <div className="admin-list" style={{ marginTop: 20 }}>
-                  {topToggledStores.length === 0 ? (
-                    <p className="t-meta" style={{ color: 'var(--ink-40)' }}>
-                      No data yet
-                    </p>
-                  ) : (
-                    topToggledStores.map(([retailer, count], i) => (
-                      <ListRow
-                        key={retailer}
-                        rank={i + 1}
-                        label={retailer}
-                        count={`${count} user${count !== 1 ? 's' : ''}`}
-                      />
-                    ))
-                  )}
-                </div>
-              </div>
-            </Reveal>
-          </div>
-
-          {/* 06 / 07 / 08 — Top Retailers · Deal Producers · Zero-Deal */}
+          {/* 03 / 04 — Top Retailers · Deal Producers */}
           <div className="admin-3col" style={{ marginTop: 32 }}>
             <Reveal>
               <div className="admin-card admin-card-tight">
