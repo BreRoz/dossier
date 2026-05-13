@@ -82,10 +82,12 @@ export interface Deal {
   original_link: string
   affiliate_link: string | null
   categories: Category[]
+  deal_subtype: string | null
   gender: GenderOption[]
   week_of: string
   source_email_id: string | null
   source_email_link: string | null
+  last_seen_at: string | null
   is_manual: boolean
   created_at: string
 }
