@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { fetchPromotionalEmails } from '@/lib/gmail'
-import { extractDealsFromEmail } from '@/lib/openai'
+import { extractDealsFromEmail, getRetailerCategories, type CategoryRow } from '@/lib/openai'
 import { getCurrentWeekOf, makeDealKey, isJunkDeal } from '@/lib/deals'
 import { fixRetailerCase } from '@/lib/stores'
 import { sendAdminAlert } from '@/lib/resend'
@@ -83,6 +83,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ emails: 0, new_deals: 0 })
     }
 
+    // Fetch the active category list once per run so the LLM prompt can be
+    // built with the current taxonomy. Adding/removing categories in the
+    // DB takes effect on the next ingest run — no code deploy.
+    const { data: categoryRows } = await supabase
+      .from('categories')
+      .select('slug, label')
+      .eq('is_active', true)
+      .order('sort_order')
+    const allCategories: CategoryRow[] = categoryRows ?? []
+
+    // In-memory cache of retailers already known to the retailer_categories
+    // table. Avoids duplicate LLM calls within a single run when multiple
+    // emails come from the same retailer.
+    const retailerCategoriesCache = new Map<string, boolean>()
+
     // Get already-processed email IDs to avoid reprocessing
     // Check both: emails that produced deals AND emails that produced zero deals
     const [{ data: existingDeals }, { data: existingProcessed }] = await Promise.all([
@@ -128,7 +143,7 @@ export async function GET(request: NextRequest) {
         return
       }
 
-      const extracted = await extractDealsFromEmail(email.from, email.subject, email.body)
+      const extracted = await extractDealsFromEmail(email.from, email.subject, email.body, allCategories)
       console.log(`[ingest] ${email.from} | subject: ${email.subject} | extracted: ${extracted.length}`)
       if (extracted.length > 0) emailsWithDeals++
       else emailsWithNoDeals++
@@ -165,10 +180,46 @@ export async function GET(request: NextRequest) {
           original_link: deal.link || `https://google.com/search?q=${encodeURIComponent(retailer)}`,
           affiliate_link: null,
           categories: deal.categories as Category[],
+          deal_subtype: deal.deal_subtype ?? null,
+          last_seen_at: new Date().toISOString(),
           week_of: weekOfStr,
           source_email_id: email.id,
           source_email_link: email.viewInBrowserUrl ?? null,
           is_manual: email.isManual,
+        }
+
+        // Lazy-populate retailer_categories: the first time we see a deal
+        // from this retailer in this run, ask the LLM what categories the
+        // brand sells overall (Walmart → 50+, Boll & Branch → 2). Cached
+        // in-memory for the rest of the run; persisted across runs in the
+        // retailer_categories table.
+        if (!retailerCategoriesCache.has(retailer)) {
+          retailerCategoriesCache.set(retailer, true)
+          // Skip the LLM call if the retailer is already known
+          const { data: existingMapping } = await supabase
+            .from('retailer_categories')
+            .select('retailer')
+            .eq('retailer', retailer)
+            .limit(1)
+            .maybeSingle()
+          if (!existingMapping) {
+            const retailerCats = await getRetailerCategories(retailer, allCategories)
+            if (retailerCats.length > 0) {
+              const rows = retailerCats.map((slug, i) => ({
+                retailer,
+                category_slug: slug,
+                is_primary: i === 0,
+              }))
+              const { error } = await supabase
+                .from('retailer_categories')
+                .upsert(rows, { onConflict: 'retailer,category_slug' })
+              if (error) {
+                console.error('[ingest] retailer_categories upsert error:', JSON.stringify(error))
+              } else {
+                console.log(`[ingest] retailer_categories: ${retailer} → ${retailerCats.join(', ')}`)
+              }
+            }
+          }
         }
 
         // Plain insert: the processed_emails table already prevents

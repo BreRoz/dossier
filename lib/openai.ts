@@ -7,6 +7,14 @@ function getClient() {
   return new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'placeholder' })
 }
 
+// Legacy taxonomy — kept so the existing weekly digest send keeps working
+// during the rebuild. Will be removed in Phase 6 cleanup.
+const LEGACY_CATEGORIES = [
+  'accessories', 'beauty', 'baby', 'entertainment', 'fashion',
+  'grocery', 'home', 'kids', 'shoes', 'restaurants', 'tools',
+  'tech', 'pets',
+] as const
+
 const DealSchema = z.object({
   retailer: z.string(),
   description: z.string(),
@@ -19,6 +27,7 @@ const DealSchema = z.object({
   expiration_date: z.string().nullable().optional(),
   link: z.string().nullable().optional(),
   categories: z.array(z.string()).catch([]),
+  deal_subtype: z.string().nullable().optional(),
 })
 
 const ExtractionSchema = z.object({
@@ -27,7 +36,18 @@ const ExtractionSchema = z.object({
 
 type ExtractedDeal = z.infer<typeof DealSchema>
 
-const SYSTEM_PROMPT = `You are a deal extraction specialist for an editorial newsletter called Deal Dossier.
+export interface CategoryRow {
+  slug: string
+  label: string
+}
+
+function buildSystemPrompt(newCategories: CategoryRow[]): string {
+  const legacyList = LEGACY_CATEGORIES.join(', ')
+  const newList = newCategories
+    .map((c) => `${c.slug} (${c.label})`)
+    .join(', ')
+
+  return `You are a deal extraction specialist for an editorial newsletter called Deal Dossier.
 
 Extract ALL deals and promotions from retail/promotional emails. Be inclusive — if there is any offer, discount, sale, code, or promotion, extract it.
 
@@ -39,7 +59,11 @@ For each deal:
 5. PROMO_CODE: The promotional code if present (null if none)
 6. EXPIRATION_DATE: The expiration date in YYYY-MM-DD format (null if unknown)
 7. LINK: The direct URL to the deal (null if not found)
-8. CATEGORIES: Array of relevant categories from: accessories, beauty, baby, entertainment, fashion, grocery, home, kids, shoes, restaurants, tools, tech, pets
+8. CATEGORIES: Array combining BOTH taxonomies — 1-2 from the legacy list AND 1-3 from the granular list.
+   - Legacy (for backwards-compat with current send pipeline): ${legacyList}
+   - Granular (for the new watchlist model): ${newList}
+   Tag the deal based on what THIS specific email is about, not what the retailer broadly sells. A Walmart grocery email gets ["grocery", "baby-foods"], NOT every category Walmart carries.
+9. DEAL_SUBTYPE: A single short fine-grained product type if the email is specifically about it (e.g. "jeans", "sneakers", "lipstick", "coffee maker", "yoga pants"). null for generic / site-wide / multi-product sales.
 
 RULES:
 - Extract any sale, discount, promo code, or special offer — even if the percentage is not stated
@@ -76,16 +100,51 @@ Return ONLY this exact JSON structure:
       "promo_code": "CODE123",
       "expiration_date": "2024-12-31",
       "link": "https://example.com",
-      "categories": ["fashion"]
+      "categories": ["fashion", "womens-clothes"],
+      "deal_subtype": "jeans"
     }
   ]
 }
 Use null for any field that doesn't apply. percent_off must be a number or null.`
+}
+
+async function callOpenAIWithRetry(
+  systemPrompt: string,
+  userPrompt: string,
+): Promise<string | null> {
+  const client = getClient()
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await client.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0,
+      })
+      return response.choices[0]?.message?.content ?? null
+    } catch (err) {
+      const isRateLimit =
+        err instanceof Error &&
+        'status' in err &&
+        (err as { status?: number }).status === 429
+      if (!isRateLimit || attempt === 2) throw err
+      const waitMs = 1000 * Math.pow(2, attempt) + Math.random() * 250
+      console.warn(`[openai] 429 rate limit, retry ${attempt + 1}/3 in ${Math.round(waitMs)}ms`)
+      await new Promise((r) => setTimeout(r, waitMs))
+    }
+  }
+  return null
+}
 
 export async function extractDealsFromEmail(
   from: string,
   subject: string,
-  body: string
+  body: string,
+  newCategories: CategoryRow[] = [],
 ): Promise<ExtractedDeal[]> {
   // Strip HTML tags and bulk noise for cleaner text
   const cleanBody = body
@@ -103,39 +162,7 @@ SUBJECT: ${subject}
 BODY: ${cleanBody}`
 
   try {
-    const client = getClient()
-
-    // Retry on 429 (TPM rate limit) up to 3 times with exponential backoff.
-    // Heavy ingest days repeatedly hit the 200K tokens-per-minute cap on
-    // gpt-4o-mini; without retry, every 429 dropped the email's deals on
-    // the floor.
-    let response: Awaited<ReturnType<typeof client.chat.completions.create>> | null = null
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        response = await client.chat.completions.create({
-          model: 'gpt-4o-mini',
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: userPrompt },
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0,
-        })
-        break
-      } catch (err) {
-        const isRateLimit =
-          err instanceof Error &&
-          'status' in err &&
-          (err as { status?: number }).status === 429
-        if (!isRateLimit || attempt === 2) throw err
-        const waitMs = 1000 * Math.pow(2, attempt) + Math.random() * 250
-        console.warn(`[openai] 429 rate limit, retry ${attempt + 1}/3 in ${Math.round(waitMs)}ms`)
-        await new Promise((r) => setTimeout(r, waitMs))
-      }
-    }
-    if (!response) return []
-
-    const content = response.choices[0]?.message?.content
+    const content = await callOpenAIWithRetry(buildSystemPrompt(newCategories), userPrompt)
     if (!content) return []
 
     const parsed = JSON.parse(content)
@@ -155,6 +182,53 @@ BODY: ${cleanBody}`
     }))
   } catch (err) {
     console.error('OpenAI extraction error:', err)
+    return []
+  }
+}
+
+// ── Retailer category lookup ───────────────────────────────────────────
+// Given a retailer name, ask the LLM what categories that brand primarily
+// sells (using its training knowledge of the brand, not any specific email).
+// Returns slugs from the new taxonomy. Returns empty array if the brand is
+// unknown to the model — the caller should fall back to using whatever the
+// current deal's tags were.
+
+const RetailerCategoriesSchema = z.object({
+  categories: z.array(z.string()),
+})
+
+export async function getRetailerCategories(
+  retailer: string,
+  allCategories: CategoryRow[],
+): Promise<string[]> {
+  if (!retailer || allCategories.length === 0) return []
+
+  const categoryList = allCategories
+    .map((c) => `${c.slug} (${c.label})`)
+    .join(', ')
+
+  const systemPrompt = `You are a retail-industry expert. Given a retailer name, list ALL product categories they primarily sell to consumers — based on your general knowledge of the brand, not any specific email.
+
+Use slugs from this list ONLY: ${categoryList}
+
+For mega-retailers (Walmart, Target, Amazon, Costco, Nordstrom, etc.) list every applicable category — there's no cap. For specialty brands (Boll & Branch, Warby Parker, etc.) list 1-3. If the brand is unknown to you, return an empty array.
+
+Return ONLY this exact JSON structure:
+{ "categories": ["slug1", "slug2", ...] }`
+
+  try {
+    const content = await callOpenAIWithRetry(systemPrompt, `Retailer: ${retailer}`)
+    if (!content) return []
+
+    const parsed = JSON.parse(content)
+    const validated = RetailerCategoriesSchema.safeParse(parsed)
+    if (!validated.success) return []
+
+    // Filter to only valid slugs (defense against LLM hallucination)
+    const validSlugs = new Set(allCategories.map((c) => c.slug))
+    return validated.data.categories.filter((slug) => validSlugs.has(slug))
+  } catch (err) {
+    console.error(`[openai] getRetailerCategories error for "${retailer}":`, err)
     return []
   }
 }
