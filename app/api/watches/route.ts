@@ -100,6 +100,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unknown category' }, { status: 400 })
   }
 
+  // Free-tier limit: up to 3 active watches. Paid is unlimited.
+  const { data: tierRow } = await service
+    .from('subscribers')
+    .select('tier')
+    .eq('id', subscriberId)
+    .single()
+  const isFreeTier = tierRow?.tier !== 'paid'
+  if (isFreeTier) {
+    const { count } = await service
+      .from('subscriber_watches')
+      .select('*', { count: 'exact', head: true })
+      .eq('subscriber_id', subscriberId)
+    if ((count ?? 0) >= 3) {
+      return NextResponse.json(
+        {
+          error: 'Free tier is limited to 3 active watches. Remove one or upgrade for unlimited.',
+          upgrade_url: '/pricing',
+        },
+        { status: 403 }
+      )
+    }
+  }
+
   const { data: inserted, error } = await service
     .from('subscriber_watches')
     .insert({

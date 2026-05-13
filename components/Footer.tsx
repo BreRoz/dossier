@@ -90,7 +90,7 @@ export function Footer() {
       <footer className="site-footer">
         <div className="site-footer-brand">
           <DossierMark size={16} />
-          <span>Deal Dossier · Curated Weekly</span>
+          <span>Deal Dossier · Tell Us What You’re Shopping For</span>
         </div>
         <div className="site-footer-links">
           <Link href="/archive" className="site-footer-link">Archive</Link>

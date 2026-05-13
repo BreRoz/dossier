@@ -11,51 +11,56 @@ import { FlapNumber } from '@/components/FlapNumber'
 
 // ── Free tier features (label: bold, body: regular) ─────────────────────────
 const FREE_FEATURES: [string, string][] = [
-  ['Inbox Declutter', 'Unsubscribe from hundreds of brands immediately. We do the listening for you.'],
-  ['Essential Coverage', 'Weekly digests covering the Big Three — Fashion, Grocery, Restaurants.'],
-  ['High-Value Only', 'A strict 40% minimum discount filter. Only deals worth your time.'],
-  ['Thursday Boost', 'A curated list delivered right before the weekend shopping rush.'],
+  ['Watchlist of up to 3', 'Tell us what you’re shopping for. We’ll email deals as they hit your retailers.'],
+  ['Every major retailer', 'We’re subscribed to over 1,000 brand newsletters. The hunting is all on us.'],
+  ['On-demand refresh', 'Hit “send me deals now” any time you’re about to shop. Updates within seconds.'],
+  ['No credit card', 'Free forever. Upgrade when you want to track more than 3 things at once.'],
 ]
 
 // ── Paid tier features ──────────────────────────────────────────────────────
 const PAID_FEATURES: [string, string][] = [
-  ['Total Category Access', 'Unlock all 13 categories — Tech, Home, Travel, Beauty, and more.'],
-  ['Bespoke Filters', 'Set your own bar — 20%, 30%, 50%+ thresholds for any retailer.'],
-  ['Curated For Your Life', 'Age-based filters and demographic discovery — find brands that fit.'],
-  ['Granular Control', 'Toggle specific stores. Ignore brands you don’t like, prioritize favorites.'],
-  ['Stackable Alerts', 'Be first to know when a sale, loyalty bonus, and BOGO all hit at once.'],
-  ['On-Demand Scheduling', 'Tuesday for grocery planning. Saturday for browsing. Your call.'],
+  ['Unlimited watches', 'Track every shopping need at once — towels, mattresses, perfume, mens jeans, all of it.'],
+  ['Per-watch modifiers', 'Narrow each watch by sub-type (jeans vs sweaters), gender, price tier, min discount.'],
+  ['Ad-free emails', 'Your watchlist emails arrive clean — no banner ads, no AdSense.'],
+  ['Priority alerts', 'New deals from your watched retailers reach you faster than the free queue.'],
+  ['Suggest brands', 'Tell us about a retailer we’re missing — we’ll evaluate and add it to the rotation.'],
 ]
 
-// ── FAQ — preserves the substantive multi-paragraph answers from prior copy ─
+// ── FAQ ──────────────────────────────────────────────────────────────────
 const FAQ_ITEMS: { q: string; a: ReactNode }[] = [
+  {
+    q: 'How does the watchlist work?',
+    a: (
+      <>
+        <p>
+          You tell us what you&rsquo;re shopping for — bath &amp; towels, a new mattress, mens
+          jeans, perfume, whatever. We do the rest.
+        </p>
+        <p>
+          Our AI is subscribed to over 1,000 brand newsletters. Every day it scans the inbox,
+          extracts real discounts, tags each deal by category, and stores them. The moment you ask
+          for an update — by hitting &ldquo;send me deals now&rdquo; or signing up for a new
+          category — we email everything we&rsquo;re currently tracking that matches your
+          watchlist. Within seconds, not Thursdays.
+        </p>
+        <p>
+          When you find what you needed and buy it, remove that category. Move on to the next
+          thing you&rsquo;re hunting for. Repeat.
+        </p>
+      </>
+    ),
+  },
   {
     q: 'Is the free tier really free?',
     a: (
       <>
         <p>Yes, absolutely.</p>
         <p>
-          We don’t ask for a credit card to get started. The free tier is designed to give you a decluttered
-          inbox experience right away. You get our core Big Three categories (Fashion, Grocery, Restaurants)
-          and our curated Thursday digest at no cost. We only charge for the Premium Tier if you want to
-          unlock advanced features like custom send days, deep-dive category filters, and store-specific
-          controls.
-        </p>
-      </>
-    ),
-  },
-  {
-    q: 'Can I change categories later?',
-    a: (
-      <>
-        <p>Yes, you have full control.</p>
-        <p>
-          On the Free Tier you’re automatically set to our three core categories. If you decide you want
-          more variety, you can upgrade to Premium any time.
-        </p>
-        <p>
-          On Premium, you can toggle all 13 categories on or off whenever your needs change. Remodeling
-          your home? Turn on Home &amp; DIY. Project finished? Turn it back off.
+          We don&rsquo;t ask for a credit card. The free tier covers up to 3 active watches plus
+          the on-demand refresh — enough to track most short-term shopping projects (towels,
+          luggage, a coat for fall) at no cost. The paid tier ($4.99/month, $45/year) lifts the
+          cap so you can track unlimited categories simultaneously — useful if you&rsquo;re
+          juggling a kitchen remodel, a new baby, and a wardrobe refresh all at once.
         </p>
       </>
     ),
@@ -65,32 +70,37 @@ const FAQ_ITEMS: { q: string; a: ReactNode }[] = [
     a: (
       <>
         <p>
-          We use AI to do the window shopping for you. Our system is subscribed to over 500 brand
-          newsletters. Once a week, our AI scans thousands of these emails, filters out the fluff (like
-          “Check out our new blog post”), and identifies only the actual discounts.
+          AI does the window shopping for you. We&rsquo;re subscribed to over 1,000 brand
+          newsletters. Every day, our system scans the inbox, filters out fluff (&ldquo;check out
+          our new blog post&rdquo;) and personalized one-time codes, and pulls out only the real
+          discounts.
         </p>
         <p>
-          On the Free Tier, we only show you deals that are 40% off or higher.
-          <br />
-          On Premium, you set your own threshold (20%, 30%, 50%+).
+          We never show welcome offers, birthday codes, or anything that only works once per
+          person — those are useless to most readers. We also tag each deal with all the
+          categories it applies to, so a Walmart grocery email reaches you if you&rsquo;re
+          watching groceries, but not if you&rsquo;re watching mattresses.
         </p>
-        <p>This means you only see the math that matters, curated into a single, easy-to-read dossier.</p>
       </>
     ),
   },
   {
-    q: 'How are brands prioritized?',
+    q: 'How are deals ranked in my email?',
     a: (
       <>
-        <p>A few factors work together to decide what shows up first.</p>
         <p>
-          The biggest driver is savings. A 60% off deal ranks above a 20% off deal, every time. Beyond
-          that, we factor in store tier. A sale at a higher-end retailer gets a meaningful boost over the
-          same discount at a store that’s always running promotions. The logic is simple: a rare sale at a
-          premium brand is more noteworthy than a perpetual 30% off at a store where 30% off is basically
-          the regular price.
+          Two factors work together. The biggest driver is savings — a 60% off deal ranks above a
+          20% off deal, every time.
         </p>
-        <p>Free shipping deals are always shown last, they’re nice, but they’re not the reason you’re here.</p>
+        <p>
+          Second, we factor in store tier. A rare sale at a higher-end retailer gets a meaningful
+          boost over the same discount at a store that&rsquo;s always running promotions. A 30%
+          off at a store where 30% off is basically the regular price isn&rsquo;t actually a
+          deal.
+        </p>
+        <p>
+          Free shipping deals are always shown last — nice, but not why you&rsquo;re here.
+        </p>
       </>
     ),
   },
@@ -99,13 +109,13 @@ const FAQ_ITEMS: { q: string; a: ReactNode }[] = [
     a: (
       <>
         <p>
-          Personal Shopper is $4.99/month or $45/year (a 25% saving over monthly). Billing is handled by
+          Personal Shopper is $4.99/month or $45/year (save 25% annual). Billing is handled by
           Stripe — your card details never touch our servers.
         </p>
         <p>
-          Cancel any time from your account settings. You keep access through the end of the period
-          you’ve already paid for, then drop back to the free tier — your preferences and history are
-          preserved.
+          Cancel any time from your account settings. You keep access through the end of the
+          period you&rsquo;ve already paid for, then drop back to the free tier — your
+          watchlist and history are preserved.
         </p>
       </>
     ),
@@ -288,10 +298,10 @@ export default function LandingPage() {
           >
             <Reveal delay={500}>
               <p style={{ fontSize: 19, lineHeight: 1.5, maxWidth: '36ch', color: 'var(--ink-70)' }}>
-                Most of what hits your inbox is noise dressed up as opportunity. We look at everything so
-                you don’t have to.{' '}
+                Tell us what you&rsquo;re shopping for. We watch every retailer&rsquo;s promo
+                inbox so you don&rsquo;t have to.{' '}
                 <em style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)' }}>
-                  One email. Once a week. Only what clears the bar.
+                  Never pay full price for what you&rsquo;re looking for.
                 </em>
               </p>
             </Reveal>
@@ -449,7 +459,7 @@ export default function LandingPage() {
               {
                 n: '03',
                 t: 'Deliver',
-                b: 'One email. Thursday morning. Only what clears the 40% bar — categorized, tagged, ready to act on.',
+                b: 'You tell us what you’re shopping for. We email matching deals — on demand, the moment you ask.',
               },
             ].map((s, i) => (
               <Reveal key={s.n} delay={i * 120}>
