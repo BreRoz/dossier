@@ -36,7 +36,14 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     console.error('store suggestion error:', JSON.stringify(error))
-    return NextResponse.json({ error: 'Failed to submit suggestion' }, { status: 500 })
+    // Surface the real DB error to the client during debugging.
+    // Auth-gated route, so leaking the Postgres code is acceptable.
+    return NextResponse.json(
+      {
+        error: `DB error [${error.code}]: ${error.message}${error.hint ? ` (hint: ${error.hint})` : ''}`,
+      },
+      { status: 500 }
+    )
   }
 
   return NextResponse.json({ success: true })
