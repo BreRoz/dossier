@@ -90,7 +90,6 @@ export default async function AdminPage() {
     { data: tierData },
     { count: newThisWeek },
     { data: recentSubscribers },
-    { data: editions },
     { count: totalEmailsSent },
     { count: sentThisWeek },
     { data: topRetailers },
@@ -104,14 +103,13 @@ export default async function AdminPage() {
     db.from('subscribers').select('tier').eq('is_active', true),
     db.from('subscribers').select('*', { count: 'exact', head: true }).gte('created_at', sevenDaysAgo),
     db.from('subscribers').select('email, tier, created_at').order('created_at', { ascending: false }).limit(12),
-    db.from('editions').select('*').order('week_of', { ascending: false }).limit(8),
     db.from('sent_emails').select('*', { count: 'exact', head: true }),
     db.from('sent_emails').select('*', { count: 'exact', head: true }).gte('created_at', sevenDaysAgo),
     db.from('deals').select('retailer').gte('created_at', thirtyDaysAgo),
     db.from('processed_emails').select('*', { count: 'exact', head: true }),
     db.from('deals').select('*', { count: 'exact', head: true }),
     db.from('retailer_scan_log').select('retailer, sender_email, emails_processed, deals_extracted').order('emails_processed', { ascending: false }),
-    db.from('store_suggestions').select('id, store_name, website, category, notes, ships_usa, status, created_at').order('created_at', { ascending: false }).limit(50),
+    db.from('store_suggestions').select('id, store_name, website, category, notes, status, created_at').order('created_at', { ascending: false }).limit(50),
   ])
 
   // ── Derived stats ─────────────────────────────────────────────────────
@@ -369,14 +367,6 @@ export default async function AdminPage() {
                         >
                           {s.store_name}
                         </div>
-                        {s.ships_usa && (
-                          <span
-                            className="t-meta"
-                            style={{ color: 'var(--olive-deep)', marginTop: 2, display: 'inline-block' }}
-                          >
-                            ✓ Ships USA
-                          </span>
-                        )}
                       </div>
                       <div className="t-mono" style={{ fontSize: 12 }}>
                         {s.website ? (
@@ -453,71 +443,11 @@ export default async function AdminPage() {
             </Reveal>
           )}
 
-          {/* 10 / 11 — Recent Editions · Recent Signups */}
-          <div className="admin-2col" style={{ marginTop: 32 }}>
+          {/* 10 — Recent Signups */}
+          <div style={{ marginTop: 32 }}>
             <Reveal>
               <div className="admin-card">
-                <SectionLabel n="10">Recent Editions</SectionLabel>
-                <div className="admin-table" style={{ marginTop: 20 }}>
-                  <div
-                    className="admin-table-head"
-                    style={{ gridTemplateColumns: '1.5fr 0.5fr 0.7fr 0.7fr 0.8fr' }}
-                  >
-                    <div>Week Of</div>
-                    <div>Issue</div>
-                    <div>Scanned</div>
-                    <div>Deals</div>
-                    <div>Retailers</div>
-                  </div>
-                  {!editions || editions.length === 0 ? (
-                    <p
-                      style={{
-                        marginTop: 20,
-                        fontSize: 13,
-                        color: 'var(--ink-55)',
-                      }}
-                    >
-                      No editions yet.
-                    </p>
-                  ) : (
-                    editions.map((ed) => (
-                      <div
-                        key={ed.id}
-                        className="admin-table-row"
-                        style={{ gridTemplateColumns: '1.5fr 0.5fr 0.7fr 0.7fr 0.8fr' }}
-                      >
-                        <div
-                          style={{
-                            fontFamily: 'var(--font-serif)',
-                            fontSize: 16,
-                            fontWeight: 350,
-                            letterSpacing: '-0.01em',
-                          }}
-                        >
-                          {format(parseISO(ed.week_of), 'MMM d, yyyy')}
-                        </div>
-                        <div className="t-mono">
-                          {ed.issue_number ? `No. ${ed.issue_number}` : '—'}
-                        </div>
-                        <div className="t-mono" style={{ color: 'var(--ink-55)' }}>
-                          {ed.emails_scanned ?? '—'}
-                        </div>
-                        <div className="t-mono" style={{ color: 'var(--olive-deep)' }}>
-                          {ed.deals_found ?? '—'}
-                        </div>
-                        <div className="t-mono" style={{ color: 'var(--ink-55)' }}>
-                          {ed.retailers_count ?? '—'}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal delay={80}>
-              <div className="admin-card">
-                <SectionLabel n="11">Recent Signups</SectionLabel>
+                <SectionLabel n="10">Recent Signups</SectionLabel>
                 <div className="admin-table" style={{ marginTop: 20 }}>
                   <div
                     className="admin-table-head"
