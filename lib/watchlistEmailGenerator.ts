@@ -100,6 +100,62 @@ function section({ label, deals }: WatchSection): string {
   `
 }
 
+// ── Empty-watchlist nudge ──────────────────────────────────────────────
+// Sent to subscribers with no active watches as part of the weekly Thursday
+// touchpoint. Goal is retention: a gentle reminder that the product exists
+// and a one-click path to set up a watchlist.
+export function generateEmptyWatchlistNudgeEmail({
+  appUrl,
+}: { appUrl: string }): string {
+  const today = format(new Date(), 'MMMM d, yyyy')
+  const preferencesUrl = `${appUrl}/preferences`
+
+  return `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Set up your watchlist · ${today}</title>
+</head>
+<body style="margin:0;padding:0;background-color:${BONE2};-webkit-font-smoothing:antialiased;">
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:${BONE2};padding:40px 16px 60px;">
+<tr><td align="center">
+
+  <table width="560" cellpadding="0" cellspacing="0" role="presentation" style="max-width:560px;width:100%;background-color:${BONE};border:1px solid ${INK15};">
+
+    <!-- Header -->
+    <tr><td style="padding:28px 40px;border-bottom:1px solid ${INK15};">
+      <img src="${appUrl}/dealdossier-logo.png" alt="Deal Dossier" width="160" height="32" style="display:block;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;" />
+    </td></tr>
+
+    <!-- Body -->
+    <tr><td style="padding:56px 40px 48px;">
+      <p style="font-family:${FONT_BODY};font-size:11px;font-weight:500;letter-spacing:0.22em;text-transform:uppercase;color:${OLIVE_DEEP};margin:0 0 20px;">A friendly nudge</p>
+      <h1 style="font-family:${FONT_DISPLAY};font-size:40px;font-weight:300;letter-spacing:-0.025em;line-height:1.05;color:${INK};margin:0 0 20px;">Tell us what<br><em style="font-style:italic;color:${OLIVE_DEEP};font-weight:300;">you&rsquo;re shopping for.</em></h1>
+      <p style="font-family:${FONT_BODY};font-size:15px;color:${INK70};line-height:1.6;margin:0 0 32px;">
+        We haven&rsquo;t heard from you yet about what you&rsquo;re hunting for. Pick a few categories — bath &amp; towels, mens jeans, a new mattress, whatever&rsquo;s on your list — and we&rsquo;ll start emailing real deals the moment they hit. Free for up to 3 watches; takes about thirty seconds.
+      </p>
+      <table cellpadding="0" cellspacing="0" role="presentation">
+        <tr><td style="background-color:${INK};">
+          <a href="${preferencesUrl}" style="display:inline-block;font-family:${FONT_BODY};font-size:11.5px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:${BONE};text-decoration:none;padding:14px 32px;">Build my watchlist&nbsp;→</a>
+        </td></tr>
+      </table>
+    </td></tr>
+
+    <!-- Footer -->
+    <tr><td style="padding:24px 40px;border-top:1px solid ${INK15};">
+      <p style="font-family:${FONT_BODY};font-size:10.5px;letter-spacing:0.22em;text-transform:uppercase;font-weight:500;color:${INK55};margin:0;">
+        ${escape(today)} · <a href="${preferencesUrl}" style="color:${INK55};text-decoration:none;">Turn this email off</a>
+      </p>
+    </td></tr>
+
+  </table>
+
+</td></tr>
+</table>
+</body></html>`
+}
+
 export function generateWatchlistEmail({
   appUrl,
   watchSections,

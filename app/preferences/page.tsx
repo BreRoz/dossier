@@ -31,6 +31,8 @@ export default function PreferencesPage() {
   const [loading, setLoading] = useState(true)
   const [email, setEmail] = useState('')
   const [tier, setTier] = useState<'free' | 'paid'>('free')
+  const [weeklyEnabled, setWeeklyEnabled] = useState(true)
+  const [savingWeekly, setSavingWeekly] = useState(false)
   const [watches, setWatches] = useState<Watch[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [addingSlug, setAddingSlug] = useState<string | null>(null)
@@ -62,6 +64,9 @@ export default function PreferencesPage() {
         setWatches(watchesRes.watches ?? [])
         setCategories(catsRes.categories ?? [])
         if (accountRes?.tier) setTier(accountRes.tier)
+        if (typeof accountRes?.weekly_email_enabled === 'boolean') {
+          setWeeklyEnabled(accountRes.weekly_email_enabled)
+        }
       } catch (err) {
         console.error(err)
         setError('Failed to load your watchlist. Try refreshing the page.')
@@ -141,6 +146,26 @@ export default function PreferencesPage() {
       setError(err instanceof Error ? err.message : 'Refresh failed')
     } finally {
       setRefreshing(false)
+    }
+  }, [])
+
+  const toggleWeekly = useCallback(async (next: boolean) => {
+    // Optimistic — flip the UI immediately, revert on failure.
+    setWeeklyEnabled(next)
+    setSavingWeekly(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/account', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ weekly_email_enabled: next }),
+      })
+      if (!res.ok) throw new Error('Could not save')
+    } catch (err) {
+      setWeeklyEnabled(!next)
+      setError(err instanceof Error ? err.message : 'Failed to save')
+    } finally {
+      setSavingWeekly(false)
     }
   }, [])
 
@@ -519,6 +544,34 @@ export default function PreferencesPage() {
                       </Link>
                     )}
                   </div>
+                </div>
+
+                <div>
+                  <div className="t-meta" style={{ color: 'var(--ink-55)', marginBottom: 8 }}>
+                    Weekly Email
+                  </div>
+                  <label
+                    style={{
+                      display: 'flex',
+                      gap: 12,
+                      alignItems: 'flex-start',
+                      cursor: savingWeekly ? 'wait' : 'pointer',
+                      maxWidth: 520,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={weeklyEnabled}
+                      onChange={(e) => toggleWeekly(e.target.checked)}
+                      disabled={savingWeekly}
+                      style={{ marginTop: 3, width: 16, height: 16, flexShrink: 0 }}
+                    />
+                    <span style={{ fontSize: 14, color: 'var(--ink-70)', lineHeight: 1.55 }}>
+                      Send me a recap each Thursday with the current deals on my
+                      watchlist. The &ldquo;send me deals now&rdquo; button always
+                      works regardless of this setting.
+                    </span>
+                  </label>
                 </div>
 
                 <div
