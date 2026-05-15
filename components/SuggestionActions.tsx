@@ -76,7 +76,17 @@ export function SuggestionActions({
   }
 
   return (
-    <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
+    <div
+      ref={ref}
+      style={{
+        position: 'relative',
+        display: 'inline-block',
+        // Lift the whole control above sibling admin cards so the popover
+        // doesn't slide behind "Recent Signups" (or anything else that
+        // follows in the DOM). Only lifted while open.
+        zIndex: open ? 50 : 'auto',
+      }}
+    >
       <button
         type="button"
         className="admin-link-btn"
@@ -85,7 +95,7 @@ export function SuggestionActions({
         Respond ↳
       </button>
       {open && (
-        <div className="admin-popover">
+        <div className="admin-popover" style={{ zIndex: 50 }}>
           <div className="t-meta" style={{ color: 'var(--ink-40)', marginBottom: 10 }}>
             Respond to: {storeName}
           </div>
