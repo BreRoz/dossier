@@ -439,10 +439,9 @@ export default async function AdminPage() {
                     </p>
                   ) : (
                     editions.map((ed) => (
-                      <Link
+                      <div
                         key={ed.id}
-                        href={`/archive/${ed.week_of}`}
-                        className="admin-table-row admin-table-link"
+                        className="admin-table-row"
                         style={{ gridTemplateColumns: '1.5fr 0.5fr 0.7fr 0.7fr 0.8fr' }}
                       >
                         <div
@@ -467,7 +466,7 @@ export default async function AdminPage() {
                         <div className="t-mono" style={{ color: 'var(--ink-55)' }}>
                           {ed.retailers_count ?? '—'}
                         </div>
-                      </Link>
+                      </div>
                     ))
                   )}
                 </div>

@@ -93,7 +93,7 @@ export function Footer() {
           <span>Deal Dossier · Tell Us What You’re Shopping For</span>
         </div>
         <div className="site-footer-links">
-          <Link href="/archive" className="site-footer-link">Archive</Link>
+          <Link href="/suggest" className="site-footer-link">Suggest a Store</Link>
           <Link href="/privacy" className="site-footer-link">Privacy</Link>
         </div>
         <span className="site-footer-copy">

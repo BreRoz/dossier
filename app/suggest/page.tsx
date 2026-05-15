@@ -1,0 +1,353 @@
+'use client'
+
+export const dynamic = 'force-dynamic'
+
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import Link from 'next/link'
+import { Nav } from '@/components/Nav'
+import { Footer } from '@/components/Footer'
+import { Reveal } from '@/components/Reveal'
+import { createClient } from '@/lib/supabase/client'
+
+interface KnownStore {
+  name: string
+  website: string
+}
+
+// Normalize a store name for fuzzy matching — lowercase, strip everything
+// that isn't a letter or digit. "J.Crew" and "jcrew" both become "jcrew".
+function normalize(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]/g, '')
+}
+
+export default function SuggestStorePage() {
+  const [loading, setLoading] = useState(true)
+  const [signedIn, setSignedIn] = useState(false)
+  const [knownStores, setKnownStores] = useState<KnownStore[]>([])
+
+  // form state
+  const [storeName, setStoreName] = useState('')
+  const [website, setWebsite] = useState('')
+  const [shipsUsa, setShipsUsa] = useState(false)
+  const [category, setCategory] = useState('')
+  const [notes, setNotes] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function load() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      setSignedIn(!!user?.email)
+
+      try {
+        const res = await fetch('/api/stores').then((r) => r.json())
+        const stores: KnownStore[] = (res.stores ?? []).map(
+          (s: { name: string; website: string }) => ({
+            name: s.name,
+            website: s.website,
+          })
+        )
+        setKnownStores(stores)
+      } catch {
+        // Autofill is a nice-to-have; failing to load the sheet just means
+        // no "we already have it" hint. The form still works.
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  // Live match: does what they've typed look like a store we already track?
+  const existingMatch = useMemo(() => {
+    const typed = normalize(storeName)
+    if (typed.length < 3) return null
+    return (
+      knownStores.find((s) => {
+        const n = normalize(s.name)
+        return n === typed || n.startsWith(typed) || typed.startsWith(n)
+      }) ?? null
+    )
+  }, [storeName, knownStores])
+
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      setError(null)
+
+      if (!storeName.trim()) {
+        setError('Store name is required.')
+        return
+      }
+      if (!website.trim()) {
+        setError('Store website is required.')
+        return
+      }
+      if (!shipsUsa) {
+        setError('We only track retailers that ship to the USA — please confirm.')
+        return
+      }
+
+      setSubmitting(true)
+      try {
+        const res = await fetch('/api/stores/suggest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            store_name: storeName,
+            website,
+            category: category || null,
+            notes: notes || null,
+            ships_usa: shipsUsa,
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Submission failed')
+        setSubmitted(true)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Something went wrong')
+      } finally {
+        setSubmitting(false)
+      }
+    },
+    [storeName, website, shipsUsa, category, notes]
+  )
+
+  return (
+    <>
+      <Nav />
+
+      <section style={{ padding: 'clamp(56px, 8vw, 96px) 0 clamp(48px, 6vw, 72px)' }}>
+        <div className="wrap" style={{ maxWidth: 720 }}>
+          <Reveal>
+            <div className="t-eyebrow">Suggest a Store</div>
+          </Reveal>
+          <Reveal delay={100}>
+            <h1
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontWeight: 300,
+                fontSize: 'clamp(40px, 6vw, 80px)',
+                marginTop: 20,
+                lineHeight: 1,
+                letterSpacing: '-0.03em',
+              }}
+            >
+              Know a brand{' '}
+              <em style={{ color: 'var(--olive-deep)', fontWeight: 300 }}>
+                we&rsquo;re missing?
+              </em>
+            </h1>
+          </Reveal>
+          <Reveal delay={200}>
+            <p
+              style={{
+                marginTop: 24,
+                color: 'var(--ink-70)',
+                fontSize: 16,
+                lineHeight: 1.6,
+                maxWidth: '56ch',
+              }}
+            >
+              We track over a thousand retailers — but there&rsquo;s always more.
+              Tell us about a brand you love and we&rsquo;ll evaluate adding it
+              to the rotation. We only cover retailers that ship to the USA.
+            </p>
+          </Reveal>
+
+          {loading ? (
+            <p className="t-meta" style={{ marginTop: 56, color: 'var(--ink-55)' }}>
+              Loading…
+            </p>
+          ) : !signedIn ? (
+            <Reveal delay={300}>
+              <div
+                style={{
+                  marginTop: 56,
+                  border: '1.5px solid var(--ink-15)',
+                  padding: 32,
+                  background: 'var(--paper)',
+                }}
+              >
+                <div className="t-eyebrow" style={{ marginBottom: 12 }}>
+                  Sign in to suggest
+                </div>
+                <p style={{ color: 'var(--ink-70)', fontSize: 15, lineHeight: 1.55, marginBottom: 24 }}>
+                  We ask for a quick sign-in so we can follow up if we have
+                  questions about the brand. It&rsquo;s free — magic link, no
+                  password.
+                </p>
+                <Link href="/login?next=/suggest" className="btn-primary">
+                  Sign in <span className="arr">→</span>
+                </Link>
+              </div>
+            </Reveal>
+          ) : submitted ? (
+            <Reveal delay={300}>
+              <div
+                style={{
+                  marginTop: 56,
+                  border: '1.5px solid var(--olive-deep)',
+                  padding: 32,
+                  background: 'var(--paper)',
+                }}
+              >
+                <div className="t-eyebrow" style={{ color: 'var(--olive-deep)', marginBottom: 12 }}>
+                  ✓ Suggestion received
+                </div>
+                <p style={{ color: 'var(--ink-70)', fontSize: 15, lineHeight: 1.55 }}>
+                  Thanks — we&rsquo;ll review <strong style={{ color: 'var(--ink)' }}>{storeName}</strong>{' '}
+                  and add them to the watchlist if they run regular promotions.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubmitted(false)
+                    setStoreName('')
+                    setWebsite('')
+                    setShipsUsa(false)
+                    setCategory('')
+                    setNotes('')
+                  }}
+                  className="btn-ghost"
+                  style={{ marginTop: 24 }}
+                >
+                  Suggest another <span className="arr">→</span>
+                </button>
+              </div>
+            </Reveal>
+          ) : (
+            <Reveal delay={300}>
+              <form onSubmit={handleSubmit} style={{ marginTop: 56 }}>
+                {/* Store name */}
+                <div className="t-meta" style={{ marginBottom: 12 }}>
+                  Store / Brand Name
+                </div>
+                <div className="field" style={{ maxWidth: 520 }}>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Brooklinen"
+                    value={storeName}
+                    onChange={(e) => setStoreName(e.target.value)}
+                  />
+                </div>
+                {existingMatch && (
+                  <p
+                    className="t-meta"
+                    style={{ marginTop: 10, color: 'var(--olive-deep)', maxWidth: 520, lineHeight: 1.5 }}
+                  >
+                    ✓ Good news — we already track{' '}
+                    <strong>{existingMatch.name}</strong>. Their deals already flow
+                    into matching watchlists. (Different brand, same name? Submit
+                    anyway and we&rsquo;ll sort it out.)
+                  </p>
+                )}
+
+                {/* Website */}
+                <div className="t-meta" style={{ marginBottom: 12, marginTop: 32 }}>
+                  Store Website
+                </div>
+                <div className="field" style={{ maxWidth: 520 }}>
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://brooklinen.com"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                  />
+                </div>
+
+                {/* Ships to USA */}
+                <label
+                  style={{
+                    marginTop: 32,
+                    display: 'flex',
+                    gap: 12,
+                    alignItems: 'flex-start',
+                    cursor: 'pointer',
+                    maxWidth: 520,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={shipsUsa}
+                    onChange={(e) => setShipsUsa(e.target.checked)}
+                    style={{ marginTop: 3, width: 16, height: 16, flexShrink: 0 }}
+                  />
+                  <span style={{ fontSize: 14, color: 'var(--ink-70)', lineHeight: 1.5 }}>
+                    I confirm this retailer <strong style={{ color: 'var(--ink)' }}>ships to the USA</strong>.
+                    We can only track brands that US shoppers can actually buy from.
+                  </span>
+                </label>
+
+                {/* Category (optional) */}
+                <div className="t-meta" style={{ marginBottom: 12, marginTop: 32 }}>
+                  What do they sell? <span style={{ color: 'var(--ink-40)' }}>(optional)</span>
+                </div>
+                <div className="field" style={{ maxWidth: 520 }}>
+                  <input
+                    type="text"
+                    placeholder="e.g. bedding, bath & towels"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                  />
+                </div>
+
+                {/* Notes (optional) */}
+                <div className="t-meta" style={{ marginBottom: 12, marginTop: 32 }}>
+                  Anything else? <span style={{ color: 'var(--ink-40)' }}>(optional)</span>
+                </div>
+                <textarea
+                  placeholder="Why you love them, what kind of deals they run, etc."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    maxWidth: 520,
+                    padding: '12px 14px',
+                    border: '1px solid var(--ink-15)',
+                    background: 'var(--paper)',
+                    fontFamily: 'inherit',
+                    fontSize: 14.5,
+                    color: 'var(--ink)',
+                    outline: 'none',
+                    resize: 'vertical',
+                    lineHeight: 1.55,
+                  }}
+                />
+
+                {error && (
+                  <p
+                    className="t-meta"
+                    style={{ marginTop: 24, color: 'oklch(50% 0.2 20)', maxWidth: 520 }}
+                  >
+                    {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="btn-primary"
+                  style={{ marginTop: 40 }}
+                >
+                  {submitting ? 'Submitting…' : (
+                    <>
+                      Submit Suggestion <span className="arr">→</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            </Reveal>
+          )}
+        </div>
+      </section>
+
+      <Footer />
+    </>
+  )
+}
