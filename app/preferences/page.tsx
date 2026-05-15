@@ -9,11 +9,13 @@ import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import { Reveal } from '@/components/Reveal'
 import { createClient } from '@/lib/supabase/client'
+import { groupCategories } from '@/lib/categoryGroups'
 
 interface Category {
   slug: string
   label: string
   sort_order: number
+  group_name?: string | null
 }
 
 interface Watch {
@@ -88,6 +90,13 @@ export default function PreferencesPage() {
       .filter((c) => !watchedSlugs.has(c.slug))
       .filter((c) => !q || c.label.toLowerCase().includes(q))
   }, [categories, watchedSlugs, search])
+
+  // Browsing → grouped by parent (Clothing, Beauty, …). Searching → flat.
+  const isSearching = search.trim().length > 0
+  const groupedCategories = useMemo(
+    () => (isSearching ? null : groupCategories(filteredCategories)),
+    [filteredCategories, isSearching]
+  )
 
   const addWatch = useCallback(async (slug: string) => {
     setAddingSlug(slug)
@@ -434,29 +443,81 @@ export default function PreferencesPage() {
                       onChange={(e) => setSearch(e.target.value)}
                     />
                   </div>
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                      gap: 8,
-                    }}
-                  >
-                    {filteredCategories.length === 0 ? (
-                      <div
-                        style={{
-                          gridColumn: '1/-1',
-                          padding: 24,
-                          textAlign: 'center',
-                          color: 'var(--ink-55)',
-                          fontSize: 14,
-                        }}
-                      >
-                        {watchedSlugs.size === categories.length
-                          ? 'You’re watching every category. Quite the shopper.'
-                          : 'No match. Try a different search.'}
+                  {filteredCategories.length === 0 ? (
+                    <div
+                      style={{
+                        padding: 24,
+                        textAlign: 'center',
+                        color: 'var(--ink-55)',
+                        fontSize: 14,
+                      }}
+                    >
+                      {watchedSlugs.size === categories.length
+                        ? 'You’re watching every category. Quite the shopper.'
+                        : 'No match. Try a different search.'}
+                    </div>
+                  ) : groupedCategories ? (
+                    groupedCategories.map((group) => (
+                      <div key={group.name} style={{ marginBottom: 20 }}>
+                        <div
+                          className="t-meta"
+                          style={{
+                            marginBottom: 10,
+                            color: 'var(--olive-deep)',
+                            letterSpacing: '0.08em',
+                            fontSize: 11,
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {group.name}
+                        </div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                            gap: 8,
+                          }}
+                        >
+                          {group.items.map((c) => (
+                            <button
+                              key={c.slug}
+                              type="button"
+                              onClick={() => addWatch(c.slug)}
+                              disabled={addingSlug === c.slug}
+                              style={{
+                                textAlign: 'left',
+                                padding: '12px 14px',
+                                border: '1.5px solid var(--ink-15)',
+                                background: 'var(--paper)',
+                                cursor: 'pointer',
+                                fontFamily: 'inherit',
+                                color: 'var(--ink)',
+                                fontSize: 14,
+                                transition: 'border-color .15s, background .15s',
+                                opacity: addingSlug === c.slug ? 0.5 : 1,
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--ink)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.borderColor = 'var(--ink-15)'
+                              }}
+                            >
+                              {addingSlug === c.slug ? 'Adding…' : `+ ${c.label}`}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    ) : (
-                      filteredCategories.map((c) => (
+                    ))
+                  ) : (
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                        gap: 8,
+                      }}
+                    >
+                      {filteredCategories.map((c) => (
                         <button
                           key={c.slug}
                           type="button"
@@ -483,9 +544,9 @@ export default function PreferencesPage() {
                         >
                           {addingSlug === c.slug ? 'Adding…' : `+ ${c.label}`}
                         </button>
-                      ))
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

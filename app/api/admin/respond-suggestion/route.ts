@@ -23,7 +23,7 @@ const RESPONSES = {
     subject: 'Your store suggestion has been added to Deal Dossier',
     headline: 'Great news — we added them!',
     body: (store: string, note?: string) =>
-      `We just added <strong>${escapeHtml(store)}</strong> to our watchlist. We'll start scanning their promotional emails and you'll see their deals in upcoming editions.${note ? `<br><br>${escapeHtml(note)}` : ''}`,
+      `We just added <strong>${escapeHtml(store)}</strong> to our watchlist. We'll start scanning their promotional emails and surface their deals to anyone watching the relevant categories.${note ? `<br><br>${escapeHtml(note)}` : ''}`,
   },
   not_us: {
     status: 'declined',

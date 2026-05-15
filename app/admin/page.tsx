@@ -187,7 +187,14 @@ export default async function AdminPage() {
                 </p>
               </Reveal>
             </div>
-            <div className="admin-actions">
+            <div className="admin-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <Link
+                href="/admin/stores"
+                className="btn-ghost"
+                style={{ fontSize: 12, padding: '8px 14px' }}
+              >
+                Manage stores →
+              </Link>
               <RunIngestButton />
             </div>
           </div>
@@ -292,7 +299,7 @@ export default async function AdminPage() {
                       No data yet
                     </p>
                   ) : (
-                    dealProducers.map((r, i) => (
+                    dealProducers.slice(0, 10).map((r, i) => (
                       <ListRow
                         key={r.retailer}
                         rank={i + 1}
@@ -317,7 +324,7 @@ export default async function AdminPage() {
                   </p>
                 ) : (
                   <div className="admin-list" style={{ marginTop: 20 }}>
-                    {zeroDealSenders.map((r, i) => (
+                    {zeroDealSenders.slice(0, 10).map((r, i) => (
                       <ListRow
                         key={r.retailer}
                         rank={i + 1}

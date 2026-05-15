@@ -64,20 +64,20 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Deal Dossier — The Curated Deals Brief',
-  description: 'A weekly deals brief covering fashion, grocery, restaurants, home, tech, beauty and more. Curated by AI, edited for real life. Free. No paywall.',
+  title: 'Deal Dossier — Tell us what you want. We’ll find the deal.',
+  description: 'Build a watchlist of what you’re shopping for. We sit on every retailer’s promo inbox and email you the deals when they hit. Free to start.',
   metadataBase: new URL('https://dealdossier.io'),
   openGraph: {
-    title: 'Deal Dossier — The Curated Deals Brief',
-    description: 'The deals worth your attention. Curated weekly. Free. No paywall.',
+    title: 'Deal Dossier — Tell us what you want. We’ll find the deal.',
+    description: 'Build a watchlist of what you’re shopping for. We sit on every retailer’s promo inbox and email you the deals when they hit.',
     type: 'website',
     url: 'https://dealdossier.io',
     siteName: 'Deal Dossier',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Deal Dossier — The Curated Deals Brief',
-    description: 'The deals worth your attention. Curated weekly. Free. No paywall.',
+    title: 'Deal Dossier — Tell us what you want. We’ll find the deal.',
+    description: 'Build a watchlist of what you’re shopping for. We sit on every retailer’s promo inbox and email you the deals when they hit.',
   },
   robots: {
     index: true,

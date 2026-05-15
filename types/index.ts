@@ -62,15 +62,6 @@ export interface Deal {
   created_at: string
 }
 
-export interface Edition {
-  id: string
-  week_of: string
-  issue_number: number | null
-  emails_scanned: number
-  deals_found: number
-  retailers_count: number
-  created_at: string
-}
 
 export const DEAL_TYPE_LABELS: Record<DealType, string> = {
   'percent-off': 'Percent Off',

@@ -44,7 +44,6 @@ The app runs at `http://localhost:3000`.
 | `NEXT_PUBLIC_APP_URL` | — | Public URL of the deployed app (e.g. `https://dealdossier.io`) — **required** |
 | `CRON_SECRET` | — | Bearer token used to authenticate cron job requests — **required in production** |
 | `ADMIN_EMAIL` | — | Email address granted admin access; if unset `/admin` blocks everyone — **required in production** |
-| `STORES_SHEET_ID` | *(hardcoded fallback)* | Google Sheets ID for the stores directory CSV |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | — | Stripe publishable key (`pk_test_...` / `pk_live_...`) — **required for billing** |
 | `STRIPE_SECRET_KEY` | — | Stripe secret key (`sk_test_...` / `sk_live_...`) — **required for billing** |
 | `STRIPE_WEBHOOK_SECRET` | — | Stripe webhook signing secret (`whsec_...`) — **required for billing** |

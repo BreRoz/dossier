@@ -17,6 +17,13 @@ function parseSenderName(from: string): string {
   return from.split('@')[0].trim()
 }
 
+// Normalize a retailer name for fuzzy matching against stores.name.
+// Lowercases and strips everything that isn't a letter or digit, so
+// "J.Crew", "J. Crew", and "jcrew" all collapse to "jcrew".
+function normalizeRetailer(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]/g, '')
+}
+
 // Quickly skip obvious transactional emails before hitting OpenAI.
 // These will never contain deals worth publishing.
 const TRANSACTIONAL_SUBJECT_RE = /\b(order\s+(confirmation|#\s*\d|number|receipt|summary|update)|your\s+(order|receipt|invoice|shipment|package)|has\s+shipped|order\s+shipped|out\s+for\s+delivery|delivery\s+(update|notification|confirmed|exception)|track\s+(your\s+)?(order|package|shipment)|shipping\s+(update|notification|confirmation)|password\s+reset|verify\s+(your\s+)?email|security\s+(alert|code|notice)|account\s+(update|notice|alert|created|activated))\b/i
@@ -31,6 +38,16 @@ function isTransactionalEmail(subject: string): boolean {
 const INGEST_CONCURRENCY = Math.max(
   1,
   Number(process.env.INGEST_CONCURRENCY) || 5
+)
+
+// Hard cap on emails processed per run. Vercel's serverless function limit is
+// 5 minutes; a fresh inbox with weeks of accumulated subs can have hundreds of
+// promo emails in the 24-hour IMAP window. Capping per-run lets each invocation
+// finish reliably — the hourly cron clears the backlog in a handful of runs.
+// Tunable via INGEST_MAX_PER_RUN env var.
+const INGEST_MAX_PER_RUN = Math.max(
+  1,
+  Number(process.env.INGEST_MAX_PER_RUN) || 30
 )
 
 // Queue-based worker pool. Unlike batched Promise.all, a new task starts the
@@ -73,17 +90,44 @@ export async function GET(request: NextRequest) {
   const weekOf = getCurrentWeekOf()
   const weekOfStr = format(weekOf, 'yyyy-MM-dd')
 
-  // Scan the most recent 24 hours of emails. The hourly cron re-checks
-  // this rolling window every hour; processed_emails dedupes so already-
-  // seen messages cost only a Set lookup, not a fresh OpenAI call. 24h
-  // gives ~24× redundancy against a missed cron tick without blowing the
-  // 5-minute Vercel function timeout on the first run after a fresh
-  // inbox switch.
+  // Fallback date window. Only used if the IMAP UID cursor is missing
+  // (very first run) or invalidated by a UIDVALIDITY change. Steady-state
+  // hourly runs never look at this — they pick up at `UID > last_uid`.
   const since = subHours(new Date(), 24)
 
   try {
-    const emails = await fetchPromotionalEmails(since)
+    // Read the IMAP cursor. {uid_validity, last_uid} from ingest_state.
+    // First-ever run: last_uid=0 (the table default), uidValidity unknown
+    // → falls back to date window, which is fine.
+    const { data: cursorRow } = await supabase
+      .from('ingest_state')
+      .select('uid_validity, last_uid')
+      .eq('id', 'singleton')
+      .maybeSingle()
+
+    const cursor = {
+      afterUid: Number(cursorRow?.last_uid ?? 0),
+      uidValidity: cursorRow?.uid_validity != null
+        ? Number(cursorRow.uid_validity)
+        : undefined,
+    }
+
+    const tFetchStart = Date.now()
+    const fetchResult = await fetchPromotionalEmails(since, cursor)
+    const emails = fetchResult.messages
+    console.log(
+      `[ingest] IMAP fetch: ${emails.length} new messages in ${Date.now() - tFetchStart}ms ` +
+        `(cursor: afterUid=${cursor.afterUid}, uidValidity=${cursor.uidValidity ?? 'none'} → maxUid=${fetchResult.maxUid}, uidValidity=${fetchResult.uidValidity})`
+    )
     if (emails.length === 0) {
+      // Even with zero new messages we advance uid_validity if it changed
+      // — keeps the cursor pinned to the right mailbox generation.
+      if (fetchResult.uidValidity && fetchResult.uidValidity !== cursor.uidValidity) {
+        await supabase
+          .from('ingest_state')
+          .update({ uid_validity: fetchResult.uidValidity, updated_at: new Date().toISOString() })
+          .eq('id', 'singleton')
+      }
       return NextResponse.json({ emails: 0, new_deals: 0 })
     }
 
@@ -97,30 +141,63 @@ export async function GET(request: NextRequest) {
       .order('sort_order')
     const allCategories: CategoryRow[] = categoryRows ?? []
 
+    // Pull the brand directory once per run and index it by normalized
+    // name. When a deal comes in from a known brand, its admin-tagged
+    // store.categories get unioned into the deal's category list — so a
+    // "winter coats" deal from J.Crew lands under outerwear-and-coats
+    // (LLM extraction, deal-specific) AND womens-clothes / mens-clothes
+    // (store curation, general brand coverage). Anyone watching any of
+    // those slugs sees the deal.
+    // Pull ALL stores (active + pending) so we can:
+    //   1. Route deals into store-curated categories (active path)
+    //   2. Auto-activate pending stores when their first email arrives
+    //      (so the directory self-validates — pending = "we suspect they
+    //      send promo email" → confirmed when ingest sees one)
+    const { data: storeRows } = await supabase
+      .from('stores')
+      .select('id, name, categories, is_active, status')
+    interface StoreMatch {
+      id: string
+      categories: string[]
+      is_active: boolean
+      status: string
+    }
+    const storesByName = new Map<string, StoreMatch>()
+    for (const row of storeRows ?? []) {
+      if (!row.name) continue
+      storesByName.set(normalizeRetailer(row.name), {
+        id: row.id,
+        categories: Array.isArray(row.categories) ? row.categories : [],
+        is_active: row.is_active,
+        // Older rows from before migration 019 may not have a status —
+        // default to 'pending' so they still auto-activate on first deal.
+        status: row.status ?? 'pending',
+      })
+    }
+    const activeCount = Array.from(storesByName.values()).filter((s) => s.is_active).length
+    console.log(
+      `[ingest] loaded ${storesByName.size} stores (${activeCount} active, ${storesByName.size - activeCount} inactive) for routing + auto-activation`
+    )
+
     // In-memory cache of retailers already known to the retailer_categories
     // table. Avoids duplicate LLM calls within a single run when multiple
     // emails come from the same retailer.
     const retailerCategoriesCache = new Map<string, boolean>()
 
-    // Get already-processed email IDs to avoid reprocessing
-    // Check both: emails that produced deals AND emails that produced zero deals
-    const [{ data: existingDeals }, { data: existingProcessed }] = await Promise.all([
-      supabase
-        .from('deals')
-        .select('source_email_id')
-        .eq('week_of', weekOfStr)
-        .not('source_email_id', 'is', null),
-      supabase
-        .from('processed_emails')
-        .select('email_id')
-        .eq('week_of', weekOfStr),
-    ])
+    // Per-run cap: process oldest-UID-first so the cursor advances
+    // monotonically. Anything not processed this run picks up next hour at
+    // `UID > <max processed UID>`. Sorting by UID (not date) keeps the
+    // cursor semantically correct.
+    const newEmails = emails
+      .slice()
+      .sort((a, b) => a.uid - b.uid)
+      .slice(0, INGEST_MAX_PER_RUN)
 
-    const processedIds = new Set([
-      ...(existingDeals || []).map((d) => d.source_email_id),
-      ...(existingProcessed || []).map((d) => d.email_id),
-    ])
-    const newEmails = emails.filter((e) => !processedIds.has(e.id))
+    const deferred = emails.length - newEmails.length
+    console.log(
+      `[ingest] cap: ${emails.length} new → ${newEmails.length} processing this run` +
+        (deferred > 0 ? ` (${deferred} deferred to next run)` : '')
+    )
 
     // Build a set of already-seen deal keys this week so we never insert
     // the same sale twice even if 3 emails announce it
@@ -137,6 +214,10 @@ export async function GET(request: NextRequest) {
     let emailsWithDeals = 0
     let emailsWithNoDeals = 0
     const processedEmailIds: string[] = []
+    // Track per-email UIDs so we can advance the IMAP cursor only as far as
+    // we've successfully processed. If one email fails mid-run, the cursor
+    // stays low enough that the next run will retry it.
+    const processedUids: number[] = []
 
     async function processEmail(email: (typeof newEmails)[number]): Promise<void> {
       // Fast-path: skip obviously transactional emails without an OpenAI call
@@ -144,6 +225,7 @@ export async function GET(request: NextRequest) {
         console.log(`[ingest] skip transactional: "${email.subject}"`)
         await supabase.from('processed_emails').upsert({ email_id: email.id, week_of: weekOfStr })
         processedEmailIds.push(email.id)
+        processedUids.push(email.uid)
         return
       }
 
@@ -174,6 +256,42 @@ export async function GET(request: NextRequest) {
         }
         seenDealKeys.add(dealKey)
 
+        // Look up the brand in the stores table. Used for two things:
+        //   1. Category routing — union store.categories into deal.categories
+        //   2. Auto-activation — flip pending stores to active when their
+        //      first deal arrives (with promo email = the validation signal)
+        const storeMatch = storesByName.get(normalizeRetailer(retailer))
+        const storeCats = storeMatch?.categories ?? []
+        const mergedCategories = Array.from(
+          new Set([...(deal.categories ?? []), ...storeCats])
+        ) as Category[]
+        if (storeCats.length > 0) {
+          console.log(
+            `[ingest] store-routed ${retailer}: LLM=[${(deal.categories ?? []).join(',')}] + store=[${storeCats.join(',')}] → [${mergedCategories.join(',')}]`
+          )
+        }
+
+        // Auto-activate pending stores. Only flip 'pending' — never
+        // touch 'no_email' or 'declined', those are deliberate negative
+        // signals. Mutate the in-memory record first so subsequent deals
+        // from the same brand this run don't re-fire the UPDATE; the DB
+        // write is fire-and-forget since it's idempotent.
+        if (storeMatch && !storeMatch.is_active && storeMatch.status === 'pending') {
+          storeMatch.is_active = true
+          storeMatch.status = 'active'
+          supabase
+            .from('stores')
+            .update({ is_active: true, status: 'active' })
+            .eq('id', storeMatch.id)
+            .then(({ error: actErr }) => {
+              if (actErr) {
+                console.error(`[ingest] auto-activate error for ${retailer}:`, JSON.stringify(actErr))
+              } else {
+                console.log(`[ingest] auto-activated pending store: ${retailer}`)
+              }
+            })
+        }
+
         const dealRow = {
           retailer,
           description: deal.description,
@@ -183,7 +301,7 @@ export async function GET(request: NextRequest) {
           expiration_date: deal.expiration_date,
           original_link: deal.link || `https://google.com/search?q=${encodeURIComponent(retailer)}`,
           affiliate_link: null,
-          categories: deal.categories as Category[],
+          categories: mergedCategories,
           deal_subtype: deal.deal_subtype ?? null,
           last_seen_at: new Date().toISOString(),
           week_of: weekOfStr,
@@ -277,11 +395,13 @@ export async function GET(request: NextRequest) {
 
       await supabase.from('processed_emails').upsert({ email_id: email.id, week_of: weekOfStr })
       processedEmailIds.push(email.id)
+      processedUids.push(email.uid)
     }
 
     // Concurrency-limited worker pool — N workers run in parallel and pick
     // up the next email as soon as their current one finishes, eliminating
     // the head-of-line blocking of the previous batched approach.
+    const tProcessStart = Date.now()
     await runWithConcurrency(newEmails, INGEST_CONCURRENCY, async (email) => {
       try {
         await processEmail(email)
@@ -289,60 +409,56 @@ export async function GET(request: NextRequest) {
         console.error(`Failed to process email ${email.id}:`, err)
       }
     })
+    console.log(
+      `[ingest] processed ${newEmails.length} emails in ${Date.now() - tProcessStart}ms ` +
+        `(${emailsWithDeals} with deals, ${emailsWithNoDeals} empty, ${newDeals} new deals)`
+    )
 
-    // Upsert edition stats — always use actual table counts as source of truth
-    const [
-      { data: allDealsForStats },
-      { count: totalProcessed },
-    ] = await Promise.all([
-      supabase.from('deals').select('retailer').eq('week_of', weekOfStr),
-      supabase.from('processed_emails').select('*', { count: 'exact', head: true }).eq('week_of', weekOfStr),
-    ])
-
-    const retailers = new Set((allDealsForStats || []).map((d) => d.retailer))
-    const totalDeals = allDealsForStats?.length || 0
-    const emailsScanned = totalProcessed ?? 0
-
-    const { data: existingEdition } = await supabase
-      .from('editions')
-      .select('id, issue_number')
+    // Total deals this week — surfaced in the response for debugging.
+    // The editions table is gone; homepage + admin stats now compute
+    // live from deals + processed_emails (see /api/stats and
+    // /api/editions/latest).
+    const { count: totalDeals } = await supabase
+      .from('deals')
+      .select('*', { count: 'exact', head: true })
       .eq('week_of', weekOfStr)
-      .single()
 
-    if (existingEdition) {
-      await supabase
-        .from('editions')
+    // Advance the IMAP cursor. We use the max successfully-processed UID
+    // (NOT fetchResult.maxUid, which would include emails that errored
+    // mid-run). If processedUids is empty for any reason — every email
+    // hit an exception — leave the cursor where it was so next run
+    // retries.
+    if (processedUids.length > 0) {
+      const newLastUid = Math.max(...processedUids)
+      const { error: cursorErr } = await supabase
+        .from('ingest_state')
         .update({
-          emails_scanned: emailsScanned,
-          deals_found: totalDeals,
-          retailers_count: retailers.size,
+          last_uid: newLastUid,
+          uid_validity: fetchResult.uidValidity,
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', existingEdition.id)
-    } else {
-      const { data: lastEdition } = await supabase
-        .from('editions')
-        .select('issue_number')
-        .order('week_of', { ascending: false })
-        .limit(1)
-        .single()
-
-      const nextIssue = lastEdition?.issue_number ? lastEdition.issue_number + 1 : 1
-
-      await supabase.from('editions').insert({
-        week_of: weekOfStr,
-        issue_number: nextIssue,
-        emails_scanned: emailsScanned,
-        deals_found: totalDeals,
-        retailers_count: retailers.size,
-      })
+        .eq('id', 'singleton')
+      if (cursorErr) {
+        console.error('[ingest] cursor update failed:', JSON.stringify(cursorErr))
+      } else {
+        console.log(
+          `[ingest] cursor advanced: last_uid=${newLastUid}, uid_validity=${fetchResult.uidValidity}`
+        )
+      }
     }
 
     return NextResponse.json({
+      emails_fetched: emails.length,
       emails_processed: newEmails.length,
+      emails_deferred: deferred,
       emails_with_deals: emailsWithDeals,
       emails_with_no_deals: emailsWithNoDeals,
       new_deals: newDeals,
-      total_deals_this_week: totalDeals,
+      total_deals_this_week: totalDeals ?? 0,
+      cursor: {
+        last_uid: processedUids.length > 0 ? Math.max(...processedUids) : cursor.afterUid,
+        uid_validity: fetchResult.uidValidity,
+      },
     })
   } catch (err) {
     console.error('Ingest error:', err)

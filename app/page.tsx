@@ -131,7 +131,6 @@ export default function LandingPage() {
     deals_found: number
     retailers_count: number
     emails_scanned: number
-    issue_number?: number
   } | null>(null)
   const [openFaq, setOpenFaq] = useState<number>(0)
 
@@ -235,8 +234,7 @@ export default function LandingPage() {
           <div className="ticker" style={{ marginBottom: 64, border: 'none', padding: 0 }}>
             <span className="dot" />
             <span className="t-meta">
-              {edition?.issue_number ? `Issue No. ${edition.issue_number} · ` : ''}
-              {today}
+              Last 30 days · {today}
             </span>
             <div className="ticker-stats" style={{ marginLeft: 'auto' }}>
               <div className="item">
@@ -271,18 +269,18 @@ export default function LandingPage() {
               fontSize: 'clamp(56px, 9.5vw, 156px)',
             }}
           >
-            <MaskLines lines={['Your inbox']} stagger={0} />
+            <MaskLines lines={['Tell us']} stagger={0} />
             <br />
             <MaskLines
               lines={[
-                <span key="lying" className="it" style={{ color: 'var(--olive-deep)' }}>
-                  is lying
+                <span key="want" className="it" style={{ color: 'var(--olive-deep)' }}>
+                  what you want.
                 </span>,
               ]}
               delay={120}
             />
             <br />
-            <MaskLines lines={['to you.']} delay={260} />
+            <MaskLines lines={[`We'll find the deal.`]} delay={260} />
           </h1>
 
           {/* Subline + form, two-column grid */}
@@ -298,8 +296,8 @@ export default function LandingPage() {
           >
             <Reveal delay={500}>
               <p style={{ fontSize: 19, lineHeight: 1.5, maxWidth: '36ch', color: 'var(--ink-70)' }}>
-                Tell us what you&rsquo;re shopping for. We watch every retailer&rsquo;s promo
-                inbox so you don&rsquo;t have to.{' '}
+                Build a watchlist of what you&rsquo;re shopping for. We sit on every
+                retailer&rsquo;s promo inbox so you don&rsquo;t have to.{' '}
                 <em style={{ fontFamily: 'var(--font-serif)', color: 'var(--ink)' }}>
                   Never pay full price for what you&rsquo;re looking for.
                 </em>

@@ -18,12 +18,37 @@ import { simpleParser, type ParsedMail } from 'mailparser'
 
 export interface GmailMessage {
   id: string
+  uid: number
   from: string
   subject: string
   date: string
   body: string
   isManual: boolean
   viewInBrowserUrl: string | null
+}
+
+export interface FetchResult {
+  messages: GmailMessage[]
+  /** UIDVALIDITY of the mailbox at fetch time. Compare to stored value on
+   *  the next run — mismatch means Gmail reset the UID space and the
+   *  saved cursor is meaningless. */
+  uidValidity: number
+  /** Highest UID seen during this fetch (whether or not it produced a
+   *  GmailMessage — transformMessage can return null for truly empty
+   *  bodies). Caller persists this as the new cursor. */
+  maxUid: number
+}
+
+export interface FetchOptions {
+  /** Last UID processed in the previous successful run. Combined with
+   *  uidValidity to determine whether to fetch UID > afterUid (fast,
+   *  steady-state) or fall back to a date window (first run, or after a
+   *  UIDVALIDITY change). */
+  afterUid?: number
+  /** UIDVALIDITY saved alongside afterUid. If it doesn't match the
+   *  mailbox's current UIDVALIDITY, the cursor is invalid and we fall
+   *  back to the date window. */
+  uidValidity?: number
 }
 
 function getCreds(): { user: string; pass: string } {
@@ -35,7 +60,15 @@ function getCreds(): { user: string; pass: string } {
   return { user, pass: pass.replace(/\s+/g, '') }
 }
 
-export async function fetchPromotionalEmails(sinceDate: Date): Promise<GmailMessage[]> {
+function normalizeMessageId(raw: string | null | undefined, uid: number): string {
+  if (!raw) return `uid-${uid}`
+  return raw.replace(/^<|>$/g, '')
+}
+
+export async function fetchPromotionalEmails(
+  sinceDate: Date,
+  options: FetchOptions = {}
+): Promise<FetchResult> {
   const { user, pass } = getCreds()
 
   const client = new ImapFlow({
@@ -47,6 +80,8 @@ export async function fetchPromotionalEmails(sinceDate: Date): Promise<GmailMess
   })
 
   const messages: GmailMessage[] = []
+  let uidValidity = 0
+  let maxUid = 0
 
   await client.connect()
   try {
@@ -57,10 +92,42 @@ export async function fetchPromotionalEmails(sinceDate: Date): Promise<GmailMess
     // we don't try to be clever with category filtering here.
     const lock = await client.getMailboxLock('INBOX')
     try {
+      // mailbox object is populated on successful lock acquisition and
+      // includes uidValidity and uidNext.
+      const mbox = client.mailbox as { uidValidity?: bigint | number; uidNext?: number }
+      uidValidity = Number(mbox.uidValidity ?? 0)
+
+      // Decide the search range. Cursor path: fetch UID > afterUid when
+      // the saved UIDVALIDITY still matches the current mailbox.
+      // Fallback path: date-based since (first run, or UIDVALIDITY
+      // changed under us).
+      let searchRange: { uid: string } | { since: Date }
+      let modeDescription: string
+      if (
+        options.afterUid !== undefined &&
+        options.afterUid > 0 &&
+        options.uidValidity !== undefined &&
+        options.uidValidity === uidValidity
+      ) {
+        searchRange = { uid: `${options.afterUid + 1}:*` }
+        modeDescription = `UID > ${options.afterUid}`
+        maxUid = options.afterUid
+      } else {
+        searchRange = { since: sinceDate }
+        modeDescription = `since ${sinceDate.toISOString()} (no cursor)`
+      }
+      console.log(
+        `[gmail] fetch mode: ${modeDescription} (uidValidity=${uidValidity})`
+      )
+
       for await (const msg of client.fetch(
-        { since: sinceDate },
-        { uid: true, envelope: true, source: true, labels: true }
+        searchRange,
+        { uid: true, envelope: true, source: true, labels: true },
+        // When using a UID range like "N:*", interpret the range as UIDs
+        // (not sequence numbers).
+        'uid' in searchRange ? { uid: true } : undefined
       )) {
+        if (msg.uid > maxUid) maxUid = msg.uid
         try {
           const transformed = await transformMessage(msg)
           if (transformed) messages.push(transformed)
@@ -78,7 +145,7 @@ export async function fetchPromotionalEmails(sinceDate: Date): Promise<GmailMess
     })
   }
 
-  return messages
+  return { messages, uidValidity, maxUid }
 }
 
 async function transformMessage(msg: FetchMessageObject): Promise<GmailMessage | null> {
@@ -88,8 +155,12 @@ async function transformMessage(msg: FetchMessageObject): Promise<GmailMessage |
 
   // Message-ID is stable across mailboxes and survives label moves.
   // Fall back to UID-prefixed string only if the email has no Message-ID
-  // (rare, but happens with hand-crafted messages).
-  const id = (parsed.messageId || `uid-${msg.uid}`).replace(/^<|>$/g, '')
+  // (rare, but happens with hand-crafted messages). Must match the same
+  // normalization the dedup pass uses so the IDs line up.
+  const id = normalizeMessageId(
+    parsed.messageId ?? msg.envelope?.messageId,
+    msg.uid
+  )
 
   const fromText =
     parsed.from?.text ||
@@ -113,6 +184,7 @@ async function transformMessage(msg: FetchMessageObject): Promise<GmailMessage |
 
   return {
     id,
+    uid: msg.uid,
     from: fromText,
     subject,
     date,

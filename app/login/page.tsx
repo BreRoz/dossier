@@ -4,12 +4,14 @@ import { useState, useEffect, useMemo } from 'react'
 import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import { Reveal } from '@/components/Reveal'
+import { groupCategories } from '@/lib/categoryGroups'
 
 export const dynamic = 'force-dynamic'
 
 interface Category {
   slug: string
   label: string
+  group_name?: string | null
 }
 
 export default function LoginPage() {
@@ -45,6 +47,15 @@ export default function LoginPage() {
       ? categories.filter((c) => c.label.toLowerCase().includes(q))
       : categories
   }, [categories, search])
+
+  // When the user is browsing (search empty), group by parent — Clothing,
+  // Beauty, etc. When they're searching, flatten to a single ranked list so
+  // group boundaries don't fragment the result set.
+  const isSearching = search.trim().length > 0
+  const grouped = useMemo(
+    () => (isSearching ? null : groupCategories(filteredCategories)),
+    [filteredCategories, isSearching]
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -182,10 +193,6 @@ export default function LoginPage() {
 
                     <div
                       style={{
-                        display: 'grid',
-                        gridTemplateColumns:
-                          'repeat(auto-fill, minmax(180px, 1fr))',
-                        gap: 6,
                         maxHeight: 360,
                         overflowY: 'auto',
                         padding: 4,
@@ -196,7 +203,6 @@ export default function LoginPage() {
                       {filteredCategories.length === 0 ? (
                         <div
                           style={{
-                            gridColumn: '1/-1',
                             padding: 24,
                             textAlign: 'center',
                             color: 'var(--ink-55)',
@@ -207,35 +213,92 @@ export default function LoginPage() {
                             ? 'Loading…'
                             : 'No match. Try a different search.'}
                         </div>
-                      ) : (
-                        filteredCategories.map((c) => {
-                          const on = picked.has(c.slug)
-                          return (
-                            <button
-                              key={c.slug}
-                              type="button"
-                              onClick={() => togglePick(c.slug)}
+                      ) : grouped ? (
+                        grouped.map((group) => (
+                          <div key={group.name} style={{ marginBottom: 16 }}>
+                            <div
+                              className="t-meta"
                               style={{
-                                textAlign: 'left',
-                                padding: '10px 12px',
-                                border: `1.5px solid ${on ? 'var(--ink)' : 'var(--ink-15)'}`,
-                                background: on
-                                  ? 'var(--ink)'
-                                  : 'transparent',
-                                color: on
-                                  ? 'var(--paper)'
-                                  : 'var(--ink)',
-                                cursor: 'pointer',
-                                fontFamily: 'inherit',
-                                fontSize: 13.5,
-                                transition: 'all .12s',
+                                padding: '8px 8px 6px',
+                                color: 'var(--olive-deep)',
+                                letterSpacing: '0.08em',
+                                fontSize: 11,
+                                textTransform: 'uppercase',
+                                position: 'sticky',
+                                top: 0,
+                                background: 'var(--paper)',
+                                zIndex: 1,
                               }}
                             >
-                              {on ? '✓ ' : '+ '}
-                              {c.label}
-                            </button>
-                          )
-                        })
+                              {group.name}
+                            </div>
+                            <div
+                              style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                                gap: 6,
+                              }}
+                            >
+                              {group.items.map((c) => {
+                                const on = picked.has(c.slug)
+                                return (
+                                  <button
+                                    key={c.slug}
+                                    type="button"
+                                    onClick={() => togglePick(c.slug)}
+                                    style={{
+                                      textAlign: 'left',
+                                      padding: '10px 12px',
+                                      border: `1.5px solid ${on ? 'var(--ink)' : 'var(--ink-15)'}`,
+                                      background: on ? 'var(--ink)' : 'transparent',
+                                      color: on ? 'var(--paper)' : 'var(--ink)',
+                                      cursor: 'pointer',
+                                      fontFamily: 'inherit',
+                                      fontSize: 13.5,
+                                      transition: 'all .12s',
+                                    }}
+                                  >
+                                    {on ? '✓ ' : '+ '}
+                                    {c.label}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                            gap: 6,
+                          }}
+                        >
+                          {filteredCategories.map((c) => {
+                            const on = picked.has(c.slug)
+                            return (
+                              <button
+                                key={c.slug}
+                                type="button"
+                                onClick={() => togglePick(c.slug)}
+                                style={{
+                                  textAlign: 'left',
+                                  padding: '10px 12px',
+                                  border: `1.5px solid ${on ? 'var(--ink)' : 'var(--ink-15)'}`,
+                                  background: on ? 'var(--ink)' : 'transparent',
+                                  color: on ? 'var(--paper)' : 'var(--ink)',
+                                  cursor: 'pointer',
+                                  fontFamily: 'inherit',
+                                  fontSize: 13.5,
+                                  transition: 'all .12s',
+                                }}
+                              >
+                                {on ? '✓ ' : '+ '}
+                                {c.label}
+                              </button>
+                            )
+                          })}
+                        </div>
                       )}
                     </div>
                   </div>

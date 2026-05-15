@@ -8,15 +8,18 @@ import { Nav } from '@/components/Nav'
 import { Footer } from '@/components/Footer'
 import { Reveal } from '@/components/Reveal'
 import { createClient } from '@/lib/supabase/client'
+import { groupCategories } from '@/lib/categoryGroups'
 
 interface KnownStore {
   name: string
   website: string
+  status: string
 }
 
 interface Category {
   slug: string
   label: string
+  group_name?: string | null
 }
 
 // Normalize a store name for fuzzy matching — lowercase, strip everything
@@ -53,9 +56,10 @@ export default function SuggestStorePage() {
           fetch('/api/categories').then((r) => r.json()),
         ])
         const stores: KnownStore[] = (storesRes.stores ?? []).map(
-          (s: { name: string; website: string }) => ({
+          (s: { name: string; website: string; status?: string }) => ({
             name: s.name,
             website: s.website,
+            status: s.status ?? 'active',
           })
         )
         setKnownStores(stores)
@@ -131,6 +135,13 @@ export default function SuggestStorePage() {
       }
     },
     [storeName, website, pickedSlugs, otherCategory, notes, categories]
+  )
+
+  // Render categories grouped by parent (Clothing, Beauty, …). The
+  // suggestion form has no search field — grouping is the whole UX win.
+  const groupedCategories = useMemo(
+    () => groupCategories(categories),
+    [categories]
   )
 
   const togglePick = (slug: string) => {
@@ -261,17 +272,47 @@ export default function SuggestStorePage() {
                     onChange={(e) => setStoreName(e.target.value)}
                   />
                 </div>
-                {existingMatch && (
-                  <p
-                    className="t-meta"
-                    style={{ marginTop: 10, color: 'var(--olive-deep)', maxWidth: 520, lineHeight: 1.5 }}
-                  >
-                    ✓ Good news — we already track{' '}
-                    <strong>{existingMatch.name}</strong>. Their deals already flow
-                    into matching watchlists. (Different brand, same name? Submit
-                    anyway and we&rsquo;ll sort it out.)
-                  </p>
-                )}
+                {existingMatch && (() => {
+                  const status = existingMatch.status
+                  if (status === 'active') {
+                    return (
+                      <p
+                        className="t-meta"
+                        style={{ marginTop: 10, color: 'var(--olive-deep)', maxWidth: 520, lineHeight: 1.5 }}
+                      >
+                        ✓ Good news — we already track{' '}
+                        <strong>{existingMatch.name}</strong>. Their deals flow
+                        into matching watchlists. (Different brand, same name?
+                        Submit anyway and we&rsquo;ll sort it out.)
+                      </p>
+                    )
+                  }
+                  if (status === 'no_email') {
+                    return (
+                      <p
+                        className="t-meta"
+                        style={{ marginTop: 10, color: 'var(--ink-55)', maxWidth: 520, lineHeight: 1.5 }}
+                      >
+                        We&rsquo;ve checked <strong>{existingMatch.name}</strong>{' '}
+                        and they don&rsquo;t publish a promotional email list, so
+                        we can&rsquo;t track their deals. If that&rsquo;s changed,
+                        submit anyway and let us know.
+                      </p>
+                    )
+                  }
+                  // 'pending' or anything else → we know about them but haven't
+                  // received an email yet
+                  return (
+                    <p
+                      className="t-meta"
+                      style={{ marginTop: 10, color: 'var(--ink-55)', maxWidth: 520, lineHeight: 1.5 }}
+                    >
+                      <strong>{existingMatch.name}</strong> is in our directory
+                      but we haven&rsquo;t received a promo email from them yet.
+                      Once we do, they&rsquo;ll flip on automatically.
+                    </p>
+                  )
+                })()}
 
                 {/* Website */}
                 <div className="t-meta" style={{ marginBottom: 12, marginTop: 32 }}>
@@ -326,12 +367,9 @@ export default function SuggestStorePage() {
                 </div>
                 <div
                   style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-                    gap: 6,
-                    maxHeight: 280,
+                    maxHeight: 360,
                     overflowY: 'auto',
-                    padding: 4,
+                    padding: 8,
                     border: '1px solid var(--ink-15)',
                     background: 'var(--paper)',
                     maxWidth: 520,
@@ -340,7 +378,6 @@ export default function SuggestStorePage() {
                   {categories.length === 0 ? (
                     <div
                       style={{
-                        gridColumn: '1/-1',
                         padding: 16,
                         textAlign: 'center',
                         color: 'var(--ink-55)',
@@ -350,30 +387,58 @@ export default function SuggestStorePage() {
                       Loading…
                     </div>
                   ) : (
-                    categories.map((c) => {
-                      const on = pickedSlugs.has(c.slug)
-                      return (
-                        <button
-                          key={c.slug}
-                          type="button"
-                          onClick={() => togglePick(c.slug)}
+                    groupedCategories.map((group) => (
+                      <div key={group.name} style={{ marginBottom: 14 }}>
+                        <div
+                          className="t-meta"
                           style={{
-                            textAlign: 'left',
-                            padding: '8px 10px',
-                            border: `1.5px solid ${on ? 'var(--ink)' : 'var(--ink-15)'}`,
-                            background: on ? 'var(--ink)' : 'transparent',
-                            color: on ? 'var(--paper)' : 'var(--ink)',
-                            cursor: 'pointer',
-                            fontFamily: 'inherit',
-                            fontSize: 13,
-                            transition: 'all .12s',
+                            padding: '6px 4px 8px',
+                            color: 'var(--olive-deep)',
+                            letterSpacing: '0.08em',
+                            fontSize: 11,
+                            textTransform: 'uppercase',
+                            position: 'sticky',
+                            top: 0,
+                            background: 'var(--paper)',
+                            zIndex: 1,
                           }}
                         >
-                          {on ? '✓ ' : '+ '}
-                          {c.label}
-                        </button>
-                      )
-                    })
+                          {group.name}
+                        </div>
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+                            gap: 6,
+                          }}
+                        >
+                          {group.items.map((c) => {
+                            const on = pickedSlugs.has(c.slug)
+                            return (
+                              <button
+                                key={c.slug}
+                                type="button"
+                                onClick={() => togglePick(c.slug)}
+                                style={{
+                                  textAlign: 'left',
+                                  padding: '8px 10px',
+                                  border: `1.5px solid ${on ? 'var(--ink)' : 'var(--ink-15)'}`,
+                                  background: on ? 'var(--ink)' : 'transparent',
+                                  color: on ? 'var(--paper)' : 'var(--ink)',
+                                  cursor: 'pointer',
+                                  fontFamily: 'inherit',
+                                  fontSize: 13,
+                                  transition: 'all .12s',
+                                }}
+                              >
+                                {on ? '✓ ' : '+ '}
+                                {c.label}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))
                   )}
                 </div>
 
