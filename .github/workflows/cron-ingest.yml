@@ -16,7 +16,11 @@ name: Hourly Ingest
 
 on:
   schedule:
-    - cron: '0 * * * *'   # every hour, on the hour (UTC)
+    # GitHub heavily throttles scheduled jobs at :00 (every repo writes
+    # '0 * * * *'), so runs can drift 15-60+ minutes or get skipped
+    # entirely under load. Shifting off the top of the hour gets us
+    # more reliable firings.
+    - cron: '17 * * * *'  # every hour at :17 past (UTC)
   workflow_dispatch:
 
 jobs:
