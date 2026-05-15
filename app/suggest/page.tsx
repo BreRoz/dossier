@@ -34,7 +34,6 @@ export default function SuggestStorePage() {
   // form state
   const [storeName, setStoreName] = useState('')
   const [website, setWebsite] = useState('')
-  const [shipsUsa, setShipsUsa] = useState(false)
   const [pickedSlugs, setPickedSlugs] = useState<Set<string>>(new Set())
   const [otherCategory, setOtherCategory] = useState('')
   const [notes, setNotes] = useState('')
@@ -96,10 +95,6 @@ export default function SuggestStorePage() {
         setError('Store website is required.')
         return
       }
-      if (!shipsUsa) {
-        setError('We only track retailers that ship to the USA — please confirm.')
-        return
-      }
 
       setSubmitting(true)
       try {
@@ -124,7 +119,6 @@ export default function SuggestStorePage() {
             website,
             category: categoryField,
             notes: notes || null,
-            ships_usa: shipsUsa,
           }),
         })
         const data = await res.json()
@@ -136,7 +130,7 @@ export default function SuggestStorePage() {
         setSubmitting(false)
       }
     },
-    [storeName, website, shipsUsa, pickedSlugs, otherCategory, notes, categories]
+    [storeName, website, pickedSlugs, otherCategory, notes, categories]
   )
 
   const togglePick = (slug: string) => {
@@ -240,7 +234,6 @@ export default function SuggestStorePage() {
                     setSubmitted(false)
                     setStoreName('')
                     setWebsite('')
-                    setShipsUsa(false)
                     setPickedSlugs(new Set())
                     setOtherCategory('')
                     setNotes('')
@@ -294,28 +287,23 @@ export default function SuggestStorePage() {
                   />
                 </div>
 
-                {/* Ships to USA */}
-                <label
+                {/* Ships to USA — informational reminder, not a gate */}
+                <div
                   style={{
                     marginTop: 32,
-                    display: 'flex',
-                    gap: 12,
-                    alignItems: 'flex-start',
-                    cursor: 'pointer',
+                    padding: '12px 16px',
+                    border: '1px solid var(--ink-15)',
+                    background: 'var(--paper)',
+                    fontSize: 13.5,
+                    color: 'var(--ink-70)',
+                    lineHeight: 1.55,
                     maxWidth: 520,
                   }}
                 >
-                  <input
-                    type="checkbox"
-                    checked={shipsUsa}
-                    onChange={(e) => setShipsUsa(e.target.checked)}
-                    style={{ marginTop: 3, width: 16, height: 16, flexShrink: 0 }}
-                  />
-                  <span style={{ fontSize: 14, color: 'var(--ink-70)', lineHeight: 1.5 }}>
-                    I confirm this retailer <strong style={{ color: 'var(--ink)' }}>ships to the USA</strong>.
-                    We can only track brands that US shoppers can actually buy from.
-                  </span>
-                </label>
+                  <strong style={{ color: 'var(--ink)' }}>FYI:</strong> we only track retailers
+                  that ship to the USA. Worth a quick check on the brand&rsquo;s site before you
+                  submit.
+                </div>
 
                 {/* Categories (optional, multi-select + Other) */}
                 <div

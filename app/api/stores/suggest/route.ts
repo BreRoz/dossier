@@ -17,19 +17,13 @@ export async function POST(req: NextRequest) {
 
   if (!sub) return NextResponse.json({ error: 'Subscriber not found' }, { status: 404 })
 
-  const { store_name, website, category, notes, ships_usa } = await req.json()
+  const { store_name, website, category, notes } = await req.json()
 
   if (!store_name?.trim()) {
     return NextResponse.json({ error: 'Store name is required' }, { status: 400 })
   }
   if (!website?.trim()) {
     return NextResponse.json({ error: 'Store website is required' }, { status: 400 })
-  }
-  if (ships_usa !== true) {
-    return NextResponse.json(
-      { error: 'We only track retailers that ship to the USA' },
-      { status: 400 }
-    )
   }
 
   const { error } = await supabase.from('store_suggestions').insert({
@@ -38,11 +32,10 @@ export async function POST(req: NextRequest) {
     website: website.trim(),
     category: category?.trim() || null,
     notes: notes?.trim() || null,
-    ships_usa: true,
   })
 
   if (error) {
-    console.error('store suggestion error:', error)
+    console.error('store suggestion error:', JSON.stringify(error))
     return NextResponse.json({ error: 'Failed to submit suggestion' }, { status: 500 })
   }
 
