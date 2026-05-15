@@ -1,68 +1,20 @@
-import { google } from 'googleapis'
+// Gmail inbox scraping via IMAP + App Password.
+//
+// Replaces the previous OAuth-based Gmail API implementation. The
+// OAuth refresh-token flow had a hard 7-day expiry on unverified apps
+// using restricted scopes (Gmail), which forced a manual token refresh
+// every week. App Passwords don't rotate — set up once, works
+// indefinitely.
+//
+// Setup:
+//   1. Enable 2-Step Verification on the Gmail account
+//   2. https://myaccount.google.com/apppasswords → generate
+//   3. Set env vars:
+//      - GMAIL_SCRAP_EMAIL   = the account address
+//      - GMAIL_APP_PASSWORD  = the 16-char app password (no spaces)
 
-function getOAuthClient() {
-  const oauth2Client = new google.auth.OAuth2(
-    process.env.GMAIL_CLIENT_ID,
-    process.env.GMAIL_CLIENT_SECRET,
-    'https://developers.google.com/oauthplayground'
-  )
-  oauth2Client.setCredentials({
-    refresh_token: process.env.GMAIL_REFRESH_TOKEN,
-  })
-  return oauth2Client
-}
-
-export async function fetchPromotionalEmails(sinceDate: Date): Promise<GmailMessage[]> {
-  const auth = getOAuthClient()
-  const gmail = google.gmail({ version: 'v1', auth })
-
-  const sinceTimestamp = Math.floor(sinceDate.getTime() / 1000)
-  // Include promotions, updates, and primary so brands that land outside
-  // the Promotions tab (e.g. Credo, Body Shop) are still captured.
-  const query = `after:${sinceTimestamp} (category:promotions OR category:updates OR category:primary OR label:manual OR label:restaurant OR label:restaurants) -is:sent -in:spam -in:trash`
-
-  // Paginate through all results — a busy inbox can easily exceed 250/week
-  const messages: { id?: string | null }[] = []
-  let pageToken: string | undefined
-
-  do {
-    const listRes = await gmail.users.messages.list({
-      userId: 'me',
-      q: query,
-      maxResults: 500,
-      pageToken,
-    })
-    const page = listRes.data.messages || []
-    messages.push(...page)
-    pageToken = listRes.data.nextPageToken ?? undefined
-  } while (pageToken)
-
-  if (messages.length === 0) return []
-
-  const results: GmailMessage[] = []
-  const batchSize = 25
-
-  for (let i = 0; i < messages.length; i += batchSize) {
-    const batch = messages.slice(i, i + batchSize)
-    const fetched = await Promise.all(
-      batch.map(async (msg) => {
-        try {
-          const full = await gmail.users.messages.get({
-            userId: 'me',
-            id: msg.id!,
-            format: 'full',
-          })
-          return parseGmailMessage(full.data)
-        } catch {
-          return null
-        }
-      })
-    )
-    results.push(...fetched.filter((m): m is GmailMessage => m !== null))
-  }
-
-  return results
-}
+import { ImapFlow, type FetchMessageObject } from 'imapflow'
+import { simpleParser, type ParsedMail } from 'mailparser'
 
 export interface GmailMessage {
   id: string
@@ -74,56 +26,100 @@ export interface GmailMessage {
   viewInBrowserUrl: string | null
 }
 
-function parseGmailMessage(msg: any): GmailMessage | null {
-  if (!msg.id) return null
+function getCreds(): { user: string; pass: string } {
+  const user = process.env.GMAIL_SCRAP_EMAIL
+  const pass = process.env.GMAIL_APP_PASSWORD
+  if (!user) throw new Error('GMAIL_SCRAP_EMAIL env var is not set')
+  if (!pass) throw new Error('GMAIL_APP_PASSWORD env var is not set')
+  // App passwords are shown with spaces — strip just in case
+  return { user, pass: pass.replace(/\s+/g, '') }
+}
 
-  const headers = msg.payload?.headers || []
-  const getHeader = (name: string) =>
-    headers.find((h: any) => h.name.toLowerCase() === name.toLowerCase())?.value || ''
+export async function fetchPromotionalEmails(sinceDate: Date): Promise<GmailMessage[]> {
+  const { user, pass } = getCreds()
 
-  const labels: string[] = msg.labelIds || []
-  const isManual = labels.includes('Label_manual') || labels.some((l: string) => l.toLowerCase().includes('manual'))
+  const client = new ImapFlow({
+    host: 'imap.gmail.com',
+    port: 993,
+    secure: true,
+    auth: { user, pass },
+    logger: false,
+  })
 
-  const body = extractBody(msg.payload)
+  const messages: GmailMessage[] = []
+
+  await client.connect()
+  try {
+    // INBOX includes Primary + Promotions + Updates by default on Gmail,
+    // unless the user has hidden categories from IMAP. The downstream
+    // pipeline filters transactional / non-deal content via
+    // isTransactionalEmail + isJunkDeal + the LLM extraction prompt, so
+    // we don't try to be clever with category filtering here.
+    const lock = await client.getMailboxLock('INBOX')
+    try {
+      for await (const msg of client.fetch(
+        { since: sinceDate },
+        { uid: true, envelope: true, source: true, labels: true }
+      )) {
+        try {
+          const transformed = await transformMessage(msg)
+          if (transformed) messages.push(transformed)
+        } catch (err) {
+          // One bad email shouldn't tank the whole ingest run.
+          console.error(`[gmail] failed to parse UID ${msg.uid}:`, err)
+        }
+      }
+    } finally {
+      lock.release()
+    }
+  } finally {
+    await client.logout().catch(() => {
+      // Logout failures aren't fatal — the function is about to end.
+    })
+  }
+
+  return messages
+}
+
+async function transformMessage(msg: FetchMessageObject): Promise<GmailMessage | null> {
+  if (!msg.source) return null
+
+  const parsed: ParsedMail = await simpleParser(msg.source as Buffer)
+
+  // Message-ID is stable across mailboxes and survives label moves.
+  // Fall back to UID-prefixed string only if the email has no Message-ID
+  // (rare, but happens with hand-crafted messages).
+  const id = (parsed.messageId || `uid-${msg.uid}`).replace(/^<|>$/g, '')
+
+  const fromText =
+    parsed.from?.text ||
+    (msg.envelope?.from?.[0]
+      ? `${msg.envelope.from[0].name ?? ''} <${msg.envelope.from[0].address ?? ''}>`.trim()
+      : '')
+
+  const subject = parsed.subject ?? msg.envelope?.subject ?? ''
+  const dateObj = parsed.date ?? msg.envelope?.date ?? null
+  const date = dateObj ? dateObj.toUTCString() : ''
+  const body = parsed.html || parsed.text || ''
+
+  // Gmail X-GM-LABELS — flagged as a Gmail extension by imapflow when
+  // we request `labels: true` in the FETCH options. Manual-labeled
+  // messages are emails the user has tagged for explicit inclusion
+  // regardless of category heuristics.
+  const labels: Set<string> = msg.labels ?? new Set()
+  const isManual = Array.from(labels).some((l) =>
+    typeof l === 'string' && l.toLowerCase().includes('manual')
+  )
 
   return {
-    id: msg.id,
-    from: getHeader('from'),
-    subject: getHeader('subject'),
-    date: getHeader('date'),
+    id,
+    from: fromText,
+    subject,
+    date,
     body,
     isManual,
     viewInBrowserUrl: extractViewInBrowserUrl(body),
   }
-}
-
-function extractBody(payload: any): string {
-  if (!payload) return ''
-
-  if (payload.mimeType === 'text/plain' || payload.mimeType === 'text/html') {
-    if (payload.body?.data) {
-      return Buffer.from(payload.body.data, 'base64').toString('utf-8')
-    }
-  }
-
-  if (payload.parts) {
-    // Prefer HTML over plain text for richer extraction
-    const htmlPart = payload.parts.find((p: any) => p.mimeType === 'text/html')
-    if (htmlPart?.body?.data) {
-      return Buffer.from(htmlPart.body.data, 'base64').toString('utf-8')
-    }
-    const textPart = payload.parts.find((p: any) => p.mimeType === 'text/plain')
-    if (textPart?.body?.data) {
-      return Buffer.from(textPart.body.data, 'base64').toString('utf-8')
-    }
-    // Recurse into multipart
-    for (const part of payload.parts) {
-      const body = extractBody(part)
-      if (body) return body
-    }
-  }
-
-  return ''
 }
 
 // Find the "view in browser" URL from a retail email's HTML body.

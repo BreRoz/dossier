@@ -39,10 +39,8 @@ The app runs at `http://localhost:3000`.
 | `OPENAI_API_KEY` | — | OpenAI API key for GPT-4o-mini deal extraction — **required** |
 | `RESEND_API_KEY` | — | Resend API key for outbound email — **required** |
 | `RESEND_FROM_EMAIL` | `hello@dossier.email` | From address for all outbound emails |
-| `GMAIL_CLIENT_ID` | — | Gmail OAuth2 client ID — **required** |
-| `GMAIL_CLIENT_SECRET` | — | Gmail OAuth2 client secret — **required** |
-| `GMAIL_REFRESH_TOKEN` | — | Gmail OAuth2 refresh token — **required** |
-| `GMAIL_SCRAP_EMAIL` | `bre.roz.ai@gmail.com` | Gmail address to scan for promotional emails |
+| `GMAIL_SCRAP_EMAIL` | — | Gmail address to scan for promotional emails — **required** |
+| `GMAIL_APP_PASSWORD` | — | 16-char [App Password](https://myaccount.google.com/apppasswords) for the scrape account (requires 2FA enabled) — **required** |
 | `NEXT_PUBLIC_APP_URL` | — | Public URL of the deployed app (e.g. `https://dealdossier.io`) — **required** |
 | `CRON_SECRET` | — | Bearer token used to authenticate cron job requests — **required in production** |
 | `ADMIN_EMAIL` | — | Email address granted admin access; if unset `/admin` blocks everyone — **required in production** |
