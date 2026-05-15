@@ -111,7 +111,7 @@ export default async function AdminPage() {
     db.from('processed_emails').select('*', { count: 'exact', head: true }),
     db.from('deals').select('*', { count: 'exact', head: true }),
     db.from('retailer_scan_log').select('retailer, sender_email, emails_processed, deals_extracted').order('emails_processed', { ascending: false }),
-    db.from('store_suggestions').select('id, store_name, website, notes, status, created_at').order('created_at', { ascending: false }).limit(50),
+    db.from('store_suggestions').select('id, store_name, website, category, notes, ships_usa, status, created_at').order('created_at', { ascending: false }).limit(50),
   ])
 
   // ── Derived stats ─────────────────────────────────────────────────────
@@ -338,33 +338,75 @@ export default async function AdminPage() {
           {(storeSuggestions || []).length > 0 && (
             <Reveal delay={80}>
               <div className="admin-card" style={{ marginTop: 32 }}>
-                <SectionLabel n="09">Store Suggestions · From Paid Users</SectionLabel>
+                <SectionLabel n="09">Store Suggestions</SectionLabel>
                 <div className="admin-table" style={{ marginTop: 24 }}>
-                  <div className="admin-table-head">
+                  <div
+                    className="admin-table-head"
+                    style={{ gridTemplateColumns: '1.3fr 1.2fr 1.2fr 1.3fr 0.7fr 0.6fr 0.8fr' }}
+                  >
                     <div>Store</div>
                     <div>Website</div>
+                    <div>Categories</div>
                     <div>Notes</div>
                     <div>Status</div>
                     <div>Date</div>
                     <div></div>
                   </div>
                   {(storeSuggestions || []).map((s) => (
-                    <div key={s.id} className="admin-table-row">
-                      <div
-                        style={{
-                          fontFamily: 'var(--font-serif)',
-                          fontSize: 18,
-                          fontWeight: 350,
-                          letterSpacing: '-0.01em',
-                        }}
-                      >
-                        {s.store_name}
+                    <div
+                      key={s.id}
+                      className="admin-table-row"
+                      style={{ gridTemplateColumns: '1.3fr 1.2fr 1.2fr 1.3fr 0.7fr 0.6fr 0.8fr' }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            fontFamily: 'var(--font-serif)',
+                            fontSize: 18,
+                            fontWeight: 350,
+                            letterSpacing: '-0.01em',
+                          }}
+                        >
+                          {s.store_name}
+                        </div>
+                        {s.ships_usa && (
+                          <span
+                            className="t-meta"
+                            style={{ color: 'var(--olive-deep)', marginTop: 2, display: 'inline-block' }}
+                          >
+                            ✓ Ships USA
+                          </span>
+                        )}
+                      </div>
+                      <div className="t-mono" style={{ fontSize: 12 }}>
+                        {s.website ? (
+                          <a
+                            href={s.website.startsWith('http') ? s.website : `https://${s.website}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              color: 'var(--olive-deep)',
+                              textDecoration: 'none',
+                              borderBottom: '1px solid currentColor',
+                              wordBreak: 'break-all',
+                            }}
+                          >
+                            {s.website.replace(/^https?:\/\//, '')}
+                          </a>
+                        ) : (
+                          <span style={{ color: 'var(--ink-25)' }}>—</span>
+                        )}
                       </div>
                       <div
-                        className="t-mono"
-                        style={{ fontSize: 12, color: 'var(--ink-55)' }}
+                        style={{
+                          fontSize: 12,
+                          color: 'var(--ink-70)',
+                          lineHeight: 1.5,
+                        }}
                       >
-                        {s.website || '—'}
+                        {s.category || (
+                          <span style={{ color: 'var(--ink-25)' }}>—</span>
+                        )}
                       </div>
                       <div
                         style={{

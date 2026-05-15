@@ -14,6 +14,11 @@ interface KnownStore {
   website: string
 }
 
+interface Category {
+  slug: string
+  label: string
+}
+
 // Normalize a store name for fuzzy matching — lowercase, strip everything
 // that isn't a letter or digit. "J.Crew" and "jcrew" both become "jcrew".
 function normalize(s: string): string {
@@ -24,12 +29,14 @@ export default function SuggestStorePage() {
   const [loading, setLoading] = useState(true)
   const [signedIn, setSignedIn] = useState(false)
   const [knownStores, setKnownStores] = useState<KnownStore[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
 
   // form state
   const [storeName, setStoreName] = useState('')
   const [website, setWebsite] = useState('')
   const [shipsUsa, setShipsUsa] = useState(false)
-  const [category, setCategory] = useState('')
+  const [pickedSlugs, setPickedSlugs] = useState<Set<string>>(new Set())
+  const [otherCategory, setOtherCategory] = useState('')
   const [notes, setNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -42,14 +49,18 @@ export default function SuggestStorePage() {
       setSignedIn(!!user?.email)
 
       try {
-        const res = await fetch('/api/stores').then((r) => r.json())
-        const stores: KnownStore[] = (res.stores ?? []).map(
+        const [storesRes, catsRes] = await Promise.all([
+          fetch('/api/stores').then((r) => r.json()),
+          fetch('/api/categories').then((r) => r.json()),
+        ])
+        const stores: KnownStore[] = (storesRes.stores ?? []).map(
           (s: { name: string; website: string }) => ({
             name: s.name,
             website: s.website,
           })
         )
         setKnownStores(stores)
+        setCategories(catsRes.categories ?? [])
       } catch {
         // Autofill is a nice-to-have; failing to load the sheet just means
         // no "we already have it" hint. The form still works.
@@ -92,13 +103,26 @@ export default function SuggestStorePage() {
 
       setSubmitting(true)
       try {
+        // Combine selected category slugs + "Other" free-text into a single
+        // comma-separated string for the existing category text column.
+        const labelBySlug: Record<string, string> = {}
+        for (const c of categories) labelBySlug[c.slug] = c.label
+        const pickedLabels = Array.from(pickedSlugs)
+          .map((slug) => labelBySlug[slug])
+          .filter(Boolean)
+        const allCats = [
+          ...pickedLabels,
+          ...(otherCategory.trim() ? [`Other: ${otherCategory.trim()}`] : []),
+        ]
+        const categoryField = allCats.length > 0 ? allCats.join(', ') : null
+
         const res = await fetch('/api/stores/suggest', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             store_name: storeName,
             website,
-            category: category || null,
+            category: categoryField,
             notes: notes || null,
             ships_usa: shipsUsa,
           }),
@@ -112,8 +136,17 @@ export default function SuggestStorePage() {
         setSubmitting(false)
       }
     },
-    [storeName, website, shipsUsa, category, notes]
+    [storeName, website, shipsUsa, pickedSlugs, otherCategory, notes, categories]
   )
+
+  const togglePick = (slug: string) => {
+    setPickedSlugs((prev) => {
+      const next = new Set(prev)
+      if (next.has(slug)) next.delete(slug)
+      else next.add(slug)
+      return next
+    })
+  }
 
   return (
     <>
@@ -208,7 +241,8 @@ export default function SuggestStorePage() {
                     setStoreName('')
                     setWebsite('')
                     setShipsUsa(false)
-                    setCategory('')
+                    setPickedSlugs(new Set())
+                    setOtherCategory('')
                     setNotes('')
                   }}
                   className="btn-ghost"
@@ -283,16 +317,91 @@ export default function SuggestStorePage() {
                   </span>
                 </label>
 
-                {/* Category (optional) */}
-                <div className="t-meta" style={{ marginBottom: 12, marginTop: 32 }}>
-                  What do they sell? <span style={{ color: 'var(--ink-40)' }}>(optional)</span>
+                {/* Categories (optional, multi-select + Other) */}
+                <div
+                  className="t-meta"
+                  style={{
+                    marginBottom: 8,
+                    marginTop: 32,
+                    display: 'flex',
+                    gap: 12,
+                    flexWrap: 'wrap',
+                    alignItems: 'baseline',
+                  }}
+                >
+                  <span>What do they sell?</span>
+                  <span style={{ color: 'var(--ink-40)' }}>
+                    {pickedSlugs.size > 0
+                      ? `${pickedSlugs.size} picked`
+                      : 'optional — helps us route the brand'}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+                    gap: 6,
+                    maxHeight: 280,
+                    overflowY: 'auto',
+                    padding: 4,
+                    border: '1px solid var(--ink-15)',
+                    background: 'var(--paper)',
+                    maxWidth: 520,
+                  }}
+                >
+                  {categories.length === 0 ? (
+                    <div
+                      style={{
+                        gridColumn: '1/-1',
+                        padding: 16,
+                        textAlign: 'center',
+                        color: 'var(--ink-55)',
+                        fontSize: 13,
+                      }}
+                    >
+                      Loading…
+                    </div>
+                  ) : (
+                    categories.map((c) => {
+                      const on = pickedSlugs.has(c.slug)
+                      return (
+                        <button
+                          key={c.slug}
+                          type="button"
+                          onClick={() => togglePick(c.slug)}
+                          style={{
+                            textAlign: 'left',
+                            padding: '8px 10px',
+                            border: `1.5px solid ${on ? 'var(--ink)' : 'var(--ink-15)'}`,
+                            background: on ? 'var(--ink)' : 'transparent',
+                            color: on ? 'var(--paper)' : 'var(--ink)',
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                            fontSize: 13,
+                            transition: 'all .12s',
+                          }}
+                        >
+                          {on ? '✓ ' : '+ '}
+                          {c.label}
+                        </button>
+                      )
+                    })
+                  )}
+                </div>
+
+                {/* Other / freeform fallback */}
+                <div
+                  className="t-meta"
+                  style={{ marginBottom: 8, marginTop: 20, color: 'var(--ink-55)' }}
+                >
+                  Don&rsquo;t see it? Add your own
                 </div>
                 <div className="field" style={{ maxWidth: 520 }}>
                   <input
                     type="text"
-                    placeholder="e.g. bedding, bath & towels"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
+                    placeholder="e.g. electrolyte drinks, kayak gear"
+                    value={otherCategory}
+                    onChange={(e) => setOtherCategory(e.target.value)}
                   />
                 </div>
 
