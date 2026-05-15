@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 const PRESETS = [
   { value: 'added',           label: 'Added to watchlist',        glyph: '✓' },
@@ -24,16 +25,34 @@ export function SuggestionActions({
   const [sending, setSending] = useState(false)
   const [sent, setSent]       = useState(false)
   const [selected, setSelected] = useState('')
-  const ref = useRef<HTMLDivElement>(null)
+  // Bounding rect of the trigger button, captured at open time so we can
+  // anchor the portaled popover. Re-captured every time the popover opens
+  // so it follows the button if the page reflowed.
+  const [rect, setRect] = useState<DOMRect | null>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
 
+  // Close on outside click — check both the wrapper AND the portaled
+  // popover, since the popover isn't a DOM child of the wrapper anymore.
   useEffect(() => {
     if (!open) return
     const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      const t = e.target as Node
+      if (wrapperRef.current?.contains(t)) return
+      if (popoverRef.current?.contains(t)) return
+      setOpen(false)
     }
     document.addEventListener('mousedown', onDoc)
     return () => document.removeEventListener('mousedown', onDoc)
   }, [open])
+
+  const handleToggle = () => {
+    if (!open && buttonRef.current) {
+      setRect(buttonRef.current.getBoundingClientRect())
+    }
+    setOpen((o) => !o)
+  }
 
   if (status !== 'pending') {
     const isAdded = status === 'added'
@@ -75,85 +94,91 @@ export function SuggestionActions({
     setSending(false)
   }
 
-  return (
+  // The popover lives in a React Portal to document.body so it escapes
+  // any ancestor stacking context (e.g. <Reveal>'s transform). Without
+  // this, even z-index: 9999 won't lift it above sibling animated cards.
+  const popover = open && rect && typeof document !== 'undefined' && createPortal(
     <div
-      ref={ref}
+      ref={popoverRef}
+      className="admin-popover"
       style={{
-        position: 'relative',
-        display: 'inline-block',
-        // Lift the whole control above sibling admin cards so the popover
-        // doesn't slide behind "Recent Signups" (or anything else that
-        // follows in the DOM). Only lifted while open.
-        zIndex: open ? 50 : 'auto',
+        position: 'fixed',
+        top: rect.bottom + 8,
+        right: Math.max(8, window.innerWidth - rect.right),
+        zIndex: 1000,
       }}
     >
+      <div className="t-meta" style={{ color: 'var(--ink-40)', marginBottom: 10 }}>
+        Respond to: {storeName}
+      </div>
+      {PRESETS.map((r) => (
+        <label
+          key={r.value}
+          className={`sug-row ${selected === r.value ? 'on' : ''}`}
+        >
+          <input
+            type="radio"
+            name={`s-${suggestionId}`}
+            checked={selected === r.value}
+            onChange={() => setSelected(r.value)}
+          />
+          <span
+            style={{
+              marginRight: 8,
+              color: r.value === 'added' ? 'var(--olive-deep)' : 'var(--ink-40)',
+            }}
+          >
+            {r.glyph}
+          </span>
+          <span>{r.label}</span>
+        </label>
+      ))}
+      <textarea
+        className="sug-note"
+        placeholder="Optional note…"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        rows={2}
+      />
+      <div
+        style={{
+          display: 'flex',
+          gap: 8,
+          justifyContent: 'flex-end',
+          marginTop: 10,
+        }}
+      >
+        <button
+          type="button"
+          className="admin-link-btn"
+          onClick={() => setOpen(false)}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          className="admin-btn admin-btn-sm"
+          disabled={!selected || sending}
+          onClick={handleSend}
+        >
+          {sending ? 'Sending…' : 'Send'}
+        </button>
+      </div>
+    </div>,
+    document.body
+  )
+
+  return (
+    <div ref={wrapperRef} style={{ display: 'inline-block' }}>
       <button
+        ref={buttonRef}
         type="button"
         className="admin-link-btn"
-        onClick={() => setOpen((o) => !o)}
+        onClick={handleToggle}
       >
         Respond ↳
       </button>
-      {open && (
-        <div className="admin-popover" style={{ zIndex: 50 }}>
-          <div className="t-meta" style={{ color: 'var(--ink-40)', marginBottom: 10 }}>
-            Respond to: {storeName}
-          </div>
-          {PRESETS.map((r) => (
-            <label
-              key={r.value}
-              className={`sug-row ${selected === r.value ? 'on' : ''}`}
-            >
-              <input
-                type="radio"
-                name={`s-${suggestionId}`}
-                checked={selected === r.value}
-                onChange={() => setSelected(r.value)}
-              />
-              <span
-                style={{
-                  marginRight: 8,
-                  color: r.value === 'added' ? 'var(--olive-deep)' : 'var(--ink-40)',
-                }}
-              >
-                {r.glyph}
-              </span>
-              <span>{r.label}</span>
-            </label>
-          ))}
-          <textarea
-            className="sug-note"
-            placeholder="Optional note…"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            rows={2}
-          />
-          <div
-            style={{
-              display: 'flex',
-              gap: 8,
-              justifyContent: 'flex-end',
-              marginTop: 10,
-            }}
-          >
-            <button
-              type="button"
-              className="admin-link-btn"
-              onClick={() => setOpen(false)}
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              className="admin-btn admin-btn-sm"
-              disabled={!selected || sending}
-              onClick={handleSend}
-            >
-              {sending ? 'Sending…' : 'Send'}
-            </button>
-          </div>
-        </div>
-      )}
+      {popover}
     </div>
   )
 }
