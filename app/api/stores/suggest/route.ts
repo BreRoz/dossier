@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 
 export async function POST(req: NextRequest) {
+  // User-scoped client for the auth check
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Any signed-in subscriber can suggest a store — free or paid. Every
-  // submission is manually reviewed before a brand is added, so opening
-  // this up just widens the funnel of brands we hear about.
-  const { data: sub } = await supabase
+  // Service client for the DB read/write so we don't get blocked by RLS
+  // on store_suggestions. The auth check above already verifies the
+  // request comes from a signed-in subscriber; bypassing RLS for the
+  // write is safe.
+  const service = createServiceClient()
+
+  const { data: sub } = await service
     .from('subscribers')
     .select('id')
     .eq('email', user.email)
@@ -26,7 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Store website is required' }, { status: 400 })
   }
 
-  const { error } = await supabase.from('store_suggestions').insert({
+  const { error } = await service.from('store_suggestions').insert({
     subscriber_id: sub.id,
     store_name: store_name.trim(),
     website: website.trim(),
@@ -36,14 +40,7 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     console.error('store suggestion error:', JSON.stringify(error))
-    // Surface the real DB error to the client during debugging.
-    // Auth-gated route, so leaking the Postgres code is acceptable.
-    return NextResponse.json(
-      {
-        error: `DB error [${error.code}]: ${error.message}${error.hint ? ` (hint: ${error.hint})` : ''}`,
-      },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Failed to submit suggestion' }, { status: 500 })
   }
 
   return NextResponse.json({ success: true })
