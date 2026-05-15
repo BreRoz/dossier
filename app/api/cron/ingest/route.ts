@@ -5,7 +5,7 @@ import { extractDealsFromEmail, getRetailerCategories, type CategoryRow } from '
 import { getCurrentWeekOf, makeDealKey, isJunkDeal } from '@/lib/deals'
 import { fixRetailerCase } from '@/lib/stores'
 import { sendAdminAlert } from '@/lib/resend'
-import { addDays, format } from 'date-fns'
+import { format, subHours } from 'date-fns'
 import type { Category } from '@/types'
 
 export const maxDuration = 300 // 5 minute max
@@ -73,9 +73,13 @@ export async function GET(request: NextRequest) {
   const weekOf = getCurrentWeekOf()
   const weekOfStr = format(weekOf, 'yyyy-MM-dd')
 
-  // Scan from the Sunday before the edition Thursday so we catch weekly-ad
-  // emails (e.g. H-E-B) that arrive mid-week before the Thursday anchor
-  const since = addDays(weekOf, -4)
+  // Scan the most recent 24 hours of emails. The hourly cron re-checks
+  // this rolling window every hour; processed_emails dedupes so already-
+  // seen messages cost only a Set lookup, not a fresh OpenAI call. 24h
+  // gives ~24× redundancy against a missed cron tick without blowing the
+  // 5-minute Vercel function timeout on the first run after a fresh
+  // inbox switch.
+  const since = subHours(new Date(), 24)
 
   try {
     const emails = await fetchPromotionalEmails(since)
