@@ -8,7 +8,7 @@ import {
   backoffMs,
   getRetryAfterMs,
   isRetryableExtractionError,
-} from '@/app/api/cron/process-extraction-jobs/route'
+} from '@/lib/extractionRetry'
 
 type QueryResult = { data?: unknown; error?: { message?: string } | null }
 
